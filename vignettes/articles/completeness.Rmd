@@ -43,7 +43,7 @@ glimpse(ncbi_taxonomy_table)
 ```
 
 
-## Number of taxa in the NCBI database per rank
+# Number of taxa in the NCBI database per rank
 
 ```{r}
 valid_ranks <- c(
@@ -70,7 +70,7 @@ counts %>%
     )
 ```
 
-## Completeness in bugphyzz (before phylogenetic/taxonomic propagation)
+# Completeness in bugphyzz (before phylogenetic/taxonomic propagation)
 
 ```{r}
 counts_bp <- map(bp, ~ {
