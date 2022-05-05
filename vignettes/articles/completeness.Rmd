@@ -93,7 +93,7 @@ col_fun <- circlize::colorRamp2(c(0, 0.0001, 100), c("white", "lightblue", "dark
 Heatmap(
     counts_bp, 
     col = col_fun,
-    name = 'Completeness (%)',
+    name = '%',
     row_title = 'Attributes',
     column_title = 'Ranks',
     cluster_columns = FALSE
