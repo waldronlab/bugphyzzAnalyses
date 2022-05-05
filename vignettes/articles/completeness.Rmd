@@ -82,6 +82,8 @@ counts_bp <- map(bp, ~ {
     as.data.frame() %>% 
     as.matrix() 
 counts_bp[is.na(counts_bp)] <- 0
+order_cols <- valid_ranks[valid_ranks %in% colnames(counts_bp)]
+counts_bp <- counts_bp[, order_cols]
 ```
 
 Draw heatmap
@@ -90,7 +92,11 @@ Draw heatmap
 col_fun <- circlize::colorRamp2(c(0, 0.0001, 100), c("white", "lightblue", "darkblue"))
 Heatmap(
     counts_bp, 
-    col = col_fun
+    col = col_fun,
+    name = 'Completeness (%)',
+    row_title = 'Attributes',
+    column_title = 'Ranks',
+    cluster_columns = FALSE
 )
 ```
 
