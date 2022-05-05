@@ -55,7 +55,14 @@
   </ul>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/waldronlab/bugphyzzAnalyses/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -71,7 +78,7 @@
       <h1 data-toc-skip>Completeness of annotations</h1>
             
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/waldronlab/bugphyzzAnalyses/blob/HEAD/vignettes/articles/completeness.Rmd" class="external-link"><code>vignettes/articles/completeness.Rmd</code></a></small>
       <div class="hidden name"><code>completeness.Rmd</code></div>
 
     </div>
@@ -79,7 +86,7 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">bugphyzzAnalyses</span><span class="op">)</span>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/waldronlab/bugphyzzAnalyses" class="external-link">bugphyzzAnalyses</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">bugphyzz</span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://purrr.tidyverse.org" class="external-link">purrr</a></span><span class="op">)</span>
@@ -103,7 +110,7 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ncbi_taxonomy_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_ncbi_taxonomy.html">get_ncbi_taxonomy</a></span><span class="op">(</span><span class="op">)</span>
 <span class="fu"><a href="https://dplyr.tidyverse.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">ncbi_taxonomy_table</span><span class="op">)</span>
-<span class="co">#&gt; Rows: 545,136</span>
+<span class="co">#&gt; Rows: 545,453</span>
 <span class="co">#&gt; Columns: 10</span>
 <span class="co">#&gt; $ kingdom  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Archaea", "Archaea", "Archaea", "Archaea", "Archaea", "Archa…</span>
 <span class="co">#&gt; $ phylum   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA, NA, "Candidatus Baldrarchaeota", "Candidatus Baldrarchaeo…</span>
@@ -155,13 +162,19 @@
     <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">column_to_rownames</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">'attribute'</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
     <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> 
     <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="op">)</span> 
-<span class="va">counts_bp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">counts_bp</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span></code></pre></div>
+<span class="va">counts_bp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">counts_bp</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span>
+<span class="va">order_cols</span> <span class="op">&lt;-</span> <span class="va">valid_ranks</span><span class="op">[</span><span class="va">valid_ranks</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">counts_bp</span><span class="op">)</span><span class="op">]</span>
+<span class="va">counts_bp</span> <span class="op">&lt;-</span> <span class="va">counts_bp</span><span class="op">[</span>, <span class="va">order_cols</span><span class="op">]</span></code></pre></div>
 <p>Draw heatmap</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">col_fun</span> <span class="op">&lt;-</span> <span class="fu">circlize</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/circlize/man/colorRamp2.html" class="external-link">colorRamp2</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.0001</span>, <span class="fl">100</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"lightblue"</span>, <span class="st">"darkblue"</span><span class="op">)</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">Heatmap</a></span><span class="op">(</span>
     <span class="va">counts_bp</span>, 
-    col <span class="op">=</span> <span class="va">col_fun</span>
+    col <span class="op">=</span> <span class="va">col_fun</span>,
+    name <span class="op">=</span> <span class="st">'Completeness (%)'</span>,
+    row_title <span class="op">=</span> <span class="st">'Attributes'</span>,
+    column_title <span class="op">=</span> <span class="st">'Ranks'</span>,
+    cluster_columns <span class="op">=</span> <span class="cn">FALSE</span>
 <span class="op">)</span></code></pre></div>
 <p><img src="completeness_files/figure-html/unnamed-chunk-6-1.png" width="480"></p>
 </div>
