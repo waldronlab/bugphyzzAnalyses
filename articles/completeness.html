@@ -122,9 +122,10 @@
 <span class="co">#&gt; $ NCBI_ID  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "1935183", "2798909", "2798916", "2798922", "2798928", "27989…</span>
 <span class="co">#&gt; $ tax_name <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Asgard group", "Candidatus Baldrarchaeota", "Candidatus Bald…</span>
 <span class="co">#&gt; $ rank     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "clade", "phylum", "class", "order", "family", "genus", "spec…</span></code></pre></div>
-<div class="section level3">
-<h3 id="number-of-taxa-in-the-ncbi-database-per-rank">Number of taxa in the NCBI database per rank<a class="anchor" aria-label="anchor" href="#number-of-taxa-in-the-ncbi-database-per-rank"></a>
-</h3>
+</div>
+<div class="section level2">
+<h2 id="number-of-taxa-in-the-ncbi-database-per-rank">Number of taxa in the NCBI database per rank<a class="anchor" aria-label="anchor" href="#number-of-taxa-in-the-ncbi-database-per-rank"></a>
+</h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">valid_ranks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>
     <span class="st">'kingdom'</span>, <span class="st">'phylum'</span>, <span class="st">'class'</span>, <span class="st">'order'</span>, <span class="st">'family'</span>, <span class="st">'genus'</span>, <span class="st">'species'</span>,
@@ -150,9 +151,9 @@
     <span class="op">)</span></code></pre></div>
 <p><img src="completeness_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 </div>
-<div class="section level3">
-<h3 id="completeness-in-bugphyzz-before-phylogenetictaxonomic-propagation">Completeness in bugphyzz (before phylogenetic/taxonomic propagation)<a class="anchor" aria-label="anchor" href="#completeness-in-bugphyzz-before-phylogenetictaxonomic-propagation"></a>
-</h3>
+<div class="section level2">
+<h2 id="completeness-in-bugphyzz-before-phylogenetictaxonomic-propagation">Completeness in bugphyzz (before phylogenetic/taxonomic propagation)<a class="anchor" aria-label="anchor" href="#completeness-in-bugphyzz-before-phylogenetictaxonomic-propagation"></a>
+</h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">counts_bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">bp</span>, <span class="op">~</span> <span class="op">{</span>
     <span class="va">attr_counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_attr_counts.html">get_attr_counts</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span>
@@ -177,7 +178,6 @@
     cluster_columns <span class="op">=</span> <span class="cn">FALSE</span>
 <span class="op">)</span></code></pre></div>
 <p><img src="completeness_files/figure-html/unnamed-chunk-6-1.png" width="480"></p>
-</div>
 </div>
   </div>
 
