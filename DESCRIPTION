@@ -2,13 +2,32 @@ Package: bugphyzzAnalyses
 Type: Package
 Title: Analyses performed with the bugphyzz package
 Version: 0.1.0
-Author: Who wrote it
+Authors@R:
+    c(
+        person(
+            'Samuel', 'Gamboa', email = 'Samuel.Gamboa.Tuz@gmail.com',
+            role = c('aut', 'cre')
+        )
+    )
 Description: Analyses done with the bugphyzz package.
-License: What license is it under?
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Suggests: 
     bugphyzz,
+    circlize,
+    ComplexHeatmap,
+    ggplot2,
     rmarkdown
 Remotes:
     waldronlab/bugphyzz
+Imports: 
+    BiocFileCache,
+    dplyr,
+    magrittr,
+    purrr,
+    readr,
+    stringr,
+    tools,
+    vroom
+RoxygenNote: 7.1.2
