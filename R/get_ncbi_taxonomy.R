@@ -13,7 +13,7 @@
 #' @return A data frame with the complete NCBI taxonomy
 #' @export
 #'
-get_ncbi_taxonomy <- function(force_download  = FALSE) {
+get_ncbi_taxonomy <- function(force_download = FALSE) {
 
     superkingdom <- kingdom <- phylum <- class <- order <- family <-
         genus <- species <- NCBI_ID <- tax_name <- NULL
@@ -115,5 +115,8 @@ get_ncbi_taxonomy <- function(force_download  = FALSE) {
     BiocFileCache::bfcrpath(bfc, rids = rid)
 }
 
-
-
+## Function to crate a cache
+.get_cache <- function() {
+    cache <- tools::R_user_dir('bugphyzzAnalyses', which = 'cache')
+    BiocFileCache::BiocFileCache(cache)
+}

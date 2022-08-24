@@ -5,3 +5,4 @@
     BiocFileCache::BiocFileCache(cache)
 }
 
+#' Convert con
