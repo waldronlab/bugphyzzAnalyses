@@ -18,8 +18,10 @@ Suggests:
     circlize,
     ComplexHeatmap,
     ggplot2,
-    rmarkdown
+    rmarkdown,
+    taxPPro
 Remotes:
+    sdgamboa/taxPPro
     waldronlab/bugphyzz
 Imports: 
     BiocFileCache,
