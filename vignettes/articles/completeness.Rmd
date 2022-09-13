@@ -1,5 +1,8 @@
 ---
-title: "Completeness of annotations"
+title: "Stats"
+output:
+    html_document:
+        toc: true
 ---
 
 ```{r, include = FALSE}
@@ -12,4 +15,81 @@ knitr::opts_chunk$set(
 ```{r setup, message=FALSE}
 library(bugphyzzAnalyses)
 library(taxPPro)
+library(bugphyzz)
+library(dplyr)
+library(purrr)
+library(ggplot2)
 ```
+
+
+```{r import data, message=FALSE, warning=FALSE}
+phys <- map(physiologies(), as_tibble)
+phys[['fatty acid compositions']] <- as_tibble(fattyAcidComposition())
+```
+
+
+## Number of annotations prior propagation
+
+
+```{r}
+df <- phys[['aerophilicity']]
+
+
+```
+
+
+```{r}
+df_summary <- df |> 
+    filter(
+        Attribute != '',
+        Rank %in% c('genus', 'species', 'strain')
+    ) |> 
+    count(Attribute, Rank)
+
+Attribute_order <- df_summary |> 
+    count(Attribute, wt = n) |> 
+    arrange(-n) |> 
+    pull(Attribute)
+
+```
+
+```{r}
+df_summary |>
+    mutate(
+        Attribute = factor(Attribute, levels = Attribute_order, ordered = TRUE)
+    ) |>  
+    ggplot(aes(Attribute, n)) +
+    geom_col(
+        aes(fill = Rank), position = position_dodge2(0.9, 'single')
+    ) + 
+    geom_text(
+        aes(label = n, color = Rank), 
+        position = position_dodge2(0.9, 'single'), 
+        angle = 45, hjust = 0, vjust = -0.5
+    ) +
+    labs(
+        title = 'Number of annotatoins in the aerophilicity dataset (prior ASR)',
+        y = 'Number of annotated taxa'
+    ) +
+    scale_fill_brewer(type = 'qual', palette = 'Set1') +
+    scale_color_brewer(type = 'qual', palette = 'Set1') +
+    scale_y_continuous(limits = c(0, 4000), breaks = seq(0, 4000, 1000)) +
+    theme_bw() +
+    theme(
+        axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
