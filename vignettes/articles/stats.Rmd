@@ -33,8 +33,6 @@ phys[['fatty acid compositions']] <- as_tibble(fattyAcidComposition())
 
 ```{r}
 df <- phys[['aerophilicity']]
-
-
 ```
 
 
@@ -68,7 +66,7 @@ df_summary |>
         angle = 45, hjust = 0, vjust = -0.5
     ) +
     labs(
-        title = 'Number of annotatoins in the aerophilicity dataset (prior ASR)',
+        title = 'Number of annotations in the aerophilicity dataset (prior ASR)',
         y = 'Number of annotated taxa'
     ) +
     scale_fill_brewer(type = 'qual', palette = 'Set1') +
@@ -82,9 +80,53 @@ df_summary |>
 
 
 
+```{r}
+df2 <- propagate(df)
+```
 
 
+```{r}
 
+df2_summary <- df2 |> 
+    filter(
+        Attribute != '',
+        Rank %in% c('genus', 'species', 'strain')
+    ) |> 
+    count(Attribute, Rank)
+
+Attribute_order <- df2_summary |> 
+    count(Attribute, wt = n) |> 
+    arrange(-n) |> 
+    pull(Attribute)
+
+```
+
+```{r}
+df2_summary |>
+    mutate(
+        Attribute = factor(Attribute, levels = Attribute_order, ordered = TRUE)
+    ) |>  
+    ggplot(aes(Attribute, n)) +
+    geom_col(
+        aes(fill = Rank), position = position_dodge2(0.9, 'single')
+    ) + 
+    geom_text(
+        aes(label = n, color = Rank), 
+        position = position_dodge2(0.9, 'single'), 
+        angle = 45, hjust = 0, vjust = -0.5
+    ) +
+    labs(
+        title = 'Number of annotations in the aerophilicity dataset (after ASR - majority vote)',
+        y = 'Number of annotated taxa'
+    ) +
+    scale_fill_brewer(type = 'qual', palette = 'Set1') +
+    scale_color_brewer(type = 'qual', palette = 'Set1') +
+    scale_y_continuous(limits = c(0, 15000), breaks = seq(0, 15000, 3000)) +
+    theme_bw() +
+    theme(
+        axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+```
 
 
 
