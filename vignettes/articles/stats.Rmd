@@ -21,15 +21,18 @@ library(purrr)
 library(ggplot2)
 ```
 
+# Data
+
+## Import data from bugphyzz
 
 ```{r import data, message=FALSE, warning=FALSE}
 phys <- map(physiologies(), as_tibble)
 phys[['fatty acid compositions']] <- as_tibble(fattyAcidComposition())
 ```
 
+## Propagate data with ASR/Inheritance (majority vote)
 
 ## Number of annotations prior propagation
-
 
 ```{r}
 df <- phys[['aerophilicity']]
