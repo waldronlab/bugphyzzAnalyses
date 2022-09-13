@@ -21,7 +21,7 @@ Suggests:
     rmarkdown,
     taxPPro
 Remotes:
-    sdgamboa/taxPPro
+    sdgamboa/taxPPro,
     waldronlab/bugphyzz
 Imports: 
     BiocFileCache,
