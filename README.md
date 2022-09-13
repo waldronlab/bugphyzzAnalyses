@@ -1,6 +1,6 @@
 ## Analyses with the bugphyzz package
 
-This repository contains analyses for the [bugphyzz package](https://github.com/waldronlab/bugphyzz).
+This repository contains analyses and stats for the [bugphyzz package](https://github.com/waldronlab/bugphyzz).
 
 This package can be installed with:
 
