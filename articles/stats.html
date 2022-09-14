@@ -92,12 +92,23 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://purrr.tidyverse.org" class="external-link">purrr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
+<div class="section level2">
+<h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
+</h2>
+<div class="section level3">
+<h3 id="import-data-from-bugphyzz">Import data from bugphyzz<a class="anchor" aria-label="anchor" href="#import-data-from-bugphyzz"></a>
+</h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">phys</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/physiologies.html" class="external-link">physiologies</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">as_tibble</span><span class="op">)</span></span>
 <span><span class="va">phys</span><span class="op">[[</span><span class="st">'fatty acid compositions'</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/fattyAcidComposition.html" class="external-link">fattyAcidComposition</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="section level2">
-<h2 id="number-of-annotations-prior-propagation">Number of annotations prior propagation<a class="anchor" aria-label="anchor" href="#number-of-annotations-prior-propagation"></a>
-</h2>
+</div>
+<div class="section level3">
+<h3 id="propagate-data-with-asrinheritance-majority-vote">Propagate data with ASR/Inheritance (majority vote)<a class="anchor" aria-label="anchor" href="#propagate-data-with-asrinheritance-majority-vote"></a>
+</h3>
+</div>
+<div class="section level3">
+<h3 id="number-of-annotations-prior-propagation">Number of annotations prior propagation<a class="anchor" aria-label="anchor" href="#number-of-annotations-prior-propagation"></a>
+</h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="va">phys</span><span class="op">[[</span><span class="st">'aerophilicity'</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -127,7 +138,7 @@
 <span>        angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">0</span>, vjust <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span></span>
 <span>    <span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
-<span>        title <span class="op">=</span> <span class="st">'Number of annotatoins in the aerophilicity dataset (prior ASR)'</span>,</span>
+<span>        title <span class="op">=</span> <span class="st">'Number of annotations in the aerophilicity dataset (prior ASR)'</span>,</span>
 <span>        y <span class="op">=</span> <span class="st">'Number of annotated taxa'</span></span>
 <span>    <span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_brewer.html" class="external-link">scale_fill_brewer</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">'qual'</span>, palette <span class="op">=</span> <span class="st">'Set1'</span><span class="op">)</span> <span class="op">+</span></span>
@@ -138,6 +149,7 @@
 <span>        axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span></code></pre></div>
 <p><img src="stats_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
+</div>
 </div>
   </div>
 
