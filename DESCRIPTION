@@ -21,7 +21,8 @@ Suggests:
     rmarkdown,
     taxPPro,
     curatedMetagenomicData,
-    biobroom
+    biobroom,
+    tidySummarizedExperiment
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz
