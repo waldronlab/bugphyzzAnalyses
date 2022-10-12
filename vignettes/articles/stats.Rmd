@@ -27,7 +27,6 @@ library(ggplot2)
 
 ```{r import data, message=FALSE, warning=FALSE}
 phys <- map(physiologies(), as_tibble)
-phys[['fatty acid compositions']] <- as_tibble(fattyAcidComposition())
 ```
 
 ## Propagate data with ASR/Inheritance (majority vote)
