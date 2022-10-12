@@ -1,0 +1,89 @@
+---
+title: "ibd-aerophilicity-enrichment"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message=FALSE}
+library(bugphyzzAnalyses)
+library(bugphyzz)
+library(curatedMetagenomicData)
+library(dplyr)
+library(tidySummarizedExperiment)
+```
+
+For this example, let's use the data of the HMP_2019_bidmdb study:
+
+```{r, message=FALSE, warning=FALSE}
+tse <- curatedMetagenomicData(
+    "HMP_2019_ibdmdb.relative_abundance", dryrun = FALSE, rownames = 'NCBI'
+)[[1]]
+tse 
+```
+
+Get data subset
+
+```{r}
+tidy_data <- biobroom::tidy.RangedSummarizedExperiment(tse, addPheno = TRUE)
+sample_data <- distinct(select(tidy_data, -gene, -value)) 
+sample_data_split <- split(sample_data, factor(sample_data$disease))
+min_n <- min(vapply(sample_data_split, nrow, integer(1)))
+samples <- lapply(sample_data_split, function(x) {
+    set.seed(1234)
+    int_vct <- sample(1:nrow(x), size = min_n)
+    x[int_vct,]$sample
+}) |> 
+    unlist(use.names = FALSE)
+tse_subset <- tse[,samples]
+
+```
+
+
+# Completenees
+
+
+# Session Information
+
+```{r}
+sessionInfo()
+```
+
+
+
+
+
+```{r, echo=FALSE, include=FALSE, eval=FALSE}
+# data('sampleMetadata', package = 'curatedMetagenomicData')
+# data <- as_tibble(sampleMetadata)
+## Select all studies with IBD information
+# ibd_studies <- data |> 
+    # dplyr::filter(study_condition == 'IBD' | disease == 'IBD') |> 
+    # pull(study_name) |> 
+    # unique()
+
+# ibd_metadata <- data |> 
+#     dplyr::filter(
+#         study_name %in% ibd_studies, disease %in% c('healthy' ,'IBD')
+#     ) 
+# 
+# ibd_data <- returnSamples(ibd_metadata, dataType = 'relative_abundance')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
