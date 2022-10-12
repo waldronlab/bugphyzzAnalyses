@@ -19,7 +19,9 @@ Suggests:
     ComplexHeatmap,
     ggplot2,
     rmarkdown,
-    taxPPro
+    taxPPro,
+    curatedMetagenomicData,
+    biobroom
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz
