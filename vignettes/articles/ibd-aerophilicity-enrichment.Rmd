@@ -21,16 +21,18 @@ For this example, let's use the data of the HMP_2019_bidmdb study:
 
 ```{r, message=FALSE, warning=FALSE}
 tse <- curatedMetagenomicData(
-    "HMP_2019_ibdmdb.relative_abundance", dryrun = FALSE, rownames = 'NCBI'
+    pattern = "HMP_2019_ibdmdb.relative_abundance", dryrun = FALSE, rownames = 'NCBI',
+    counts = TRUE
 )[[1]]
 tse 
 ```
 
 Get data subset
 
-```{r}
-tidy_data <- biobroom::tidy.RangedSummarizedExperiment(tse, addPheno = TRUE)
-sample_data <- distinct(select(tidy_data, -gene, -value)) 
+```{r, message=FALSE, warning=FALSE}
+tidy_data <- biobroom::tidy.RangedSummarizedExperiment(tse, addPheno = TRUE) |> 
+    rename(gene = taxon_name)
+sample_data <- distinct(select(tidy_data, taxon_name, -value)) 
 sample_data_split <- split(sample_data, factor(sample_data$disease))
 min_n <- min(vapply(sample_data_split, nrow, integer(1)))
 samples <- lapply(sample_data_split, function(x) {
@@ -39,12 +41,23 @@ samples <- lapply(sample_data_split, function(x) {
     x[int_vct,]$sample
 }) |> 
     unlist(use.names = FALSE)
-tse_subset <- tse[,samples]
+tse_subset <- tse[,samples] |> 
+    filterTaxa()
+```
 
+# Annotations
+
+I'll use benchdamic. So I need the prior_info file.
+
+```{r}
+aer <- as_tibble(physiologies('aerophilicity')[[1]])
+tidy_data
 ```
 
 
-# Completenees
+
+
+
 
 
 # Session Information
@@ -52,9 +65,6 @@ tse_subset <- tse[,samples]
 ```{r}
 sessionInfo()
 ```
-
-
-
 
 
 ```{r, echo=FALSE, include=FALSE, eval=FALSE}
@@ -73,17 +83,4 @@ sessionInfo()
 # 
 # ibd_data <- returnSamples(ibd_metadata, dataType = 'relative_abundance')
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
 
