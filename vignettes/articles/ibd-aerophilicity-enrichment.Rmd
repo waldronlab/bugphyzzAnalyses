@@ -30,9 +30,12 @@ tse
 Get data subset
 
 ```{r, message=FALSE, warning=FALSE}
-tidy_data <- biobroom::tidy.RangedSummarizedExperiment(tse, addPheno = TRUE) |> 
-    rename(gene = taxon_name)
-sample_data <- distinct(select(tidy_data, taxon_name, -value)) 
+rank_cols <- colnames(rowData(tse))
+tidy_data <- tidySummarizedExperiment::as_tibble(tse) |> 
+    rename(taxon_name = .feature, sample = .sample) 
+sample_data <- tidy_data |> 
+    select(-rank_cols, -taxon_name, -relative_abundance) |> 
+    distinct()
 sample_data_split <- split(sample_data, factor(sample_data$disease))
 min_n <- min(vapply(sample_data_split, nrow, integer(1)))
 samples <- lapply(sample_data_split, function(x) {
@@ -50,6 +53,12 @@ tse_subset <- tse[,samples] |>
 I'll use benchdamic. So I need the prior_info file.
 
 ```{r}
+taxa_data <- tidy_data |> 
+    dplyr::filter(taxon_name %in% rownames(tse_subset)) |> 
+    select(all_of(c('taxon_name', rank_cols))) |> 
+    distinct()
+
+
 aer <- as_tibble(physiologies('aerophilicity')[[1]])
 tidy_data
 ```
