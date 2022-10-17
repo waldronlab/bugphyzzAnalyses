@@ -1,11 +1,13 @@
 ---
-title: "ibd-aerophilicity-enrichment"
+title: "Enrichment of facultative anaerobes in IBD samples"
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
 )
 ```
 
@@ -18,17 +20,27 @@ library(tidySummarizedExperiment)
 library(taxPPro)
 ```
 
-For this example, let's use the data of the HMP_2019_bidmdb study:
+# Expected result
+
++ Enrichment of anaerobic bacteria in healthy samples (gut).
++ Enrichment of facultative anaerobic bacteria in IBD samples (gut).
+
+# Data
+
+## Abundance data
+
+For this example, let's use the data of the HMP_2019_bidmdb study throug cMD:
 
 ```{r, message=FALSE, warning=FALSE}
 tse <- curatedMetagenomicData(
-    pattern = "HMP_2019_ibdmdb.relative_abundance", dryrun = FALSE, rownames = 'NCBI',
+    pattern = "HMP_2019_ibdmdb.relative_abundance", 
+    dryrun = FALSE, rownames = 'NCBI',
     counts = TRUE
 )[[1]]
 tse 
 ```
 
-Get data subset
+Use only a subset:
 
 ```{r, message=FALSE, warning=FALSE}
 rank_cols <- colnames(rowData(tse))
@@ -47,9 +59,76 @@ samples <- lapply(sample_data_split, function(x) {
     unlist(use.names = FALSE)
 tse_subset <- tse[,samples] |> 
     filterTaxa()
+tse_subset
 ```
 
-# Annotations
+## Signatures and annotations
+
+```{r}
+taxa_data <- tidy_data |> 
+    dplyr::filter(taxon_name %in% rownames(tse_subset)) |> 
+    select(all_of(c('taxon_name', rank_cols))) |> 
+    distinct()
+dim(taxa_data)
+```
+
+Annotations and microbe signatures come from the bugphyzz package. Since
+cMD contains data at the species level, let's use signatures at the species
+level. We need to check the completness (number of taxa in cMD samples
+annotated in bugphyzz)
+
+```{r, message=FALSE}
+aer <- physiologies('aerophilicity')[[1]]
+aer_species <- filter(aer, Rank == 'species')
+## Check completness
+mean(taxa_data$taxon_name %in% aer_species$NCBI_ID) * 100
+```
+
+Let's try to increase the completeness with ASR/inheritance propagation using
+majority vote:
+
+```{r, message=FALSE, warning=FALSE}
+aer_plus <- aer |> 
+    propagate()
+aer_plus_species <- filter(aer_plus, Rank == 'species')
+## Check completeness
+mean(taxa_data$taxon_name %in% aer_plus_species$NCBI_ID) * 100
+```
+
+Let's get some signatures for aerobic, anaerobic, and facultatively anaerobic:
+
+```{r, message=FALSE, warning=FALSE}
+attribute_names <- c('aerobic', 'anaerobic', 'facultatively anaerobic')
+aer_sig <- getSignatures(
+    aer_plus, tax.id.type = 'NCBI_ID', tax.level = 'species'
+)
+aer_sig <- aer_sig[names(aer_sig) %in% attribute_names]
+lapply(aer_sig, head)
+```
+
+For propagated signatures
+
+```{r, message=FALSE, warning=FALSE}
+aer_plus_sig <- getSignatures(
+    aer_plus, tax.id.type = 'NCBI_ID', tax.level = 'species'
+)
+aer_plus_sig <- aer_plus_sig[names(aer_plus_sig) %in% attribute_names]
+lapply(aer_plus_sig, head)
+```
+
+
+Comparing some numbers
+
+```{r}
+df <- data.frame(
+    aer = vapply(aer_sig, length, integer(1)),
+    aer_plus = vapply(aer_plus_sig, length, integer(1))
+)
+df
+```
+
+
+
 
 I'll use benchadmic.
 
@@ -64,55 +143,8 @@ taxa_data <- tidy_data |>
 dim(taxa_data)
 ```
 
-# Import bugphyzz
-
-```{r, message=FALSE}
-aer <- physiologies('aerophilicity')[[1]]
-aer_species <- filter(aer, Rank == 'species')
-mean(taxa_data$taxon_name %in% aer_species$NCBI_ID) * 100
-```
-
-Completeness is too low (about 2%). Let's try to improve the completeness
-of annotations with ASR/Inheritance.
-
-```{r, message=FALSE}
-aer_plus <- aer |> 
-    propagate()
-```
-
-```{r}
-aer_plus_species <- filter(aer_plus, Rank == 'species')
-mean(taxa_data$taxon_name %in% aer_plus_species$NCBI_ID) * 100
-```
-
-
-```{r}
-prior_info <- taxa_data |> 
-    left_join(aer_plus_species, by = c('taxon_name' = 'NCBI_ID')) |> 
-    filter(Attribute_value == TRUE)
-```
-
 # Session Information
 
 ```{r}
 sessionInfo()
 ```
-
-
-```{r, echo=FALSE, include=FALSE, eval=FALSE}
-# data('sampleMetadata', package = 'curatedMetagenomicData')
-# data <- as_tibble(sampleMetadata)
-## Select all studies with IBD information
-# ibd_studies <- data |> 
-    # dplyr::filter(study_condition == 'IBD' | disease == 'IBD') |> 
-    # pull(study_name) |> 
-    # unique()
-
-# ibd_metadata <- data |> 
-#     dplyr::filter(
-#         study_name %in% ibd_studies, disease %in% c('healthy' ,'IBD')
-#     ) 
-# 
-# ibd_data <- returnSamples(ibd_metadata, dataType = 'relative_abundance')
-```
-
