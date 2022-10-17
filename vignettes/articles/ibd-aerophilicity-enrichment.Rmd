@@ -15,6 +15,7 @@ library(bugphyzz)
 library(curatedMetagenomicData)
 library(dplyr)
 library(tidySummarizedExperiment)
+library(taxPPro)
 ```
 
 For this example, let's use the data of the HMP_2019_bidmdb study:
@@ -50,24 +51,46 @@ tse_subset <- tse[,samples] |>
 
 # Annotations
 
-I'll use benchdamic. So I need the prior_info file.
+I'll use benchadmic.
+
+Get only taxa information for the 'priorInfo' object.
+
 
 ```{r}
 taxa_data <- tidy_data |> 
     dplyr::filter(taxon_name %in% rownames(tse_subset)) |> 
     select(all_of(c('taxon_name', rank_cols))) |> 
     distinct()
+dim(taxa_data)
+```
 
+# Import bugphyzz
 
-aer <- as_tibble(physiologies('aerophilicity')[[1]])
-tidy_data
+```{r, message=FALSE}
+aer <- physiologies('aerophilicity')[[1]]
+aer_species <- filter(aer, Rank == 'species')
+mean(taxa_data$taxon_name %in% aer_species$NCBI_ID) * 100
+```
+
+Completeness is too low (about 2%). Let's try to improve the completeness
+of annotations with ASR/Inheritance.
+
+```{r, message=FALSE}
+aer_plus <- aer |> 
+    propagate()
+```
+
+```{r}
+aer_plus_species <- filter(aer_plus, Rank == 'species')
+mean(taxa_data$taxon_name %in% aer_plus_species$NCBI_ID) * 100
 ```
 
 
-
-
-
-
+```{r}
+prior_info <- taxa_data |> 
+    left_join(aer_plus_species, by = c('taxon_name' = 'NCBI_ID')) |> 
+    filter(Attribute_value == TRUE)
+```
 
 # Session Information
 
