@@ -93,7 +93,8 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/waldronlab/bugphyzz" class="external-link">bugphyzz</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/waldronlab/curatedMetagenomicData" class="external-link">curatedMetagenomicData</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/stemangiola/tidySummarizedExperiment" class="external-link">tidySummarizedExperiment</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/stemangiola/tidySummarizedExperiment" class="external-link">tidySummarizedExperiment</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sdgamboa/taxPPro" class="external-link">taxPPro</a></span><span class="op">)</span></span></code></pre></div>
 <p>For this example, let’s use the data of the HMP_2019_bidmdb study:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/curatedMetagenomicData/man/curatedMetagenomicData.html" class="external-link">curatedMetagenomicData</a></span><span class="op">(</span></span>
@@ -138,42 +139,42 @@
 <div class="section level2">
 <h2 id="annotations">Annotations<a class="anchor" aria-label="anchor" href="#annotations"></a>
 </h2>
-<p>I’ll use benchdamic. So I need the prior_info file.</p>
+<p>I’ll use benchadmic.</p>
+<p>Get only taxa information for the ‘priorInfo’ object.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">taxa_data</span> <span class="op">&lt;-</span> <span class="va">tidy_data</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">taxon_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">tse_subset</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'taxon_name'</span>, <span class="va">rank_cols</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span></span>
-<span><span class="va">aer</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/physiologies.html" class="external-link">physiologies</a></span><span class="op">(</span><span class="st">'aerophilicity'</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Finished aerophilicity</span></span>
-<span><span class="va">tidy_data</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 942,033 × 34</span></span></span>
-<span><span class="co">#&gt;    taxon_…¹ sample relat…² study…³ subje…⁴ body_…⁵ antib…⁶ study…⁷ disease   age</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 821      CSM5F… 8<span style="text-decoration: underline;">436</span>640 HMP_20… C3001   stool   no      IBD     IBD        43</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 820      CSM5F… 6<span style="text-decoration: underline;">235</span>541 HMP_20… C3001   stool   no      IBD     IBD        43</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 818      CSM5F… 1<span style="text-decoration: underline;">357</span>098 HMP_20… C3001   stool   no      IBD     IBD        43</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 853      CSM5F… 1<span style="text-decoration: underline;">054</span>351 HMP_20… C3001   stool   no      IBD     IBD        43</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 301302   CSM5F…  <span style="text-decoration: underline;">999</span>360 HMP_20… C3001   stool   no      IBD     IBD        43</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 47678    CSM5F…  <span style="text-decoration: underline;">551</span>484 HMP_20… C3001   stool   no      IBD     IBD        43</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 1531     CSM5F…  <span style="text-decoration: underline;">334</span>448 HMP_20… C3001   stool   no      IBD     IBD        43</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 817      CSM5F…  <span style="text-decoration: underline;">168</span>192 HMP_20… C3001   stool   no      IBD     IBD        43</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 1150298  CSM5F…  <span style="text-decoration: underline;">139</span>201 HMP_20… C3001   stool   no      IBD     IBD        43</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 292800   CSM5F…  <span style="text-decoration: underline;">133</span>264 HMP_20… C3001   stool   no      IBD     IBD        43</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># … with 942,023 more rows, 24 more variables: age_category &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   gender &lt;chr&gt;, country &lt;chr&gt;, non_westernized &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   sequencing_platform &lt;chr&gt;, DNA_extraction_kit &lt;chr&gt;, PMID &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   number_reads &lt;int&gt;, number_bases &lt;dbl&gt;, minimum_read_length &lt;int&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   median_read_length &lt;int&gt;, curator &lt;chr&gt;, BMI &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   days_from_first_collection &lt;int&gt;, location &lt;chr&gt;, visit_number &lt;int&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   disease_subtype &lt;chr&gt;, superkingdom &lt;int&gt;, phylum &lt;int&gt;, class &lt;int&gt;, …</span></span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">taxa_data</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 92  8</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="import-bugphyzz">Import bugphyzz<a class="anchor" aria-label="anchor" href="#import-bugphyzz"></a>
+</h2>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">aer</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/physiologies.html" class="external-link">physiologies</a></span><span class="op">(</span><span class="st">'aerophilicity'</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">aer_species</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">aer</span>, <span class="va">Rank</span> <span class="op">==</span> <span class="st">'species'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">taxa_data</span><span class="op">$</span><span class="va">taxon_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">aer_species</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span><span class="co">#&gt; [1] 60.86957</span></span></code></pre></div>
+<p>Completeness is too low (about 2%). Let’s try to improve the completeness of annotations with ASR/Inheritance.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">aer_plus</span> <span class="op">&lt;-</span> <span class="va">aer</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/taxPPro/man/propagate.html" class="external-link">propagate</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: 345 conflicts couldn't be solved. Dropping them.</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">aer_plus_species</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">aer_plus</span>, <span class="va">Rank</span> <span class="op">==</span> <span class="st">'species'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">taxa_data</span><span class="op">$</span><span class="va">taxon_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">aer_plus_species</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span><span class="co">#&gt; [1] 77.17391</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">prior_info</span> <span class="op">&lt;-</span> <span class="va">taxa_data</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">aer_plus_species</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'taxon_name'</span> <span class="op">=</span> <span class="st">'NCBI_ID'</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Attribute_value</span> <span class="op">==</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session Information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; R version 4.2.1 (2022-06-23)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
@@ -194,15 +195,16 @@
 <span><span class="co">#&gt; [8] base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt;  [1] tidySummarizedExperiment_1.6.1 dplyr_1.0.10                  </span></span>
-<span><span class="co">#&gt;  [3] curatedMetagenomicData_3.4.2   TreeSummarizedExperiment_2.4.0</span></span>
-<span><span class="co">#&gt;  [5] Biostrings_2.64.1              XVector_0.36.0                </span></span>
-<span><span class="co">#&gt;  [7] SingleCellExperiment_1.18.1    SummarizedExperiment_1.26.1   </span></span>
-<span><span class="co">#&gt;  [9] Biobase_2.56.0                 GenomicRanges_1.48.0          </span></span>
-<span><span class="co">#&gt; [11] GenomeInfoDb_1.32.4            IRanges_2.30.1                </span></span>
-<span><span class="co">#&gt; [13] S4Vectors_0.34.0               BiocGenerics_0.42.0           </span></span>
-<span><span class="co">#&gt; [15] MatrixGenerics_1.8.1           matrixStats_0.62.0            </span></span>
-<span><span class="co">#&gt; [17] bugphyzz_0.0.1.3               bugphyzzAnalyses_0.1.0        </span></span>
+<span><span class="co">#&gt;  [1] taxPPro_0.1.0                  tidySummarizedExperiment_1.6.1</span></span>
+<span><span class="co">#&gt;  [3] dplyr_1.0.10                   curatedMetagenomicData_3.4.2  </span></span>
+<span><span class="co">#&gt;  [5] TreeSummarizedExperiment_2.4.0 Biostrings_2.64.1             </span></span>
+<span><span class="co">#&gt;  [7] XVector_0.36.0                 SingleCellExperiment_1.18.1   </span></span>
+<span><span class="co">#&gt;  [9] SummarizedExperiment_1.26.1    Biobase_2.56.0                </span></span>
+<span><span class="co">#&gt; [11] GenomicRanges_1.48.0           GenomeInfoDb_1.32.4           </span></span>
+<span><span class="co">#&gt; [13] IRanges_2.30.1                 S4Vectors_0.34.0              </span></span>
+<span><span class="co">#&gt; [15] BiocGenerics_0.42.0            MatrixGenerics_1.8.1          </span></span>
+<span><span class="co">#&gt; [17] matrixStats_0.62.0             bugphyzz_0.0.1.3              </span></span>
+<span><span class="co">#&gt; [19] bugphyzzAnalyses_0.1.0        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;   [1] uuid_1.1-0                    AnnotationHub_3.4.0          </span></span>
@@ -275,7 +277,7 @@
 <span><span class="co">#&gt; [135] mgcv_1.8-40                   MultiAssayExperiment_1.22.0  </span></span>
 <span><span class="co">#&gt; [137] parallel_4.2.1                grid_4.2.1                   </span></span>
 <span><span class="co">#&gt; [139] beachmat_2.12.0               tidyr_1.2.1                  </span></span>
-<span><span class="co">#&gt; [141] rmarkdown_2.17                DelayedMatrixStats_1.18.1    </span></span>
+<span><span class="co">#&gt; [141] rmarkdown_2.17                DelayedMatrixStats_1.18.2    </span></span>
 <span><span class="co">#&gt; [143] shiny_1.7.2                   ggbeeswarm_0.6.0</span></span></code></pre></div>
 </div>
   </div>
