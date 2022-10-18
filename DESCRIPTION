@@ -25,7 +25,8 @@ Suggests:
     tidySummarizedExperiment,
     ggplot2,
     taxizedb,
-    EnrichmentBrowser
+    EnrichmentBrowser,
+    statmod
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz
