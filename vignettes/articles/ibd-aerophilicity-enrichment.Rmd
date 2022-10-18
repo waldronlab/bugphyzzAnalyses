@@ -34,8 +34,9 @@ library(ggplot2)
 For this example, let's use the data of the HMP_2019_bidmdb study through cMD:
 
 ```{r, message=FALSE, warning=FALSE}
+data_name <- "HallAB_2017.relative_abundance"
 tse <- curatedMetagenomicData(
-    pattern = "HallAB_2017.relative_abundance", 
+    pattern = data_name, 
     dryrun = FALSE, rownames = 'NCBI',
     counts = TRUE
 )[[1]]
@@ -82,7 +83,7 @@ annotated in bugphyzz)
 ```{r, message=FALSE}
 aer <- physiologies('aerophilicity')[[1]]
 aer_species <- filter(aer, Rank == 'species')
-## Check completness
+## Check completeness
 mean(taxa_data$taxon_name %in% aer_species$NCBI_ID) * 100
 ```
 
@@ -175,26 +176,43 @@ enrich_output_plus <- sbea(
 gsRanking(res = enrich_output_plus, signif.only = TRUE)
 ```
 
-This means anaerobic taxa are enriched in IBD samples? Let's find out:
+> This means anaerobic taxa are enriched in IBD samples?
 
 ```{r}
 enriched_taxa <- enrich_output_plus$gs$anaerobic
 tse_enriched <- da_output[enriched_taxa,]
-enriched_taxa_df <- as.data.frame(rowData(tse_enriched))
+enriched_data <- tidySummarizedExperiment::as_tibble(tse_enriched)
+dim(enriched_data)
+```
+
+```{r}
+tse_relab <- curatedMetagenomicData(
+    pattern = data_name, 
+    dryrun = FALSE, rownames = 'NCBI',
+    counts = FALSE 
+)[[1]]
+relab_data <- tidySummarizedExperiment::as_tibble(tse_relab)
 ```
 
 
 ```{r}
-enriched_taxa_df$order_names <-
-    taxizedb::taxid2name(enriched_taxa_df$order, db = 'ncbi')
-
-enriched_taxa_df |> 
-    ggplot(aes(FC, log10(PVAL + 1))) +
-    geom_point(aes(color = order_names)) +
-    geom_vline(aes(xintercept = 0)) +
-    labs(
-        title = "Anaerobes are enriched in IBD samples"
-    )
+relab_data |> 
+    mutate(relab = log(relative_abundance + 1)) |> 
+    group_by(.feature, disease) |> 
+    summarise(mean = mean(relab)) |> 
+    ungroup() |> 
+    filter(.feature %in% enriched_taxa) |>
+    left_join(enriched_data) |> 
+    mutate(direction = ifelse(FC > 0, "up in IBD", "up in healthy")) |> 
+    ggplot(aes(.feature, mean)) +
+    geom_col(aes(fill = disease), position = 'dodge') +
+    # scale_fill_manual(
+    #     values = c('firebrick', 'dodgerblue'),
+    #     labels = c('IBD', 'healthy')
+    # ) +
+    facet_wrap(~direction, ncol = 2, scale = 'free_y') +
+    theme_bw() +
+    coord_flip()
 ```
 
 # Session Information

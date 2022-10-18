@@ -24,7 +24,8 @@ Suggests:
     biobroom,
     tidySummarizedExperiment,
     ggplot2,
-    taxizedb
+    taxizedb,
+    EnrichmentBrowser
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz
