@@ -22,7 +22,9 @@ Suggests:
     taxPPro,
     curatedMetagenomicData,
     biobroom,
-    tidySummarizedExperiment
+    tidySummarizedExperiment,
+    ggplot2,
+    taxizedb
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz

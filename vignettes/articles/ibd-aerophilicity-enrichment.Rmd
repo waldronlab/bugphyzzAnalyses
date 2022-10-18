@@ -18,6 +18,8 @@ library(curatedMetagenomicData)
 library(dplyr)
 library(tidySummarizedExperiment)
 library(taxPPro)
+library(EnrichmentBrowser)
+library(ggplot2)
 ```
 
 # Expected result
@@ -29,11 +31,11 @@ library(taxPPro)
 
 ## Abundance data
 
-For this example, let's use the data of the HMP_2019_bidmdb study throug cMD:
+For this example, let's use the data of the HMP_2019_bidmdb study through cMD:
 
 ```{r, message=FALSE, warning=FALSE}
 tse <- curatedMetagenomicData(
-    pattern = "HMP_2019_ibdmdb.relative_abundance", 
+    pattern = "HallAB_2017.relative_abundance", 
     dryrun = FALSE, rownames = 'NCBI',
     counts = TRUE
 )[[1]]
@@ -100,9 +102,10 @@ Let's get some signatures for aerobic, anaerobic, and facultatively anaerobic:
 ```{r, message=FALSE, warning=FALSE}
 attribute_names <- c('aerobic', 'anaerobic', 'facultatively anaerobic')
 aer_sig <- getSignatures(
-    aer_plus, tax.id.type = 'NCBI_ID', tax.level = 'species'
+    aer, tax.id.type = 'NCBI_ID', tax.level = 'species'
 )
 aer_sig <- aer_sig[names(aer_sig) %in% attribute_names]
+aer_sig <- lapply(aer_sig, as.character)
 lapply(aer_sig, head)
 ```
 
@@ -113,11 +116,11 @@ aer_plus_sig <- getSignatures(
     aer_plus, tax.id.type = 'NCBI_ID', tax.level = 'species'
 )
 aer_plus_sig <- aer_plus_sig[names(aer_plus_sig) %in% attribute_names]
+aer_plus_sig <- lapply(aer_plus_sig, as.character)
 lapply(aer_plus_sig, head)
 ```
 
-
-Comparing some numbers
+Comparing numbers
 
 ```{r}
 df <- data.frame(
@@ -127,20 +130,71 @@ df <- data.frame(
 df
 ```
 
+## Add annotations to rowData
+
+```{r}
+taxa_data <- as.data.frame(rowData(tse_subset))
+```
 
 
+We got a lot more species
 
-I'll use benchadmic.
+# Differential abundance analysis
 
-Get only taxa information for the 'priorInfo' object.
+Let's use `EnrichmentBrowser` for this
+
+```{r}
+## Let's add a column with groups 0 and 1
+colData(tse_subset)$GROUP <- 
+    ifelse(colData(tse_subset)$disease == 'healthy', 0, 1)
+
+assay(tse_subset) <- assay(tse_subset) + 1 
+
+da_output <- deAna(
+    expr = tse_subset, de.method = 'DESeq2', padj.method = 'BH' 
+)
+dim(da_output)
+```
+
+
+# Enrichment Analysis
+
+```{r, message=FALSE, warning=FALSE}
+enrich_output <- sbea(
+    method = 'gsea', se = da_output, gs = aer_sig, alpha = 0.05, perm = 0,
+    padj.method = 'none'
+)
+gsRanking(res = enrich_output, signif.only = TRUE)
+```
+
+```{r}
+enrich_output_plus <- sbea(
+    method = 'gsea', se = da_output, gs = aer_plus_sig, alpha = 0.05, perm = 0,
+    padj.method = 'none'
+)
+gsRanking(res = enrich_output_plus, signif.only = TRUE)
+```
+
+This means anaerobic taxa are enriched in IBD samples? Let's find out:
+
+```{r}
+enriched_taxa <- enrich_output_plus$gs$anaerobic
+tse_enriched <- da_output[enriched_taxa,]
+enriched_taxa_df <- as.data.frame(rowData(tse_enriched))
+```
 
 
 ```{r}
-taxa_data <- tidy_data |> 
-    dplyr::filter(taxon_name %in% rownames(tse_subset)) |> 
-    select(all_of(c('taxon_name', rank_cols))) |> 
-    distinct()
-dim(taxa_data)
+enriched_taxa_df$order_names <-
+    taxizedb::taxid2name(enriched_taxa_df$order, db = 'ncbi')
+
+enriched_taxa_df |> 
+    ggplot(aes(FC, log10(PVAL + 1))) +
+    geom_point(aes(color = order_names)) +
+    geom_vline(aes(xintercept = 0)) +
+    labs(
+        title = "Anaerobes are enriched in IBD samples"
+    )
 ```
 
 # Session Information
