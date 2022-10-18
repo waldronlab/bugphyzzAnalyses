@@ -1,0 +1,118 @@
+---
+title: "subgingival_plaque"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE
+)
+```
+
+```{r setup, message=FALSE, warning=FALSE}
+library(bugphyzzAnalyses)
+library(MicrobiomeBenchmarkData)
+library(bugphyzz)
+library(taxPPro)
+library(EnrichmentBrowser)
+```
+
+
+```{r, message=FALSE}
+dat_name <- 'HMP_2012_WMS_gingival'
+tse <- getBenchmarkData(dat_name, dryrun = FALSE)[[1]]
+```
+
+```{r}
+taxa_names <- gsub('_', ' ', rownames(tse))
+taxids <- taxize::get_uid(taxa_names, db = 'ncbi', ask = FALSE)
+taxids <- as.character(taxids)
+names(taxids) <- taxa_names
+taxids[which(names(taxids) == 'Actinomyces odontolyticus')] <- '1660'
+taxids[which(names(taxids) == 'Leptotrichia sp oral taxon 847')] <- '1785996'
+```
+
+
+```{r}
+rowData(tse)$taxon_name <- rownames(tse)
+rowData(tse)$NCBI_ID <- taxids
+rownames(tse) <- taxids
+tse_subset <- filterTaxa(tse)
+tse_subset
+```
+
+
+# Get annotations
+
+```{r, message=FALSE, warning=FALSE}
+aer <- physiologies('aerophilicity')[[1]]
+aer_plus <- aer |> 
+    propagate()
+```
+
+# Get signatures
+
+```{r, message=FALSE}
+attribute_names <- c(
+    'aerobic', 'anaerobic', 'facultatively anaerobic'
+)
+aer_sig <- getSignatures(aer, tax.id.type = 'NCBI_ID', tax.level = 'species')
+aer_sig <- aer_sig[attribute_names]
+aer_sig <- lapply(aer_sig, as.character)
+aer_plus_sig <- 
+    getSignatures(aer_plus, tax.id.type = 'NCBI_ID', tax.level = 'species')
+aer_plus_sig <- aer_plus_sig[attribute_names]
+aer_plus_sig <- lapply(aer_plus_sig, as.character)
+```
+
+
+```{r}
+df <- data.frame(
+    aer = vapply(aer_sig, length, integer(1)),
+    aer_plus = vapply(aer_plus_sig, length, integer(1))
+)
+df
+```
+
+```{r}
+mean(rownames(tse_subset) %in% aer$NCBI_ID) * 100
+
+```
+
+Better completeness with asr/inheritance propagation
+
+```{r}
+mean(rownames(tse_subset) %in% aer_plus$NCBI_ID) * 100
+```
+
+
+```{r}
+colData(tse_subset)$GROUP <- 
+    ifelse(colData(tse_subset)$body_subsite == 'subgingival_plaque', 0, 1)
+da_res <- deAna(expr = tse_subset, de.method = 'DESeq2')
+da_res
+```
+
+
+```{r}
+enrich_res <- 
+    sbea(method = 'ora', se = da_res, gs = aer_sig, alpha = 0.05, perm = 0)
+gsRanking(enrich_res, signif.only = TRUE)
+```
+
+```{r}
+enrich_res <- 
+    sbea(method = 'ora', se = da_res, gs = aer_plus_sig, alpha = 0.05, perm = 0)
+gsRanking(enrich_res, signif.only = TRUE)
+```
+
+# Session information
+
+```{r}
+sessionInfo()
+```
+
+
+
+

@@ -26,10 +26,12 @@ Suggests:
     ggplot2,
     taxizedb,
     EnrichmentBrowser,
-    statmod
+    statmod,
+    MicrobiomeBenchmarkData
 Remotes:
     sdgamboa/taxPPro,
-    waldronlab/bugphyzz
+    waldronlab/bugphyzz,
+    waldronlab/MicrobiomeBenchmarkData
 Imports: 
     BiocFileCache,
     dplyr,
