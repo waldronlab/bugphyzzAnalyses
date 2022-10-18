@@ -26,8 +26,16 @@ tse <- getBenchmarkData(dat_name, dryrun = FALSE)[[1]]
 
 ```{r}
 taxa_names <- gsub('_', ' ', rownames(tse))
-taxids <- taxize::get_uid(taxa_names, db = 'ncbi', ask = FALSE)
-taxids <- as.character(taxids)
+x <- round(length(taxa_names) / 2)
+
+taxa_names_1 <- taxa_names[1:x]
+taxa_names_2 <- taxa_names[(x + 1):length(taxa_names)]
+
+taxids_1 <- 
+    as.character(taxize::get_uid(taxa_names_1, db = 'ncbi', ask = FALSE))
+taxids_2 <- 
+    as.character(taxize::get_uid(taxa_names_2, db = 'ncbi', ask = FALSE))
+taxids <- c(taxids_1, taxids_2)
 names(taxids) <- taxa_names
 taxids[which(names(taxids) == 'Actinomyces odontolyticus')] <- '1660'
 taxids[which(names(taxids) == 'Leptotrichia sp oral taxon 847')] <- '1785996'
