@@ -56,7 +56,7 @@
       <a href="../articles/stats.html">Stats</a>
     </li>
     <li>
-      <a href="../articles/subgingival_plaque.html">subgingival_plaque</a>
+      <a href="../articles/subgingival_plaque.html">Enrichment of aerobic taxa in supragingival plaque - WMS</a>
     </li>
   </ul>
 </li>
@@ -226,10 +226,10 @@
 <span><span class="va">aer_plus_sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">aer_plus_sig</span>, <span class="va">as.character</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">aer_plus_sig</span>, <span class="va">head</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $aerobic</span></span>
-<span><span class="co">#&gt; [1] "716"   "645"   "668"   "40269" "80877" "1396" </span></span>
+<span><span class="co">#&gt; [1] "1287735" "202950"  "65497"   "716"     "645"     "56946"  </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $anaerobic</span></span>
-<span><span class="co">#&gt; [1] "1302235" "304207"  "1597"    "1623"    "336988"  "165096" </span></span>
+<span><span class="co">#&gt; [1] "905"    "187327" "239935" "214856" "28117"  "33029" </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`facultatively anaerobic`</span></span>
 <span><span class="co">#&gt; [1] "716"   "645"   "668"   "40269" "1396"  "292"</span></span></code></pre></div>
@@ -241,8 +241,8 @@
 <span><span class="op">)</span></span>
 <span><span class="va">df</span></span>
 <span><span class="co">#&gt;                          aer aer_plus</span></span>
-<span><span class="co">#&gt; aerobic                 3712    10846</span></span>
-<span><span class="co">#&gt; anaerobic                774     2442</span></span>
+<span><span class="co">#&gt; aerobic                 3419    10025</span></span>
+<span><span class="co">#&gt; anaerobic                280     1438</span></span>
 <span><span class="co">#&gt; facultatively anaerobic  352     1273</span></span></code></pre></div>
 </div>
 <div class="section level3">
@@ -282,7 +282,7 @@
 <span><span class="co">#&gt; DataFrame with 1 row and 2 columns</span></span>
 <span><span class="co">#&gt;      GENE.SET      PVAL</span></span>
 <span><span class="co">#&gt;   &lt;character&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1   anaerobic   0.00436</span></span></code></pre></div>
+<span><span class="co">#&gt; 1   anaerobic   0.00168</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">enrich_output_plus</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
 <span>    method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">da_output</span>, gs <span class="op">=</span> <span class="va">aer_plus_sig</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
@@ -292,7 +292,7 @@
 <span><span class="co">#&gt; DataFrame with 1 row and 2 columns</span></span>
 <span><span class="co">#&gt;      GENE.SET      PVAL</span></span>
 <span><span class="co">#&gt;   &lt;character&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1   anaerobic   0.00337</span></span></code></pre></div>
+<span><span class="co">#&gt; 1   anaerobic  3.87e-05</span></span></code></pre></div>
 <blockquote>
 <p>This means anaerobic taxa are enriched in IBD samples?</p>
 </blockquote>
@@ -301,7 +301,7 @@
 <span><span class="va">tse_enriched</span> <span class="op">&lt;-</span> <span class="va">da_output</span><span class="op">[</span><span class="va">enriched_taxa</span>,<span class="op">]</span></span>
 <span><span class="va">enriched_data</span> <span class="op">&lt;-</span> <span class="fu">tidySummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">tse_enriched</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">enriched_data</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 8880   39</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 4588   39</span></span></code></pre></div>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tse_relab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/curatedMetagenomicData/man/curatedMetagenomicData.html" class="external-link">curatedMetagenomicData</a></span><span class="op">(</span></span>
 <span>    pattern <span class="op">=</span> <span class="va">data_name</span>, </span>
@@ -381,7 +381,7 @@
 <span><span class="co">#&gt;  [19] labeling_0.4.2                KEGGgraph_1.56.0             </span></span>
 <span><span class="co">#&gt;  [21] conditionz_0.1.0              GenomeInfoDbData_1.2.8       </span></span>
 <span><span class="co">#&gt;  [23] farver_2.1.1                  bit64_4.0.5                  </span></span>
-<span><span class="co">#&gt;  [25] rprojroot_2.0.3               vctrs_0.4.2                  </span></span>
+<span><span class="co">#&gt;  [25] rprojroot_2.0.3               vctrs_0.5.0                  </span></span>
 <span><span class="co">#&gt;  [27] treeio_1.20.2                 generics_0.1.3               </span></span>
 <span><span class="co">#&gt;  [29] xfun_0.34                     BiocFileCache_2.4.0          </span></span>
 <span><span class="co">#&gt;  [31] R6_2.5.1                      ggbeeswarm_0.6.0             </span></span>
@@ -413,7 +413,7 @@
 <span><span class="co">#&gt;  [83] gridExtra_2.3                 compiler_4.2.1               </span></span>
 <span><span class="co">#&gt;  [85] scater_1.24.0                 tibble_3.1.8                 </span></span>
 <span><span class="co">#&gt;  [87] crayon_1.5.2                  htmltools_0.5.3              </span></span>
-<span><span class="co">#&gt;  [89] mgcv_1.8-40                   later_1.3.0                  </span></span>
+<span><span class="co">#&gt;  [89] mgcv_1.8-41                   later_1.3.0                  </span></span>
 <span><span class="co">#&gt;  [91] tzdb_0.3.0                    geneplotter_1.74.0           </span></span>
 <span><span class="co">#&gt;  [93] tidyr_1.2.1                   DBI_1.1.3                    </span></span>
 <span><span class="co">#&gt;  [95] ExperimentHub_2.4.0           dbplyr_2.2.1                 </span></span>
@@ -432,7 +432,7 @@
 <span><span class="co">#&gt; [121] tidytree_0.4.1                edgeR_3.38.4                 </span></span>
 <span><span class="co">#&gt; [123] DelayedMatrixStats_1.18.2     curl_4.3.3                   </span></span>
 <span><span class="co">#&gt; [125] shiny_1.7.2                   lifecycle_1.0.3              </span></span>
-<span><span class="co">#&gt; [127] nlme_3.1-160                  jsonlite_1.8.2               </span></span>
+<span><span class="co">#&gt; [127] nlme_3.1-160                  jsonlite_1.8.3               </span></span>
 <span><span class="co">#&gt; [129] BiocNeighbors_1.14.0          limma_3.52.4                 </span></span>
 <span><span class="co">#&gt; [131] desc_1.4.2                    viridisLite_0.4.1            </span></span>
 <span><span class="co">#&gt; [133] fansi_1.0.3                   pillar_1.8.1                 </span></span>
