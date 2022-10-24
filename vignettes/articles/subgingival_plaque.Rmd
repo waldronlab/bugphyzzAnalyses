@@ -1,5 +1,5 @@
 ---
-title: "subgingival_plaque"
+title: "Enrichment of aerobic taxa in supragingival plaque - WMS"
 ---
 
 ```{r, include = FALSE}
