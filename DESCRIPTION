@@ -24,6 +24,7 @@ Suggests:
     biobroom,
     tidySummarizedExperiment,
     ggplot2,
+    taxize,
     taxizedb,
     EnrichmentBrowser,
     statmod,
@@ -31,7 +32,8 @@ Suggests:
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
-    waldronlab/MicrobiomeBenchmarkData
+    waldronlab/MicrobiomeBenchmarkData,
+    ropensci/taxize@1.0-rc
 Imports: 
     BiocFileCache,
     dplyr,
