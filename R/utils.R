@@ -34,3 +34,47 @@ filterTaxa <- function(x, min_ab = 1, min_per = 0.2) {
         # return(phyloseq::prune_samples(colSums(m > 1) >= 2, ps)) ## apply higher filtering
     }
 }
+
+#' Import taxids
+#'
+#' @param x Name of the dataset from Microbiome BenchmarkData
+#'
+#' @return A data frame.
+#' @export
+#'
+import_taxids <- function(x) {
+    fname <- paste0('extdata/', x, '_taxids.tsv')
+    file_path <- system.file(fname, package = 'bugphyzzAnalyses')
+    read.table(file_path, header = TRUE, sep = '\t', row.names = 1)
+}
+
+
+
+
+#' Taxize classification to data frame
+#'
+#' @param x Output from the `taxize::classification` function.
+#' @param ranks Ranks to be selected. Default is given by `valid_ranks()`.
+#'
+#' @return A data frame.
+#' @export
+#'
+classif2Table <- function(x, ranks) {
+
+    if (missing(ranks)) {
+        valid_ranks <- validRanks()
+    } else {
+        valid_ranks <- ranks
+    }
+
+    df_filtered <- x |>
+        dplyr::select(rank, id) |>
+        dplyr::filter(rank %in% valid_ranks)
+
+    new_df <- data.frame(x = df_filtered$id) |>
+        t() |>
+        as.data.frame(row.names = 1L)
+    colnames(new_df) <- df_filtered$rank
+    new_df
+}
+
