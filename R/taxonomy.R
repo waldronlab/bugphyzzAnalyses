@@ -73,11 +73,21 @@ taxNames2TaxIDs <- function(df, names_from) {
         as.list() |>
         magrittr::set_names(names)
 
+    taxa_list_unique <- unique(tax_list)
+    names(taxa_list_unique) <- vapply(
+        taxa_list_unique, function(x) paste0(x, collapse = '|'), character(1)
+    )
 
+    list(
+        row_names = names,
+        key = vapply(
+            tax_list, function(x) paste0(x, collapse = '|'), character(1),
+            USE.NAMES = FALSE
+        ),
+        taxa_list = taxa_list_unique
+    )
 
-    tax_list
 }
-
 
 
 

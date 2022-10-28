@@ -27,7 +27,7 @@ row_data <- tse |>
 # x <- my_fun(taxids1)
 
 # output <- vector('list', length(taxids1))
-df <- taxNames2TaxIDs(x = row_data, names_from = 'OTU')
+df <- taxNames2TaxIDs(df = row_data, names_from = 'OTU')
 
 test_out <- lapply(df, .getTaxonClassification)
 lapply(test_out, classif2Table) |>
