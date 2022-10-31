@@ -3,5 +3,5 @@
 export(classif2Table)
 export(filterTaxa)
 export(import_taxids)
-export(taxNames2TaxIDs)
+export(taxTable2taxid)
 export(validRanks)

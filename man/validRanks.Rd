@@ -10,5 +10,5 @@ validRanks()
 A character vector.
 }
 \description{
-Valid ranks
+\code{validRanks} get valid ranks.
 }

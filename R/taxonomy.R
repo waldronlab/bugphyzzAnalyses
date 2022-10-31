@@ -1,11 +1,29 @@
 
 ## Functions for dealing with the NCBI taxonomy
 
+#' Valid ranks
+#'
+#' \code{validRanks} get valid ranks.
+#'
+#' @return A character vector.
+#' @export
+#'
+validRanks <- function() {
+    c(
+        'superkingdom', 'kingdom', 'phylum', 'class', 'order', 'family',
+        'genus', 'species', 'strain'
+    )
+}
+
 #' Get taxonomy classification
+#'
+#' \code{.getTaxonClassification} Gets the taxonomy clasification using
+#' the `taxize:classification` function of the first non-NA element of an
+#' input vector of taxids.
 #'
 #' @param x A vector of taxonomy names or taxids.
 #'
-#' @return The classification of the first non-NA element of the input vector.
+#' @return A data frame with taxonomic classification (as in the taxize format).
 #' @keywords internal
 #'
 .getTaxonClassification <- function(x) {
@@ -31,34 +49,60 @@
     output[[1]]
 }
 
-#' Valid ranks
+#' Taxize classification to data frame
 #'
-#' @return A character vector.
+#' \code{classif2Table} converts from classification format (`taxize` packatge)
+#' to a data frame.
+#'
+#' @param x Output from the `taxize::classification` function.
+#' @param ranks Ranks to be selected. Default is given by `validRanks()`.
+#'
+#' @return A data frame.
 #' @export
 #'
-validRanks <- function() {
-    c(
-        'superkingdom', 'kingdom', 'phylum', 'class', 'order', 'family',
-        'genus', 'species', 'strain'
-    )
+classif2Table <- function(x, ranks) {
+
+    if (missing(ranks)) {
+        valid_ranks <- validRanks()
+    } else {
+        valid_ranks <- ranks
+    }
+
+    df_filtered <- x |>
+        dplyr::select(rank, id) |>
+        dplyr::filter(rank %in% valid_ranks)
+
+    new_df <- data.frame(x = df_filtered$id) |>
+        t() |>
+        as.data.frame(row.names = 1L)
+    colnames(new_df) <- df_filtered$rank
+    new_df
 }
 
-#' Taxonomic names to taxIDS
+#' Convert taxonomic names to NCBI taxids
+#'
+#' \code{taxTable2Taxid} converts a table of taxonomic names to a table of
+#' taxids. The format must be the same as curatedMetagenomicData (rowData) and
+#' phyloseq (taxa_data).
+#'
+#' This function should always be run in an interactive session because it will
+#' ask for clarification when two taxonomic names belong to two different
+#' taxids.
 #'
 #' @param df A data frame.
 #' @param names_from Name of the column with the names that should be used as
-#' rownames. Default is to extract the rownames from the dataframe.
+#' rownames.
 #'
 #' @return A data frame with taxIDs instead of names.
 #' @export
 #'
-taxNames2TaxIDs <- function(df, names_from) {
+taxTable2taxid <- function(df, names_from) {
 
     colnames(df) <- tolower(colnames(df))
     names_from <- tolower(names_from)
 
     if (missing(names_from))
-        stop('Missing argument "names_from"', call. = FALSE)
+        stop('Missing argument "names_from".', call. = FALSE)
 
     if(!names_from %in% colnames(df))
         stop(names_from, ' was not found in the data.', call. = FALSE)
@@ -92,15 +136,16 @@ taxNames2TaxIDs <- function(df, names_from) {
         lapply(classif2Table) |>
         dplyr::bind_rows(.id = 'full_taxon_name')
 
-    new_row_data <-
-        dplyr::left_join(row_data_subset, new_row_data, by = 'full_taxon_name')
-    new_row_data <- as.data.frame(new_row_data)
+    output <-
+        dplyr::left_join(
+            row_data_subset, new_row_data, by = 'full_taxon_name'
+        ) |>
+        as.data.frame()
+    # new_row_data <- as.data.frame(new_row_data)
 
-    if ('superkingdom' %in% colnames(new_row_data)) {
-        n_pos <- which(colnames(new_row_data) == 'superkingdom')
-        colnames(new_row_data)[n_pos] <- 'kingdom'
+    if ('superkingdom' %in% colnames(output)) {
+        n_pos <- which(colnames(output) == 'superkingdom')
+        colnames(output)[n_pos] <- 'kingdom'
     }
-
-    return(new_row_data)
-
+    return(output)
 }

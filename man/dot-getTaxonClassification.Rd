@@ -10,9 +10,11 @@
 \item{x}{A vector of taxonomy names or taxids.}
 }
 \value{
-The classification of the first non-NA element of the input vector.
+A data frame with taxonomic classification (as in the taxize format).
 }
 \description{
-Get taxonomy classification
+\code{.getTaxonClassification} Gets the taxonomy clasification using
+the `taxize:classification` function of the first non-NA element of an
+input vector of taxids.
 }
 \keyword{internal}
