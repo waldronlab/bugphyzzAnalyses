@@ -64,32 +64,43 @@ taxNames2TaxIDs <- function(df, names_from) {
         stop(names_from, ' was not found in the data.', call. = FALSE)
 
     col_names <- colnames(df)[which(colnames(df) %in% validRanks())]
-    names <- df[[names_from]]
+    row_names <- df[[names_from]]
 
     tax_list <- df |>
         dplyr::select(tidyselect::all_of(col_names)) |>
         t() |>
         as.data.frame() |>
         as.list() |>
-        magrittr::set_names(names)
+        magrittr::set_names(row_names)
 
-    taxa_list_unique <- unique(tax_list)
-    names(taxa_list_unique) <- vapply(
-        taxa_list_unique, function(x) paste0(x, collapse = '|'), character(1)
+    tax_list_unique <- unique(tax_list)
+    names(tax_list_unique) <- vapply(
+        tax_list_unique, function(x) paste0(x, collapse = '|'), character(1)
     )
 
-    list(
-        row_names = names,
-        key = vapply(
-            tax_list, function(x) paste0(x, collapse = '|'), character(1),
-            USE.NAMES = FALSE
-        ),
-        taxa_list = taxa_list_unique
+    full_taxon_name <- vapply(
+        tax_list, function(x) paste0(x, collapse = '|'), character(1),
+        USE.NAMES = FALSE
     )
+
+    row_data_subset <- df |>
+        dplyr::select(-tidyselect::all_of(col_names)) |>
+        dplyr::mutate(full_taxon_name = full_taxon_name)
+
+    new_row_data <- tax_list_unique |>
+        lapply(.getTaxonClassification) |>
+        lapply(classif2Table) |>
+        dplyr::bind_rows(.id = 'full_taxon_name')
+
+    new_row_data <-
+        dplyr::left_join(row_data_subset, new_row_data, by = 'full_taxon_name')
+    new_row_data <- as.data.frame(new_row_data)
+
+    if ('superkingdom' %in% colnames(new_row_data)) {
+        n_pos <- which(colnames(new_row_data) == 'superkingdom')
+        colnames(new_row_data)[n_pos] <- 'kingdom'
+    }
+
+    return(new_row_data)
 
 }
-
-
-
-
-
