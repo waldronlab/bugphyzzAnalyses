@@ -32,3 +32,7 @@ write.table(
     x = new_row_data, file = paste0('inst/extdata/', output_file),
     row.names = TRUE, sep = '\t'
 )
+
+
+rowData(tse) <- new_row_data
+
