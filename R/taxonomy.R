@@ -27,6 +27,16 @@ validRanks <- function() {
 #' @keywords internal
 #'
 .getTaxonClassification <- function(x) {
+    if (all(is.na(x))) {
+
+        output <- data.frame(
+            name = x,
+            rank = names(x),
+            id = x
+        )
+        return(output)
+    }
+
     x <- x[length(x):1]
     output <- vector('list', length(x))
     for (i in seq_along(output)) {
@@ -115,7 +125,13 @@ taxTable2taxid <- function(df, names_from) {
         t() |>
         as.data.frame() |>
         as.list() |>
-        magrittr::set_names(row_names)
+        magrittr::set_names(row_names) |>
+        lapply(
+            function(.x) {
+                names(.x) <- col_names
+                .x
+            }
+        )
 
     tax_list_unique <- unique(tax_list)
     names(tax_list_unique) <- vapply(
