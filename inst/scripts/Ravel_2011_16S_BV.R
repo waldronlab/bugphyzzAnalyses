@@ -21,10 +21,12 @@ new_row_data <- taxTable2taxid(df = row_data, names_from = 'OTU')
 
 if (all(rownames(tse) == new_row_data$otu)) {
     message('all good')
-    rownames(new_row_data) <- new_row_data$otu
-    new_row_data <- select(new_row_data, -otu)
-    new_row_data <- relocate(new_row_data, taxon_annotation, .after = 'genus')
 }
+
+rownames(new_row_data) <- new_row_data$otu
+new_row_data <- select(new_row_data, -otu)
+new_row_data <- new_row_data[,-length(colnames(new_row_data))]
+new_row_data <- relocate(new_row_data, taxon_annotation, .after = 'species')
 
 ## Export files
 output_file <- paste0(dat_name, '_taxids.tsv')
