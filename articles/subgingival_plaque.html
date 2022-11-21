@@ -159,16 +159,16 @@
 <span><span class="op">)</span></span>
 <span><span class="va">df</span></span>
 <span><span class="co">#&gt;                          aer aer_plus</span></span>
-<span><span class="co">#&gt; aerobic                 3419    10025</span></span>
-<span><span class="co">#&gt; anaerobic                280     1438</span></span>
-<span><span class="co">#&gt; facultatively anaerobic  352     1273</span></span></code></pre></div>
+<span><span class="co">#&gt; aerobic                 3420    13071</span></span>
+<span><span class="co">#&gt; anaerobic                280     1994</span></span>
+<span><span class="co">#&gt; facultatively anaerobic  352     2156</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">tse_subset</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">aer</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
 <span><span class="co">#&gt; [1] 58.20106</span></span></code></pre></div>
 <p>Better completeness with asr/inheritance propagation</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">tse_subset</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">aer_plus</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
-<span><span class="co">#&gt; [1] 71.95767</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 73.54497</span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse_subset</span><span class="op">)</span><span class="op">$</span><span class="va">GROUP</span> <span class="op">&lt;-</span> </span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse_subset</span><span class="op">)</span><span class="op">$</span><span class="va">body_subsite</span> <span class="op">==</span> <span class="st">'subgingival_plaque'</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
@@ -205,14 +205,14 @@
 <span><span class="co">#&gt; DataFrame with 1 row and 4 columns</span></span>
 <span><span class="co">#&gt;      GENE.SET  NR.GENES NR.SIG.GENES      PVAL</span></span>
 <span><span class="co">#&gt;   &lt;character&gt; &lt;numeric&gt;    &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1   anaerobic        31            9  0.000994</span></span></code></pre></div>
+<span><span class="co">#&gt; 1   anaerobic        37            9   0.00191</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; R version 4.2.1 (2022-06-23)</span></span>
+<span><span class="co">#&gt; R version 4.2.2 (2022-10-31)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
 <span><span class="co">#&gt; Running under: Ubuntu 20.04.5 LTS</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -233,56 +233,55 @@
 <span><span class="co">#&gt; other attached packages:</span></span>
 <span><span class="co">#&gt;  [1] DESeq2_1.36.0                  EnrichmentBrowser_2.26.0      </span></span>
 <span><span class="co">#&gt;  [3] graph_1.74.0                   taxPPro_0.1.0                 </span></span>
-<span><span class="co">#&gt;  [5] bugphyzz_0.0.1.3               MicrobiomeBenchmarkData_0.99.0</span></span>
+<span><span class="co">#&gt;  [5] bugphyzz_0.0.1.3               MicrobiomeBenchmarkData_1.0.0 </span></span>
 <span><span class="co">#&gt;  [7] TreeSummarizedExperiment_2.4.0 Biostrings_2.64.1             </span></span>
 <span><span class="co">#&gt;  [9] XVector_0.36.0                 SingleCellExperiment_1.18.1   </span></span>
 <span><span class="co">#&gt; [11] SummarizedExperiment_1.26.1    Biobase_2.56.0                </span></span>
 <span><span class="co">#&gt; [13] GenomicRanges_1.48.0           GenomeInfoDb_1.32.4           </span></span>
 <span><span class="co">#&gt; [15] IRanges_2.30.1                 S4Vectors_0.34.0              </span></span>
 <span><span class="co">#&gt; [17] BiocGenerics_0.42.0            MatrixGenerics_1.8.1          </span></span>
-<span><span class="co">#&gt; [19] matrixStats_0.62.0             bugphyzzAnalyses_0.1.0        </span></span>
+<span><span class="co">#&gt; [19] matrixStats_0.63.0             bugphyzzAnalyses_0.1.0        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
 <span><span class="co">#&gt;   [1] colorspace_2.0-3       ellipsis_0.3.2         rprojroot_2.0.3       </span></span>
 <span><span class="co">#&gt;   [4] fs_1.5.2               httpcode_0.3.0         bit64_4.0.5           </span></span>
 <span><span class="co">#&gt;   [7] AnnotationDbi_1.58.0   fansi_1.0.3            xml2_1.3.3            </span></span>
-<span><span class="co">#&gt;  [10] splines_4.2.1          codetools_0.2-18       bold_1.2.0            </span></span>
-<span><span class="co">#&gt;  [13] cachem_1.0.6           geneplotter_1.74.0     knitr_1.40            </span></span>
+<span><span class="co">#&gt;  [10] splines_4.2.2          codetools_0.2-18       bold_1.2.0            </span></span>
+<span><span class="co">#&gt;  [13] cachem_1.0.6           geneplotter_1.74.0     knitr_1.41            </span></span>
 <span><span class="co">#&gt;  [16] jsonlite_1.8.3         annotate_1.74.0        dbplyr_2.2.1          </span></span>
-<span><span class="co">#&gt;  [19] png_0.1-7              readr_2.1.3            hoardr_0.5.2          </span></span>
-<span><span class="co">#&gt;  [22] compiler_4.2.1         httr_1.4.4             assertthat_0.2.1      </span></span>
-<span><span class="co">#&gt;  [25] Matrix_1.5-1           fastmap_1.1.0          lazyeval_0.2.2        </span></span>
+<span><span class="co">#&gt;  [19] png_0.1-7              hoardr_0.5.2           readr_2.1.3           </span></span>
+<span><span class="co">#&gt;  [22] compiler_4.2.2         httr_1.4.4             assertthat_0.2.1      </span></span>
+<span><span class="co">#&gt;  [25] Matrix_1.5-3           fastmap_1.1.0          lazyeval_0.2.2        </span></span>
 <span><span class="co">#&gt;  [28] limma_3.52.4           cli_3.4.1              htmltools_0.5.3       </span></span>
-<span><span class="co">#&gt;  [31] tools_4.2.1            gtable_0.3.1           glue_1.6.2            </span></span>
-<span><span class="co">#&gt;  [34] taxize_0.9.100         GenomeInfoDbData_1.2.8 dplyr_1.0.10          </span></span>
+<span><span class="co">#&gt;  [31] tools_4.2.2            gtable_0.3.1           glue_1.6.2            </span></span>
+<span><span class="co">#&gt;  [34] taxize_1.0             GenomeInfoDbData_1.2.8 dplyr_1.0.10          </span></span>
 <span><span class="co">#&gt;  [37] rappdirs_0.3.3         Rcpp_1.0.9             jquerylib_0.1.4       </span></span>
-<span><span class="co">#&gt;  [40] pkgdown_2.0.6          vctrs_0.5.0            crul_1.3              </span></span>
+<span><span class="co">#&gt;  [40] pkgdown_2.0.6          vctrs_0.5.1            crul_1.3              </span></span>
 <span><span class="co">#&gt;  [43] ape_5.6-2              nlme_3.1-160           conditionz_0.1.0      </span></span>
-<span><span class="co">#&gt;  [46] iterators_1.0.14       xfun_0.34              stringr_1.4.1         </span></span>
-<span><span class="co">#&gt;  [49] lifecycle_1.0.3        XML_3.99-0.11          edgeR_3.38.4          </span></span>
-<span><span class="co">#&gt;  [52] scales_1.2.1           zlibbioc_1.42.0        zoo_1.8-11            </span></span>
-<span><span class="co">#&gt;  [55] vroom_1.6.0            hms_1.1.2              ragg_1.2.3            </span></span>
-<span><span class="co">#&gt;  [58] parallel_4.2.1         KEGGgraph_1.56.0       SparseM_1.81          </span></span>
-<span><span class="co">#&gt;  [61] RColorBrewer_1.1-3     taxizedb_0.3.0         yaml_2.3.6            </span></span>
-<span><span class="co">#&gt;  [64] curl_4.3.3             memoise_2.0.1          ggplot2_3.3.6         </span></span>
-<span><span class="co">#&gt;  [67] yulab.utils_0.0.5      sass_0.4.2             reshape_0.8.9         </span></span>
-<span><span class="co">#&gt;  [70] stringi_1.7.8          RSQLite_2.2.18         genefilter_1.78.0     </span></span>
-<span><span class="co">#&gt;  [73] desc_1.4.2             foreach_1.5.2          tidytree_0.4.1        </span></span>
-<span><span class="co">#&gt;  [76] filelock_1.0.2         BiocParallel_1.30.4    safe_3.36.0           </span></span>
-<span><span class="co">#&gt;  [79] rlang_1.0.6            pkgconfig_2.0.3        systemfonts_1.0.4     </span></span>
-<span><span class="co">#&gt;  [82] bitops_1.0-7           evaluate_0.17          lattice_0.20-45       </span></span>
-<span><span class="co">#&gt;  [85] purrr_0.3.5            treeio_1.20.2          bit_4.0.4             </span></span>
-<span><span class="co">#&gt;  [88] tidyselect_1.2.0       GSEABase_1.58.0        plyr_1.8.7            </span></span>
-<span><span class="co">#&gt;  [91] magrittr_2.0.3         R6_2.5.1               generics_0.1.3        </span></span>
-<span><span class="co">#&gt;  [94] DelayedArray_0.22.0    DBI_1.1.3              pillar_1.8.1          </span></span>
-<span><span class="co">#&gt;  [97] withr_2.5.0            survival_3.4-0         KEGGREST_1.36.3       </span></span>
-<span><span class="co">#&gt; [100] RCurl_1.98-1.9         tibble_3.1.8           crayon_1.5.2          </span></span>
-<span><span class="co">#&gt; [103] uuid_1.1-0             utf8_1.2.2             BiocFileCache_2.4.0   </span></span>
-<span><span class="co">#&gt; [106] tzdb_0.3.0             rmarkdown_2.17         locfit_1.5-9.6        </span></span>
-<span><span class="co">#&gt; [109] grid_4.2.1             data.table_1.14.4      blob_1.2.3            </span></span>
-<span><span class="co">#&gt; [112] Rgraphviz_2.40.0       digest_0.6.30          xtable_1.8-4          </span></span>
-<span><span class="co">#&gt; [115] tidyr_1.2.1            textshaping_0.3.6      munsell_0.5.0         </span></span>
-<span><span class="co">#&gt; [118] mgsub_1.7.3            bslib_0.4.0</span></span></code></pre></div>
+<span><span class="co">#&gt;  [46] xfun_0.35              stringr_1.4.1          lifecycle_1.0.3       </span></span>
+<span><span class="co">#&gt;  [49] taxa_0.4.2             XML_3.99-0.12          edgeR_3.38.4          </span></span>
+<span><span class="co">#&gt;  [52] scales_1.2.1           zlibbioc_1.42.0        vroom_1.6.0           </span></span>
+<span><span class="co">#&gt;  [55] ragg_1.2.4             hms_1.1.2              parallel_4.2.2        </span></span>
+<span><span class="co">#&gt;  [58] KEGGgraph_1.56.0       SparseM_1.81           RColorBrewer_1.1-3    </span></span>
+<span><span class="co">#&gt;  [61] taxizedb_0.3.0         yaml_2.3.6             curl_4.3.3            </span></span>
+<span><span class="co">#&gt;  [64] memoise_2.0.1          ggplot2_3.4.0          yulab.utils_0.0.5     </span></span>
+<span><span class="co">#&gt;  [67] sass_0.4.3             reshape_0.8.9          stringi_1.7.8         </span></span>
+<span><span class="co">#&gt;  [70] RSQLite_2.2.18         genefilter_1.78.0      desc_1.4.2            </span></span>
+<span><span class="co">#&gt;  [73] tidytree_0.4.1         filelock_1.0.2         BiocParallel_1.30.4   </span></span>
+<span><span class="co">#&gt;  [76] safe_3.36.0            rlang_1.0.6            pkgconfig_2.0.3       </span></span>
+<span><span class="co">#&gt;  [79] systemfonts_1.0.4      bitops_1.0-7           evaluate_0.18         </span></span>
+<span><span class="co">#&gt;  [82] lattice_0.20-45        purrr_0.3.5            treeio_1.20.2         </span></span>
+<span><span class="co">#&gt;  [85] bit_4.0.5              tidyselect_1.2.0       GSEABase_1.58.0       </span></span>
+<span><span class="co">#&gt;  [88] plyr_1.8.8             magrittr_2.0.3         R6_2.5.1              </span></span>
+<span><span class="co">#&gt;  [91] generics_0.1.3         DelayedArray_0.22.0    DBI_1.1.3             </span></span>
+<span><span class="co">#&gt;  [94] pillar_1.8.1           withr_2.5.0            survival_3.4-0        </span></span>
+<span><span class="co">#&gt;  [97] KEGGREST_1.36.3        RCurl_1.98-1.9         tibble_3.1.8          </span></span>
+<span><span class="co">#&gt; [100] crayon_1.5.2           uuid_1.1-0             utf8_1.2.2            </span></span>
+<span><span class="co">#&gt; [103] BiocFileCache_2.4.0    tzdb_0.3.0             rmarkdown_2.18        </span></span>
+<span><span class="co">#&gt; [106] locfit_1.5-9.6         grid_4.2.2             data.table_1.14.6     </span></span>
+<span><span class="co">#&gt; [109] blob_1.2.3             Rgraphviz_2.40.0       digest_0.6.30         </span></span>
+<span><span class="co">#&gt; [112] xtable_1.8-4           tidyr_1.2.1            textshaping_0.3.6     </span></span>
+<span><span class="co">#&gt; [115] munsell_0.5.0          mgsub_1.7.3            bslib_0.4.1</span></span></code></pre></div>
 </div>
   </div>
 

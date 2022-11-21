@@ -28,9 +28,24 @@
     <loc>/index.html</loc>
   </url>
   <url>
+    <loc>/reference/classif2Table.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dot-getTaxonClassification.html</loc>
+  </url>
+  <url>
     <loc>/reference/filterTaxa.html</loc>
   </url>
   <url>
+    <loc>/reference/import_taxids.html</loc>
+  </url>
+  <url>
     <loc>/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/taxTable2taxid.html</loc>
+  </url>
+  <url>
+    <loc>/reference/validRanks.html</loc>
   </url>
 </urlset>
