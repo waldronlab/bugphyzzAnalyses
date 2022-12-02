@@ -14,78 +14,85 @@ knitr::opts_chunk$set(
 
 ```{r setup, message=FALSE}
 library(bugphyzzAnalyses)
-library(taxPPro)
 library(bugphyzz)
-library(dplyr)
 library(purrr)
-library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(ComplexHeatmap)
 ```
 
 # Data
 
-## Import data from bugphyzz
-
-```{r import data, message=FALSE, warning=FALSE}
-phys <- map(physiologies(), as_tibble)
+```{r, message=FALSE, warning=FALSE}
+phys <- physiologies()
+# phys$`fatty acid compositions` <- fattyAcidComposition()
+phys <- map(phys, as_tibble)
 ```
 
-## Propagate data with ASR/Inheritance (majority vote)
+# Sources
 
-## Number of annotations prior propagation
+Use the 'Literature' keyword for all published articles with the format
+`\\w[0-9]{4}`:
 
 ```{r}
-df <- phys[['aerophilicity']]
+phys_sources_mod <- phys |> 
+  map(~{
+    .x |> 
+        mutate(
+            Attribute_source = ifelse(
+                grepl('\\w_[0-9]{4}', Attribute_source), 
+                'Literature',
+                Attribute_source
+            )
+        )
+})
+
+sources_tbl <- phys_sources_mod |> 
+  map(~ count(.x, Attribute_source)) |> 
+  bind_rows(.id = 'Attribute')
 ```
 
+Concatenate attributes per source
 
 ```{r}
-df_summary <- df |> 
-    filter(
-        Attribute != '',
-        Rank %in% c('genus', 'species', 'strain')
-    ) |> 
-    count(Attribute, Rank)
-
-Attribute_order <- df_summary |> 
-    count(Attribute, wt = n) |> 
-    arrange(-n) |> 
-    pull(Attribute)
-
+sources_cat <- sources_tbl |> 
+  select(-n) |> 
+  distinct() |> 
+  arrange(Attribute) |> 
+  group_by(Attribute_source) |> 
+  summarise(
+    Attributes = paste0(Attribute, collapse = ', ')
+  ) |> 
+  ungroup() |> 
+  rename(Sources = Attribute_source)
+knitr::kable(sources_cat)
 ```
+
+Create count table of all of the attributes:
 
 ```{r}
-df_summary |>
-    mutate(
-        Attribute = factor(Attribute, levels = Attribute_order, ordered = TRUE)
-    ) |>  
-    ggplot(aes(Attribute, n)) +
-    geom_col(
-        aes(fill = Rank), position = position_dodge2(0.9, 'single')
-    ) + 
-    geom_text(
-        aes(label = n, color = Rank), 
-        position = position_dodge2(0.9, 'single'), 
-        angle = 45, hjust = 0, vjust = -0.5
-    ) +
-    labs(
-        title = 'Number of annotations in the aerophilicity dataset (prior ASR)',
-        y = 'Number of annotated taxa'
-    ) +
-    scale_fill_brewer(type = 'qual', palette = 'Set1') +
-    scale_color_brewer(type = 'qual', palette = 'Set1') +
-    scale_y_continuous(limits = c(0, 4000), breaks = seq(0, 4000, 1000)) +
-    theme_bw() +
-    theme(
-        axis.text.x = element_text(angle = 45, hjust = 1)
-    )
+sources_counts <- phys_sources_mod |> 
+  map(~ count(.x, Attribute_source)) |> 
+  bind_rows(.id = 'Attribute')
 ```
 
+Create count matrix and matrix of proportions for each source and attribute
 
+```{r}
+count_mat <- sources_counts |> 
+  pivot_wider(
+    names_from = 'Attribute_source', values_from = 'n' , values_fill = 0
+  ) |> 
+  column_to_rownames(var = 'Attribute') |> 
+  as.matrix()
 
-
-
-
-
-
-
-
+prop_mat <- apply(count_mat, 1, function(x) (x / sum(x) * 100))
+Heatmap( 
+  matrix = prop_mat,
+  show_row_dend = FALSE, show_column_dend = FALSE,
+  column_names_side = 'bottom', row_names_side = 'left',
+  name = '%', 
+  col = circlize::colorRamp2(c(0, 1, 100), c("white", 'yellow', "red"))
+)
+```
