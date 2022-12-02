@@ -26,7 +26,7 @@ library(ComplexHeatmap)
 
 ```{r, message=FALSE, warning=FALSE}
 phys <- physiologies()
-# phys$`fatty acid compositions` <- fattyAcidComposition()
+phys$`fatty acid compositions` <- fattyAcidComposition()
 phys <- map(phys, as_tibble)
 ```
 
@@ -52,8 +52,7 @@ sources_tbl <- phys_sources_mod |>
   map(~ count(.x, Attribute_source)) |> 
   bind_rows(.id = 'Attribute')
 ```
-
-Concatenate attributes per source
+## Table of sources
 
 ```{r}
 sources_cat <- sources_tbl |> 
@@ -69,13 +68,17 @@ sources_cat <- sources_tbl |>
 createDT(sources_cat)
 ```
 
-Create count table of all of the attributes:
+
+Create count table of all of the attributes
 
 ```{r}
 sources_counts <- phys_sources_mod |> 
   map(~ count(.x, Attribute_source)) |> 
   bind_rows(.id = 'Attribute')
 ```
+
+
+## Count mattrix
 
 Create count matrix and matrix of proportions for each source and attribute
 

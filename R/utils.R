@@ -67,8 +67,11 @@ createDT <- function(x){
          options = list(
             dom = 'Brti',
             buttons = list(
-                 extend = c('copy', 'csv', 'excel', 'pdf', 'print'),
-                 title = NULL
+                list(extend = 'copy', title = NULL),
+                list(extend = 'csv', title = NULL),
+                list(extend = 'excel', title = NULL),
+                list(extend = 'pdf', title = NULL),
+                list(extend = 'print', title = NULL)
             )
         )
     )
