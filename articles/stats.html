@@ -109,7 +109,7 @@
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">phys</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/physiologies.html" class="external-link">physiologies</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co"># phys$`fatty acid compositions` &lt;- fattyAcidComposition()</span></span>
+<span><span class="va">phys</span><span class="op">$</span><span class="va">`fatty acid compositions`</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/fattyAcidComposition.html" class="external-link">fattyAcidComposition</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">phys</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">phys</span>, <span class="va">as_tibble</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -132,7 +132,9 @@
 <span><span class="va">sources_tbl</span> <span class="op">&lt;-</span> <span class="va">phys_sources_mod</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">Attribute_source</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">'Attribute'</span><span class="op">)</span></span></code></pre></div>
-<p>Concatenate attributes per source</p>
+<div class="section level3">
+<h3 id="table-of-sources">Table of sources<a class="anchor" aria-label="anchor" href="#table-of-sources"></a>
+</h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sources_cat</span> <span class="op">&lt;-</span> <span class="va">sources_tbl</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">n</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -145,12 +147,16 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>Sources <span class="op">=</span> <span class="va">Attribute_source</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/createDT.html">createDT</a></span><span class="op">(</span><span class="va">sources_cat</span><span class="op">)</span></span></code></pre></div>
-<div id="htmlwidget-caeef4d5625011ee2a81" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-caeef4d5625011ee2a81">{"x":{"filter":"none","vertical":false,"extensions":["Buttons"],"data":[["BacMap","Bergey's Manual","https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data","Kegg","Literature","Microbial Fatty Acid Compositions","MiDAS","PATRIC","ProTraits","The Microbe Directory"],["aerophilicity, arrangement, disease association, gram stain, growth temperature, habitat, isolation site, shape","aerophilicity, arrangement, gram stain, length, shape, sphingolipid producing, spore shape, width","aerophilicity, isolation site","coding genes, genome size","acetate producing, butyrate producing, habitat, health associated, hydrogen gas producing, lactate producing, mutation rate per site per generation, mutation rates per site per year, sphingolipid producing, spore shape","growth medium, growth temperature","habitat","antimicrobial resistance","aerophilicity, arrangement, gram stain, habitat, shape","animal pathogen, antimicrobial sensitivity, biofilm forming, COGEM pathogenicity rating, extreme environment, gram stain, growth temperature, habitat, optimal ph, plant pathogenicity"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Sources<\/th>\n      <th>Attributes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Brti","buttons":{"extend":["copy","csv","excel","pdf","print"],"title":null},"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script><p>Create count table of all of the attributes:</p>
+<div id="htmlwidget-3227c693644e08de5aa4" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3227c693644e08de5aa4">{"x":{"filter":"none","vertical":false,"extensions":["Buttons"],"data":[["BacMap","Bergey's Manual","https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data","Kegg","Literature","Microbial Fatty Acid Compositions","MiDAS","PATRIC","ProTraits","The Microbe Directory"],["aerophilicity, arrangement, disease association, gram stain, growth temperature, habitat, isolation site, shape","aerophilicity, arrangement, gram stain, length, shape, sphingolipid producing, spore shape, width","aerophilicity, isolation site","coding genes, genome size","acetate producing, butyrate producing, habitat, health associated, hydrogen gas producing, lactate producing, mutation rate per site per generation, mutation rates per site per year, sphingolipid producing, spore shape","fatty acid compositions, growth medium, growth temperature","habitat","antimicrobial resistance","aerophilicity, arrangement, gram stain, habitat, shape","animal pathogen, antimicrobial sensitivity, biofilm forming, COGEM pathogenicity rating, extreme environment, gram stain, growth temperature, habitat, optimal ph, plant pathogenicity"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Sources<\/th>\n      <th>Attributes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Brti","buttons":[{"extend":"copy","title":null},{"extend":"csv","title":null},{"extend":"excel","title":null},{"extend":"pdf","title":null},{"extend":"print","title":null}],"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script><p>Create count table of all of the attributes</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sources_counts</span> <span class="op">&lt;-</span> <span class="va">phys_sources_mod</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">Attribute_source</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">'Attribute'</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="count-mattrix">Count mattrix<a class="anchor" aria-label="anchor" href="#count-mattrix"></a>
+</h3>
 <p>Create count matrix and matrix of proportions for each source and attribute</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">count_mat</span> <span class="op">&lt;-</span> <span class="va">sources_counts</span> <span class="op">|&gt;</span> </span>
@@ -169,6 +175,7 @@
 <span>  col <span class="op">=</span> <span class="fu">circlize</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/circlize/man/colorRamp2.html" class="external-link">colorRamp2</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">100</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">'yellow'</span>, <span class="st">"red"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="stats_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+</div>
 </div>
   </div>
 
