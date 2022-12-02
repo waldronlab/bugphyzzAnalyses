@@ -78,7 +78,12 @@
 
       
 
-      </header><script src="stats_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><script src="stats_files/accessible-code-block-0.0.1/empty-anchor.js"></script><script src="stats_files/htmlwidgets-1.5.4/htmlwidgets.js"></script><link href="stats_files/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="stats_files/datatables-binding-0.26/datatables.js"></script><link href="stats_files/dt-core-1.12.1/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="stats_files/dt-core-1.12.1/css/jquery.dataTables.extra.css" rel="stylesheet">
+<script src="stats_files/dt-core-1.12.1/js/jquery.dataTables.min.js"></script><script src="stats_files/jszip-1.12.1/jszip.min.js"></script><script src="stats_files/pdfmake-1.12.1/pdfmake.js"></script><script src="stats_files/pdfmake-1.12.1/vfs_fonts.js"></script><link href="stats_files/dt-ext-buttons-1.12.1/css/buttons.dataTables.min.css" rel="stylesheet">
+<script src="stats_files/dt-ext-buttons-1.12.1/js/dataTables.buttons.min.js"></script><script src="stats_files/dt-ext-buttons-1.12.1/js/buttons.html5.min.js"></script><script src="stats_files/dt-ext-buttons-1.12.1/js/buttons.colVis.min.js"></script><script src="stats_files/dt-ext-buttons-1.12.1/js/buttons.print.min.js"></script><link href="stats_files/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet">
+<script src="stats_files/crosstalk-1.2.0/js/crosstalk.min.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Stats</h1>
@@ -139,60 +144,9 @@
 <span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>Sources <span class="op">=</span> <span class="va">Attribute_source</span><span class="op">)</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">sources_cat</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="31%">
-<col width="68%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">Sources</th>
-<th align="left">Attributes</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">BacMap</td>
-<td align="left">aerophilicity, arrangement, disease association, gram stain, growth temperature, habitat, isolation site, shape</td>
-</tr>
-<tr class="even">
-<td align="left">Bergey’s Manual</td>
-<td align="left">aerophilicity, arrangement, gram stain, length, shape, sphingolipid producing, spore shape, width</td>
-</tr>
-<tr class="odd">
-<td align="left"><a href="https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data" class="external-link uri">https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data</a></td>
-<td align="left">aerophilicity, isolation site</td>
-</tr>
-<tr class="even">
-<td align="left">Kegg</td>
-<td align="left">coding genes, genome size</td>
-</tr>
-<tr class="odd">
-<td align="left">Literature</td>
-<td align="left">acetate producing, butyrate producing, habitat, health associated, hydrogen gas producing, lactate producing, mutation rate per site per generation, mutation rates per site per year, sphingolipid producing, spore shape</td>
-</tr>
-<tr class="even">
-<td align="left">Microbial Fatty Acid Compositions</td>
-<td align="left">growth medium, growth temperature</td>
-</tr>
-<tr class="odd">
-<td align="left">MiDAS</td>
-<td align="left">habitat</td>
-</tr>
-<tr class="even">
-<td align="left">PATRIC</td>
-<td align="left">antimicrobial resistance</td>
-</tr>
-<tr class="odd">
-<td align="left">ProTraits</td>
-<td align="left">aerophilicity, arrangement, gram stain, habitat, shape</td>
-</tr>
-<tr class="even">
-<td align="left">The Microbe Directory</td>
-<td align="left">animal pathogen, antimicrobial sensitivity, biofilm forming, COGEM pathogenicity rating, extreme environment, gram stain, growth temperature, habitat, optimal ph, plant pathogenicity</td>
-</tr>
-</tbody>
-</table>
-<p>Create count table of all of the attributes:</p>
+<span><span class="fu"><a href="../reference/createDT.html">createDT</a></span><span class="op">(</span><span class="va">sources_cat</span><span class="op">)</span></span></code></pre></div>
+<div id="htmlwidget-caeef4d5625011ee2a81" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-caeef4d5625011ee2a81">{"x":{"filter":"none","vertical":false,"extensions":["Buttons"],"data":[["BacMap","Bergey's Manual","https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data","Kegg","Literature","Microbial Fatty Acid Compositions","MiDAS","PATRIC","ProTraits","The Microbe Directory"],["aerophilicity, arrangement, disease association, gram stain, growth temperature, habitat, isolation site, shape","aerophilicity, arrangement, gram stain, length, shape, sphingolipid producing, spore shape, width","aerophilicity, isolation site","coding genes, genome size","acetate producing, butyrate producing, habitat, health associated, hydrogen gas producing, lactate producing, mutation rate per site per generation, mutation rates per site per year, sphingolipid producing, spore shape","growth medium, growth temperature","habitat","antimicrobial resistance","aerophilicity, arrangement, gram stain, habitat, shape","animal pathogen, antimicrobial sensitivity, biofilm forming, COGEM pathogenicity rating, extreme environment, gram stain, growth temperature, habitat, optimal ph, plant pathogenicity"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Sources<\/th>\n      <th>Attributes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Brti","buttons":{"extend":["copy","csv","excel","pdf","print"],"title":null},"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script><p>Create count table of all of the attributes:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sources_counts</span> <span class="op">&lt;-</span> <span class="va">phys_sources_mod</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">Attribute_source</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
