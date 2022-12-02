@@ -48,5 +48,28 @@ import_taxids <- function(x) {
     read.table(file_path, header = TRUE, sep = '\t', row.names = 1)
 }
 
-
-
+#' Create DataTable
+#'
+#' \code{craeteDT} creates a data table.
+#'
+#' Reference for this code: https://www.r-bloggers.com/2019/12/vignette-downloadable-tables-in-rmarkdown-with-the-dt-package/
+#' The link was valid on Dec 2, 2022.
+#'
+#' @param x A data frame.
+#'
+#' @return A DataTable output.
+#'
+#' @export
+#'
+createDT <- function(x){
+    DT::datatable(
+        x, extensions = 'Buttons', rownames = FALSE,
+         options = list(
+            dom = 'Brti',
+            buttons = list(
+                 extend = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                 title = NULL
+            )
+        )
+    )
+}
