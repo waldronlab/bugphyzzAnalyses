@@ -16,7 +16,6 @@ LazyData: true
 Suggests: 
     bugphyzz,
     circlize,
-    ComplexHeatmap,
     ggplot2,
     rmarkdown,
     taxPPro,
@@ -28,7 +27,9 @@ Suggests:
     taxizedb,
     EnrichmentBrowser,
     statmod,
-    MicrobiomeBenchmarkData
+    MicrobiomeBenchmarkData,
+    tibble,
+    tidyr
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
@@ -36,7 +37,9 @@ Remotes:
     ropensci/taxize@1.0-rc
 Imports: 
     BiocFileCache,
+    ComplexHeatmap,
     dplyr,
+    DT,
     magrittr,
     purrr,
     readr,
