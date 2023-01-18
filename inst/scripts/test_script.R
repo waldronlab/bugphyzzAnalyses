@@ -1,5 +1,7 @@
 library(bugphyzz)
 library(taxPPro)
+library(tidyr)
+library(ggplot2)
 
 phys <- physiologies(remove_false = TRUE)
 
@@ -11,19 +13,42 @@ categorical <- lapply(
 )
 
 exclude_names <- c(
-    'antimicrobial resistance'
+    'antimicrobial resistance',
+    'isolation site'
 )
 
-cat_names <- names(categorical)
+categorical <- categorical[!names(categorical) %in% exclude_names]
 propagation <- vector('list', length(categorical))
-names(propagation) <- cat_names
 for (i in seq_along(propagation)) {
-    current_name <- cat_names[i]
-    if (current_name %in% exclude_names)
-        next
-    message('>>> Propagating ',  current_name, '. <<<')
+    current_name <- names(categorical)[i]
+    message('>>> Propagating ',  names(categorical)[i], '. <<<')
     stat_time <- Sys.time()
     propagation[[i]] <- propagate(categorical[[i]])
     end_time <- Sys.time()
     message('>>> Done ', difftime(end_time, stat_time), '. <<<')
 }
+names(propagation) <- names(categorical)
+
+df <- data.frame(
+    before = vapply(categorical[names(propagation)], nrow, integer(1)),
+    after = vapply(propagation, nrow, integer(1))
+)
+df$dataset <- rownames(df)
+
+tidy_df <- df |>
+    pivot_longer(
+        names_to = 'type', values_to = 'n', cols = c('before', 'after')
+    )
+tidy_df$type <- factor(tidy_df$type, levels = c('before', 'after'))
+tidy_df |>
+    ggplot(aes(dataset, n)) +
+    geom_col(aes(fill = type), position = 'dodge') +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+
+
+
+
