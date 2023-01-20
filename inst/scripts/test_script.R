@@ -46,6 +46,30 @@ tidy_df |>
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
+## Get all numbers (including informal, unclassified, and uncultured)
+
+## Let's get total by species with base numbers
+summary_species <- base_numbers |>
+    filter(Rank == 'species') |>
+    count(kingdom, phylum, name = 'n_ncbi_sp') |>
+    arrange(desc(kingdom), -n_ncbi_sp)
+
+## Let's get totals by genus with base numbers
+summary_genus <- base_numbers |>
+    filter(Rank == 'genus') |>
+    count(kingdom, phylum, name = 'n_ncbi_gn') |>
+    arrange(desc(kingdom), -n_ncbi_gn)
+
+## Let's get totals by strain with whole numbers?
+summary_strain <- all_numbers |>
+    filter(Rank == 'strain') |>
+    count(kingdom, phylum, name = 'n_ncbi_st') |>
+    arrange(desc(kingdom), -n_ncbi_st)
+
+
+
+
+
 
 
 

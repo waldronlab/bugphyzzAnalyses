@@ -1,0 +1,197 @@
+---
+title: "Figure 1 - Completeness of annotations"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+```{r, message=FALSE}
+library(bugphyzzAnalyses)
+library(bugphyzz)
+library(taxPPro)
+library(dplyr)
+library(tidyr)
+library(ComplexHeatmap)
+library(purrr)
+library(ggplot2)
+```
+
+
+# Import bugphzz data
+
+```{r, message=FALSE, warning=FALSE}
+exclude_phys <- c('antimicrobial resistance', 'isolation site')
+phys <- physiologies(remove_false = TRUE) |> 
+  keep(~ unique(.x$Attribute_type) == 'categorical') |> 
+  {\(y) y[!names(y) %in% exclude_phys]}() |> 
+  map(preSteps, tax.id.type = 'NCBI_ID', remove_false = TRUE)
+before <- map_int(phys, nrow) |> 
+  as.data.frame() |> 
+  tibble::rownames_to_column(var = 'physiology') |> 
+  mutate(group = 'before')
+colnames(before)[2] <- 'n'
+```
+
+# Run propagation
+
+```{r, message=FALSE, warning=FALSE}
+propagation <- vector('list', length(phys))
+for (i in seq_along(propagation)) {
+    message('>>> Propagating ',  names(phys)[i], '. <<<')
+    stat_time <- Sys.time()
+    names(propagation)[i] <- names(phys)[i]
+    propagation[[i]] <- propagate(phys[[i]], max.tax.level = 'genus')
+    end_time <- Sys.time()
+    message('>>> Done ', difftime(end_time, stat_time), '. <<<')
+}
+after <- map_int(propagation, nrow) |> 
+  as.data.frame() |> 
+  tibble::rownames_to_column(var = 'physiology') |> 
+  mutate(group = 'after')
+colnames(after)[2] <- 'n'
+```
+
+# Comparing raw total numbers
+
+```{r, message=FALSE}
+df <- bind_rows(before, after) |> 
+  mutate(group = factor(group, c('before', 'after')))
+p1 <- df |>
+  ggplot(aes(physiology, n)) +
+  geom_col(aes(fill = group), position = 'dodge') +
+  labs(title = 'Annotations (all ranks) before and after propagation (asr/inh)') +
+  theme_bw() +
+  scale_fill_manual(values = c('dodgerblue', 'firebrick')) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p1
+```
+
+
+# Calculate completeness
+
+## Calculate completeness before ASR
+
+### Get NCBI summary (reference/denominator numbers)
+
+```{r}
+base_numbers <- get_ncbi_taxids('b')
+all_numbers <- get_ncbi_taxids('all')
+
+## Let's get total by species with base numbers
+ncbi_summary_sp <- base_numbers |>
+    filter(Rank == 'species') |>
+    count(kingdom, phylum, name = 'n_ncbi_sp') |>
+    arrange(desc(kingdom), -n_ncbi_sp)
+
+## Let's get totals by genus with base numbers
+## Number of genus is the same anyway
+ncbi_summary_gn <- base_numbers |>
+    filter(Rank == 'genus') |>
+    count(kingdom, phylum, name = 'n_ncbi_gn') |>
+    arrange(desc(kingdom), -n_ncbi_gn)
+
+## Let's get totals by strain with whole numbers?
+ncbi_summary_st <- all_numbers |>
+    filter(Rank == 'strain') |>
+    count(kingdom, phylum, name = 'n_ncbi_st') |>
+    arrange(desc(kingdom), -n_ncbi_st)
+```
+
+### Get bugphyzz (bp) summaries (numerator)
+
+Import ncbi taxonomy. Necessary to add information about phylum, etc.
+```{r}
+ncbi_taxonomy <- get_ncbi_taxonomy() |> 
+  select(-Taxon_name, Parent_NCBI_ID, Rank)
+```
+
+### Calculate bugphyzz summaries 
+
+```{r}
+bp_summary_gn <- phys$aerophilicity |> 
+  filter(
+    NCBI_ID %in% all_numbers$NCBI_ID,
+    Rank == 'genus'
+  ) |> 
+  left_join(ncbi_taxonomy, by = 'NCBI_ID') |> 
+  select(kingdom, phylum, NCBI_ID) |> 
+  distinct() |> 
+  count(kingdom, phylum, name = 'n_bp_gn') |> 
+  arrange(desc(kingdom), n_bp_gn)
+
+bp_summary_sp <- phys$aerophilicity |> 
+  filter(
+    NCBI_ID %in% all_numbers$NCBI_ID,
+    Rank == 'species'
+  ) |> 
+  left_join(ncbi_taxonomy, by = 'NCBI_ID') |> 
+  select(kingdom, phylum, NCBI_ID) |> 
+  distinct() |> 
+  count(kingdom, phylum, name = 'n_bp_sp') |> 
+  arrange(desc(kingdom), n_bp_sp)
+
+bp_summary_st <- phys$aerophilicity |> 
+  filter(
+    NCBI_ID %in% all_numbers$NCBI_ID,
+    Rank == 'strain'
+  ) |> 
+  left_join(ncbi_taxonomy, by = 'NCBI_ID') |> 
+  select(kingdom, phylum, NCBI_ID) |> 
+  distinct() |> 
+  count(kingdom, phylum, name = 'n_bp_st') |> 
+  arrange(desc(kingdom), n_bp_st)
+```
+
+### Calculate completeness
+
+```{r}
+completeness_gn <- left_join(
+  ncbi_summary_gn, bp_summary_gn, by = c('kingdom', 'phylum')
+)  |> 
+  filter(!is.na(phylum), !grepl('(C|c)andidatus', phylum)) |> 
+  mutate(
+    n_bp_gn = ifelse(is.na(n_bp_gn), 0, n_bp_gn),
+    completeness_gn = n_bp_gn / n_ncbi_gn
+  )
+
+completeness_sp <- left_join(
+  ncbi_summary_sp, bp_summary_sp, by = c('kingdom', 'phylum')
+)  |> 
+  filter(!is.na(phylum), !grepl('(C|c)andidatus', phylum)) |> 
+  mutate(
+    n_bp_sp = ifelse(is.na(n_bp_sp), 0, n_bp_sp),
+    completeness_sp = n_bp_sp / n_ncbi_sp
+  )
+
+completeness_st <- left_join(
+  ncbi_summary_st, bp_summary_st, by = c('kingdom', 'phylum')
+)  |> 
+  filter(!is.na(phylum), !grepl('(C|c)andidatus', phylum)) |> 
+  mutate(
+    n_bp_st = ifelse(is.na(n_bp_st), 0, n_bp_st),
+    completeness_st = n_bp_st / n_ncbi_st
+  )
+```
+
+### Merge all completeness data for a single physiology
+
+```{r, warning=FALSE, message=FALSE}
+completeness <- purrr::reduce(
+  list(completeness_gn, completeness_sp, completeness_st), left_join
+) |> 
+  mutate(group = paste0(kingdom, ' - ', phylum))  |> 
+  select(group, starts_with('completeness')) |> 
+  rename(
+    strain = completeness_st, species = completeness_sp, 
+    genus = completeness_gn
+  ) |> 
+  tibble::column_to_rownames(var = 'group') |> 
+  as.matrix()
+```
+
+
