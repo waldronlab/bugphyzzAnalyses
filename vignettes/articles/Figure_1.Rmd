@@ -21,7 +21,6 @@ library(purrr)
 library(ggplot2)
 ```
 
-
 # Import bugphzz data
 
 ```{r, message=FALSE, warning=FALSE}
@@ -74,13 +73,11 @@ p1
 
 # Calculate completeness
 
-## Calculate completeness before ASR
-
-### Get NCBI summary (reference/denominator numbers)
+## Get NCBI summary (reference/denominator numbers)
 
 ```{r}
-base_numbers <- get_ncbi_taxids('b')
-all_numbers <- get_ncbi_taxids('all')
+base_numbers <- get_ncbi_taxids('b') ## base numbers only
+all_numbers <- get_ncbi_taxids('all') ## all numbers
 
 ## Let's get total by species with base numbers
 ncbi_summary_sp <- base_numbers |>
@@ -102,15 +99,15 @@ ncbi_summary_st <- all_numbers |>
     arrange(desc(kingdom), -n_ncbi_st)
 ```
 
-### Get bugphyzz (bp) summaries (numerator)
-
-Import ncbi taxonomy. Necessary to add information about phylum, etc.
+## Import ncbi taxonomy. Necessary to add information about phylum, etc.
 ```{r}
 ncbi_taxonomy <- get_ncbi_taxonomy() |> 
   select(-Taxon_name, Parent_NCBI_ID, Rank)
 ```
 
-### Calculate bugphyzz summaries 
+## Calculate completeness before propagation (asr/inheritance)
+
+### Calculate bugphyzz (bp) summaries (numerator)
 
 ```{r}
 bp_summary_gn <- phys$aerophilicity |> 
@@ -192,6 +189,166 @@ completeness <- purrr::reduce(
   ) |> 
   tibble::column_to_rownames(var = 'group') |> 
   as.matrix()
+completeness[is.na(completeness)] <- 0
 ```
+
+
+## Completeness after propagation
+
+### Calculate bugphyzz propagated (prop) summaries (numerator)
+
+```{r}
+prop_summary_gn <- propagation$aerophilicity |> 
+  filter(
+    NCBI_ID %in% all_numbers$NCBI_ID,
+    Rank == 'genus'
+  ) |> 
+  left_join(ncbi_taxonomy, by = 'NCBI_ID') |> 
+  select(kingdom, phylum, NCBI_ID) |> 
+  distinct() |> 
+  count(kingdom, phylum, name = 'n_prop_gn') |> 
+  arrange(desc(kingdom), n_prop_gn)
+
+prop_summary_sp <- propagation$aerophilicity |> 
+  filter(
+    NCBI_ID %in% all_numbers$NCBI_ID,
+    Rank == 'species'
+  ) |> 
+  left_join(ncbi_taxonomy, by = 'NCBI_ID') |> 
+  select(kingdom, phylum, NCBI_ID) |> 
+  distinct() |> 
+  count(kingdom, phylum, name = 'n_prop_sp') |> 
+  arrange(desc(kingdom), n_prop_sp)
+
+prop_summary_st <- propagation$aerophilicity |> 
+  filter(
+    NCBI_ID %in% all_numbers$NCBI_ID,
+    Rank == 'strain'
+  ) |> 
+  left_join(ncbi_taxonomy, by = 'NCBI_ID') |> 
+  select(kingdom, phylum, NCBI_ID) |> 
+  distinct() |> 
+  count(kingdom, phylum, name = 'n_prop_st') |> 
+  arrange(desc(kingdom), n_prop_st)
+```
+
+### Calculate completeness
+
+```{r}
+prop_completeness_gn <- left_join(
+  ncbi_summary_gn, prop_summary_gn, by = c('kingdom', 'phylum')
+)  |> 
+  filter(!is.na(phylum), !grepl('(C|c)andidatus', phylum)) |> 
+  mutate(
+    n_prop_gn = ifelse(is.na(n_prop_gn), 0, n_prop_gn),
+    prop_completeness_gn = n_prop_gn / n_ncbi_gn
+  )
+
+prop_completeness_sp <- left_join(
+  ncbi_summary_sp, prop_summary_sp, by = c('kingdom', 'phylum')
+)  |> 
+  filter(!is.na(phylum), !grepl('(C|c)andidatus', phylum)) |> 
+  mutate(
+    n_prop_sp = ifelse(is.na(n_prop_sp), 0, n_prop_sp),
+    prop_completeness_sp = n_prop_sp / n_prop_sp
+  )
+
+prop_completeness_st <- left_join(
+  ncbi_summary_st, prop_summary_st, by = c('kingdom', 'phylum')
+)  |> 
+  filter(!is.na(phylum), !grepl('(C|c)andidatus', phylum)) |> 
+  mutate(
+    n_prop_st = ifelse(is.na(n_prop_st), 0, n_prop_st),
+    prop_completeness_st = n_prop_st / n_ncbi_st
+  )
+```
+
+
+### Merge all completeness data for a single physiology
+
+```{r, warning=FALSE, message=FALSE}
+prop_completeness <- purrr::reduce(
+  list(prop_completeness_gn, prop_completeness_sp, prop_completeness_st),
+  left_join
+) |> 
+  mutate(group = paste0(kingdom, ' - ', phylum))  |> 
+  select(group, starts_with('prop_completeness')) |> 
+  rename(
+    strain = prop_completeness_st, 
+    species = prop_completeness_sp, 
+    genus = prop_completeness_gn
+  ) |> 
+  tibble::column_to_rownames(var = 'group') |> 
+  as.matrix()
+prop_completeness[is.na(prop_completeness)] <- 0
+```
+
+# Create a heatmap
+
+```{r}
+row_names <- sort(
+  intersect(rownames(completeness), rownames(prop_completeness)),
+  decreasing = TRUE
+)
+
+colnames(completeness) <- paste0('before_', colnames(completeness)) 
+colnames(prop_completeness) <- paste0('after_', colnames(prop_completeness)) 
+
+# mat <- cbind(completeness[row_names,], prop_completeness[row_names,])
+# mat[is.na(mat)] <- 0
+
+```
+
+```{r}
+mat <- cbind(completeness[row_names,], prop_completeness[row_names,])
+mat[is.na(mat)] <- 0
+```
+
+```{r}
+rep1 <- sum(grepl('^Bacteria -', rownames(mat)))
+rep2 <- sum(grepl('^Archaea -', rownames(mat)))
+row_splits <- c(rep('Bacteria', rep1), rep('Archaea', rep2))
+col_splits <- c(rep('Before', 3), rep('After', 3))
+
+rownames(mat) <- sub('^(Archaea|Bacteria) - ', '', rownames(mat))
+colnames(mat) <- sub('^(before|after)_', '', colnames(mat))
+
+hp <- Heatmap(
+  matrix = mat,
+  show_column_dend = FALSE, show_row_dend = FALSE,
+  cluster_columns = FALSE, cluster_rows = FALSE,
+  name = 'Completeness
+  Aerophilicity',
+  row_names_side = 'left', column_title_side = 'bottom',
+  # row_title = 'Phylum', column_title = 'rank', 
+  cell_fun = function(j, i, x, y, width, height, fill) {
+        grid.rect(x = x, y = y, width = width, height = height, 
+            gp = gpar(col = "black", fill = NA))
+  },
+  col = viridis::viridis(1020, option = 'C'),
+  row_split = factor(row_splits, levels = c('Bacteria', 'Archaea')),
+  column_split = factor(col_splits, levels = c('Before', 'After')) 
+)
+hp
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+png(filename = 'aer-completeness.png', width = 5, height = 7, res = 1020, units = 'in')
+hp
+dev.off()
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
