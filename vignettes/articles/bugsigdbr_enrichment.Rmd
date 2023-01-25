@@ -1,0 +1,40 @@
+---
+title: "Enrichment/overlpa with bugsigdb signatures"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message=FALSE}
+library(bugphyzzAnalyses)
+library(bugsigdbr)
+library(bugphyzz)
+library(purrr)
+library(taxPPro)
+```
+
+Import bugphyzz spreadsheets
+
+```{r, message=FALSE}
+exclude_phys <- c('antimicrobial resistance', 'isolation site')
+phys <- physiologies(remove_false = TRUE) |> 
+  keep(~ unique(.x$Attribute_type) == 'categorical') |> 
+  {\(y) y[!names(y) %in% exclude_phys]}() |> 
+  map(preSteps, tax.id.type = 'NCBI_ID', remove_false = TRUE)
+```
+
+# Run propagation
+
+```{r, message=FALSE, warning=FALSE}
+propagation <- vector('list', length(phys))
+for (i in seq_along(propagation)) {
+    names(propagation)[i] <- names(phys)[i]
+    propagation[[i]] <- propagate(phys[[i]], max.tax.level = 'genus')
+}
+```
+
+

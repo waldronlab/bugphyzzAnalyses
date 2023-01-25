@@ -41,12 +41,12 @@ colnames(before)[2] <- 'n'
 ```{r, message=FALSE, warning=FALSE}
 propagation <- vector('list', length(phys))
 for (i in seq_along(propagation)) {
-    message('>>> Propagating ',  names(phys)[i], '. <<<')
-    stat_time <- Sys.time()
+    # message('>>> Propagating ',  names(phys)[i], '. <<<')
+    # stat_time <- Sys.time()
     names(propagation)[i] <- names(phys)[i]
     propagation[[i]] <- propagate(phys[[i]], max.tax.level = 'genus')
-    end_time <- Sys.time()
-    message('>>> Done ', difftime(end_time, stat_time), '. <<<')
+    # end_time <- Sys.time()
+    # message('>>> Done ', difftime(end_time, stat_time), '. <<<')
 }
 after <- map_int(propagation, nrow) |> 
   as.data.frame() |> 
@@ -73,6 +73,16 @@ p1
 
 # Calculate completeness
 
+## Import ncbi taxonomy. Necessary to add information about phylum, etc.
+
+This is the reference information to filter both the ncbi references and the
+bugphyzz data (before and after propagation).
+
+```{r}
+ncbi_taxonomy <- get_ncbi_taxonomy() |> 
+  select(-Taxon_name, Parent_NCBI_ID, Rank)
+```
+
 ## Get NCBI summary (reference/denominator numbers)
 
 ```{r}
@@ -81,28 +91,37 @@ all_numbers <- get_ncbi_taxids('all') ## all numbers
 
 ## Let's get total by species with base numbers
 ncbi_summary_sp <- base_numbers |>
-    filter(Rank == 'species') |>
+    filter(
+      ## This filter is a double check. The get_ncbi_taxids function already
+      ## makes this filter.
+      NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
+      Rank == 'species'
+    ) |>
     count(kingdom, phylum, name = 'n_ncbi_sp') |>
     arrange(desc(kingdom), -n_ncbi_sp)
 
 ## Let's get totals by genus with base numbers
 ## Number of genus is the same anyway
 ncbi_summary_gn <- base_numbers |>
-    filter(Rank == 'genus') |>
+    filter(
+      ## This filter is a double check. The get_ncbi_taxids function already
+      ## makes this filter.
+      NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
+      Rank == 'genus'
+    ) |>
     count(kingdom, phylum, name = 'n_ncbi_gn') |>
     arrange(desc(kingdom), -n_ncbi_gn)
 
 ## Let's get totals by strain with whole numbers?
 ncbi_summary_st <- all_numbers |>
-    filter(Rank == 'strain') |>
+    filter(
+      ## This filter is a double check. The get_ncbi_taxids function already
+      ## makes this filter.
+      NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
+      Rank == 'strain'
+    ) |>
     count(kingdom, phylum, name = 'n_ncbi_st') |>
     arrange(desc(kingdom), -n_ncbi_st)
-```
-
-## Import ncbi taxonomy. Necessary to add information about phylum, etc.
-```{r}
-ncbi_taxonomy <- get_ncbi_taxonomy() |> 
-  select(-Taxon_name, Parent_NCBI_ID, Rank)
 ```
 
 ## Calculate completeness before propagation (asr/inheritance)
@@ -112,7 +131,7 @@ ncbi_taxonomy <- get_ncbi_taxonomy() |>
 ```{r}
 bp_summary_gn <- phys$aerophilicity |> 
   filter(
-    NCBI_ID %in% all_numbers$NCBI_ID,
+    NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
     Rank == 'genus'
   ) |> 
   left_join(ncbi_taxonomy, by = 'NCBI_ID') |> 
@@ -123,7 +142,7 @@ bp_summary_gn <- phys$aerophilicity |>
 
 bp_summary_sp <- phys$aerophilicity |> 
   filter(
-    NCBI_ID %in% all_numbers$NCBI_ID,
+    NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
     Rank == 'species'
   ) |> 
   left_join(ncbi_taxonomy, by = 'NCBI_ID') |> 
@@ -134,7 +153,7 @@ bp_summary_sp <- phys$aerophilicity |>
 
 bp_summary_st <- phys$aerophilicity |> 
   filter(
-    NCBI_ID %in% all_numbers$NCBI_ID,
+    NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
     Rank == 'strain'
   ) |> 
   left_join(ncbi_taxonomy, by = 'NCBI_ID') |> 
@@ -200,7 +219,7 @@ completeness[is.na(completeness)] <- 0
 ```{r}
 prop_summary_gn <- propagation$aerophilicity |> 
   filter(
-    NCBI_ID %in% all_numbers$NCBI_ID,
+    NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
     Rank == 'genus'
   ) |> 
   left_join(ncbi_taxonomy, by = 'NCBI_ID') |> 
@@ -211,7 +230,7 @@ prop_summary_gn <- propagation$aerophilicity |>
 
 prop_summary_sp <- propagation$aerophilicity |> 
   filter(
-    NCBI_ID %in% all_numbers$NCBI_ID,
+    NCBI_ID %in% (ncbi_taxonomy$NCBI_ID),
     Rank == 'species'
   ) |> 
   left_join(ncbi_taxonomy, by = 'NCBI_ID') |> 
@@ -222,7 +241,7 @@ prop_summary_sp <- propagation$aerophilicity |>
 
 prop_summary_st <- propagation$aerophilicity |> 
   filter(
-    NCBI_ID %in% all_numbers$NCBI_ID,
+    NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
     Rank == 'strain'
   ) |> 
   left_join(ncbi_taxonomy, by = 'NCBI_ID') |> 
@@ -250,7 +269,7 @@ prop_completeness_sp <- left_join(
   filter(!is.na(phylum), !grepl('(C|c)andidatus', phylum)) |> 
   mutate(
     n_prop_sp = ifelse(is.na(n_prop_sp), 0, n_prop_sp),
-    prop_completeness_sp = n_prop_sp / n_prop_sp
+    prop_completeness_sp = n_prop_sp / n_ncbi_sp
   )
 
 prop_completeness_st <- left_join(
