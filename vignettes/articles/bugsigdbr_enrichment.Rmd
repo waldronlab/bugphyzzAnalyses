@@ -15,9 +15,77 @@ library(bugsigdbr)
 library(bugphyzz)
 library(purrr)
 library(taxPPro)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(ontologyIndex)
+library(ontologySimilarity)
+library(BugSigDBStats)
 ```
 
-Import bugphyzz spreadsheets
+# Typical Signatures
+
+Check https://zenodo.org/record/6656514
+
+```{r, message=FALSE}
+temp_dir <- paste0(tempdir(), '/test')
+dir.create(temp_dir, showWarnings = FALSE)
+doi <- "10.5281/zenodo.6656514"
+zen4R::download_zenodo(doi = doi, path = temp_dir)
+fnames <- list.files(temp_dir, full.names = TRUE)
+fnames
+```
+
+Read csv files
+
+```{r}
+csv_fnames <- fnames[grepl('\\.csv$', fnames)]
+stool_data <- lapply(csv_fnames, function(x) {
+    df <- read.csv(x)
+    colnames(df) <- c('NCBI_ID', 'Taxon_name', 'Prevalence')
+    df[df$Prevalence >= 0.01,]
+})
+names(stool_data) <- sub('^.*/(.*)\\.csv$', '\\1', csv_fnames)
+lapply(stool_data, dim)
+```
+
+## Some exploratory data
+
+```{r}
+hsg <- stool_data$healthystool_genus
+usg <- stool_data$unhealthystool_genus
+common_ids <- intersect(hsg$NCBI_ID, usg$NCBI_ID)
+length(common_ids)
+```
+
+```{r}
+hsg_ <- hsg[hsg$NCBI_ID %in% common_ids,]
+usg_ <- usg[usg$NCBI_ID %in% common_ids, ]
+df <- left_join(
+    hsg_, usg_, by = c('NCBI_ID', 'Taxon_name'), suffix = c('.h', '.u')
+) |> 
+    mutate(ratio = Prevalence.h / Prevalence.u)
+df |> 
+    ggplot(aes(Prevalence.h, Prevalence.u)) +
+    geom_point(aes(color = ratio)) +
+    labs(
+        x = 'Prevalence in healthy stool',
+        y = 'Prevalence in unhealty stool',
+        title = 'Exploring genera present in both healthy and unhealthy stool'
+    ) +
+    scale_color_viridis_c(name = 'ratio h/u', option = 'C') +
+    theme_minimal() 
+```
+
+I'll use the healthy data only.
+
+## Healthy stool genus 
+
+```{r}
+hsg
+```
+
+# Import bugphyzz 
 
 ```{r, message=FALSE}
 exclude_phys <- c('antimicrobial resistance', 'isolation site')
@@ -27,14 +95,193 @@ phys <- physiologies(remove_false = TRUE) |>
   map(preSteps, tax.id.type = 'NCBI_ID', remove_false = TRUE)
 ```
 
-# Run propagation
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE}
 propagation <- vector('list', length(phys))
 for (i in seq_along(propagation)) {
     names(propagation)[i] <- names(phys)[i]
     propagation[[i]] <- propagate(phys[[i]], max.tax.level = 'genus')
 }
 ```
+
+```{r}
+bg_sigs <- lapply(phys, function(x) {
+  bugphyzz::getSignatures(
+    df = x, tax.id.type = 'NCBI_ID', tax.level = 'genus', min.size = 5
+  )
+})
+
+bg_sigs <- flatten(bg_sigs)
+```
+
+
+Let's add some more signatures.
+
+Growth temperature:
+
+```{r}
+ph <- physiologies('optimal ph')[[1]]
+ph <- preSteps(ph, tax.id.type = 'NCBI_ID')
+prop_ph <- propagate(ph)
+
+## Some thresholds
+acidic <- prop_ph$Attribute_value[prop_ph$Attribute_value <= 5]
+neutral <- prop_ph$Attribute_value[prop_ph$Attribute_value > 5 & prop_ph$Attribute_value <= 7]
+alkaline <- prop_ph$Attribute_value[prop_ph$Attribute_value > 7 & prop_ph$Attribute_value <= 9.75]
+very_alkaline <- prop_ph$Attribute_value[prop_ph$Attribute_value > 9.75] 
+
+ph_sigs <- vector('list', 4)
+names(ph_sigs)[1] <- paste0('bugphyzz:optimal ph|', 'acidic', '|', min(acidic), '-', max(acidic))
+names(ph_sigs)[2] <- paste0('bugphyzz:optimal ph|', 'neutral', '|', min(neutral), '-', max(neutral))
+names(ph_sigs)[3] <- paste0('bugphyzz:optimal ph|', 'alkaline', '|', min(alkaline), '-', max(alkaline))
+names(ph_sigs)[4] <- paste0('bugphyzz:optimal ph|', 'very alkaline', '|', min(very_alkaline), '-', max(very_alkaline))
+
+ph_sigs[[1]] <- prop_ph |> 
+  filter(
+    Rank == 'genus',
+    Attribute_value %in% acidic 
+  ) |> 
+  pull(NCBI_ID) |> 
+  unique()
+
+ph_sigs[[2]] <- prop_ph |> 
+  filter(
+    Rank == 'genus',
+    Attribute_value %in% neutral 
+  ) |> 
+  pull(NCBI_ID) |> 
+  unique()
+
+ph_sigs[[3]] <- prop_ph |> 
+  filter(
+    Rank == 'genus',
+    Attribute_value %in% alkaline 
+  ) |> 
+  pull(NCBI_ID) |> 
+  unique()
+
+ph_sigs[[4]] <- prop_ph |> 
+  filter(
+    Rank == 'genus',
+    Attribute_value %in% very_alkaline 
+  ) |> 
+  pull(NCBI_ID) |> 
+  unique()
+
+```
+
+```{r}
+bg_sigs <- c(bg_sigs, ph_sigs)
+```
+
+
+
+Let's create a plot
+
+```{r, message=FALSE}
+bg_sigs_freqs <- map_int(bg_sigs, length) |> 
+  as.data.frame() |> 
+  tibble::rownames_to_column(var = 'rownames') |> 
+  magrittr::set_colnames(value = c('sig_name', 'n')) |> 
+  arrange(-n)
+
+bg_sigs_freqs |>
+  ggplot(aes(forcats::fct_reorder(sig_name, n), n)) + 
+  geom_col(fill = 'firebrick4') +
+  labs(
+    x = 'Signature name', y = 'Number of taxids (genus)'
+  ) +
+  theme_minimal() +
+  coord_flip()
+```
+
+```{r}
+bsdb <- importBugSigDB()
+bsdb_sigs <- bugsigdbr::getSignatures(bsdb, tax.id.type = 'ncbi')
+```
+
+```{r, eval = FALSE}
+onto <- ontologyIndex::get_ontology("http://purl.obolibrary.org/obo/ncbitaxon.obo")
+```
+
+```{r heinzcache, echo = FALSE} 
+# onto <- BugSigDBStats:::.getResourceFromCache("ncbi.onto")
+# if (is.null(onto))
+# {
+    # onto <- ontologyIndex::get_ontology("http://purl.obolibrary.org/obo/ncbitaxon.obo")
+    # BugSigDBStats:::.cacheResource(onto, "ncbi.onto")
+# } 
+```
+
+```{r}
+onto
+head(onto$id)
+```
+
+```{r}
+
+```
+
+
+
+```{r}
+bg_sigs <- lapply(bg_sigs, function(s) paste0("NCBITaxon:", s))
+utax <- unique(unlist(bg_sigs))
+nt <- utax[!(utax %in% onto$id)]
+bg_sigs <- lapply(bg_sigs, function(s) setdiff(s, nt))
+
+```
+
+
+
+
+
+
+```{r}
+
+bsdb_sigs <- lapply(bsdb_sigs, function(s) paste0("NCBITaxon:", s))
+utax <- unique(unlist(bsdb_sigs))
+nt <- utax[!(utax %in% onto$id)]
+bsdb_sigs <- lapply(bsdb_sigs, function(s) setdiff(s, nt))
+
+```
+
+## Similarity
+
+```{r}
+res <- ontologySimilarity::get_sim_grid(
+    ontology = onto,
+    term_sets = bg_sigs,
+    term_sets2 = bsdb_sigs)
+```
+
+
+```{r}
+res_ph <- res[grep('(alkaline|neutral|acid)', rownames(res), value = TRUE),]
+```
+
+
+
+
+##  Pairwise Overlaps
+
+```{r}
+list_of_sigs <- c(bg_sigs, bsdb_sigs)
+res2 <- BugSigDBStats::calcPairwiseOverlaps(sets = list_of_sigs)
+```
+
+```{r}
+res2_subset <- res2 |> 
+  filter(
+    grepl('^bugphyzz', name1), grepl('^bsdb', name2), 
+    grepl('(alkaline|neutral|acid)', name1)
+  )
+```
+
+
+```{r}
+hist(res2$jaccard)
+```
+
 
 

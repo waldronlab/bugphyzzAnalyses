@@ -1,0 +1,55 @@
+on:
+  workflow_dispatch:
+
+name: Export TypicalMicrobiomeSignatures
+
+jobs:
+  export-typicalmicrobiomesignatures:
+    runs-on: ubuntu-latest
+    container: bioconductor/bioconductor_docker:RELEASE_3_15
+    env:
+      GITHUB_PAT: ${{ secrets.GH_PAT }}
+    steps:
+
+      - name: Checkout TypicalMicrobiomeSignatures
+        uses: actions/checkout@v3
+        with:
+          repository: waldronlab/TypicalMicrobiomeSignatures
+          ref: main
+          token: ${{ env.GITHUB_PAT }}
+          path: TypicalMicrobiomeSignatures
+
+      - name: Install dependencies
+        run: |
+          BiocManager::install(c("mia", "curatedMetagenomicData", "bugsigdbr", "ComplexHeatmap", "BiocFileCache", "annotate"))
+        shell: Rscript {0}
+
+      - name: Install TypicalMicrobiomeSignatures 
+        run: |
+          cd $GITHUB_WORKSPACE/TypicalMicrobiomeSignatures
+          Rscript -e "devtools::install()"
+
+      - name: Checkout TypicalMicrobiomeSignaturesExports
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          path: TypicalMicrobiomeSignaturesExports
+
+      - name: Configure Git
+        run: |
+          cd $GITHUB_WORKSPACE/TypicalMicrobiomeSignaturesExports
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Export TypicalMicrobiomeSignatures
+        run: |
+          Rscript $GITHUB_WORKSPACE/TypicalMicrobiomeSignatures/inst/R/write_sigs_to_file.R
+          mv *.csv $GITHUB_WORKSPACE/TypicalMicrobiomeSignaturesExports
+        timeout-minutes: 30
+
+      - name: Commit Exports
+        run: |
+          cd $GITHUB_WORKSPACE/TypicalMicrobiomeSignaturesExports
+          git add .
+          git commit -m "Update exports"
+          git push origin main

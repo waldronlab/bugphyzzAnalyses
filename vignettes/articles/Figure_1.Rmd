@@ -312,10 +312,8 @@ row_names <- sort(
 
 colnames(completeness) <- paste0('before_', colnames(completeness)) 
 colnames(prop_completeness) <- paste0('after_', colnames(prop_completeness)) 
-
 # mat <- cbind(completeness[row_names,], prop_completeness[row_names,])
 # mat[is.na(mat)] <- 0
-
 ```
 
 ```{r}
