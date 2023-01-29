@@ -32,7 +32,8 @@ Suggests:
     tibble,
     tidyr,
     ontologyIndex,
-    ontologySimilarity
+    ontologySimilarity,
+    BugSigDBStats
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
