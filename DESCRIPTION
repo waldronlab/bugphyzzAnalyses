@@ -37,7 +37,7 @@ Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
     waldronlab/MicrobiomeBenchmarkData,
-    waldronlab/BugSigDBStats
+    waldronlab/BugSigDBStats,
     ropensci/taxize@1.0-rc
 Imports: 
     BiocFileCache,
