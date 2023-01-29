@@ -60,11 +60,16 @@ attribute_names <- c(
     'aerobic', 'anaerobic', 'facultatively anaerobic'
 )
 aer_sig <- getSignatures(aer, tax.id.type = 'NCBI_ID', tax.level = 'species')
-aer_sig <- aer_sig[attribute_names]
+
+x_regex <- paste0('(', paste0(attribute_names, collapse = '|'), ')')
+
+aer_sig <- aer_sig[grep(x_regex, attribute_names)]
 aer_sig <- lapply(aer_sig, as.character)
+
+aer_plus <- aer_plus[!is.na(aer_plus$Attribute_type),]
 aer_plus_sig <- 
     getSignatures(aer_plus, tax.id.type = 'NCBI_ID', tax.level = 'species')
-aer_plus_sig <- aer_plus_sig[attribute_names]
+aer_plus_sig <- aer_plus_sig[grep(x_regex, attribute_names)]
 aer_plus_sig <- lapply(aer_plus_sig, as.character)
 ```
 

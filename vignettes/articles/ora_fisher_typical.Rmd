@@ -15,6 +15,8 @@ library(bugphyzz)
 library(purrr)
 library(tidyr)
 library(dplyr)
+library(bugsigdbr)
+library(taxPPro)
 ```
 
 Download TypicalMicrobialSignatures
@@ -51,14 +53,176 @@ for (i in seq_along(output)) {
         ) |> 
         mutate(age_range = sub('^.*_', '', names(tms)[i]))
 }
-data <- do.call(rbind, output)
-data <- data[data$pravalence > 0.01,]
-glimpse(data, width = 50)
+typica <- do.call(rbind, output)
+typical$prevalence <- round(typical$pravalence, 2)
+typical <- typical[typical$pravalence > 0.01,]
+glimpse(typical, width = 50)
+```
+
+# Stool - genus
+
+## Get a signature from TypicalMicrobiomeSignatures (both adults and children, stool, genus, prevalence >= 0.01)
+
+```{r}
+typical_stool_gn <- typical |> 
+    filter(
+        body_site == 'stool', rank == 'genus'
+    ) |> 
+    pull(taxid) |> 
+    unique()
+```
+
+## Import signatures from bsdb (stool samples only)
+
+```{r}
+bsdb <- importBugSigDB()
+bsdb_feces_gn <- bsdb |> 
+    filter(`Body site` == 'feces', `Host species` == 'Homo sapiens') |> 
+    bugsigdbr::getSignatures(
+        tax.id.type = 'ncbi', tax.level = 'genus', min.size = 5
+    )
+```
+
+## Import signatures from bugphyzz
+
+```{r}
+exclude_phys <- c('antimicrobial resistance', 'isolation site')
+phys <- physiologies(remove_false = TRUE) |> 
+  keep(~ unique(.x$Attribute_type) == 'categorical') |> 
+  {\(y) y[!names(y) %in% exclude_phys]}() |> 
+  map(preSteps, tax.id.type = 'NCBI_ID', remove_false = TRUE)
+```
+
+Propagate bugphyzz signatures
+
+```{r}
+propagation <- vector('list', length(phys))
+for (i in seq_along(propagation)) {
+    names(propagation)[i] <- names(phys)[i]
+    propagation[[i]] <- propagate(phys[[i]], max.tax.level = 'genus')
+}
+```
+
+Convert data.frames to signatures
+
+```{r}
+bg_sigs <- lapply(phys, function(x) {
+  bugphyzz::getSignatures(
+    df = x, tax.id.type = 'NCBI_ID', tax.level = 'genus', min.size = 5
+  )
+})
+
+bg_sigs <- flatten(bg_sigs)
+```
+
+Import pH
+
+```{r}
+ph <- physiologies('optimal ph')[[1]]
+ph <- preSteps(ph, tax.id.type = 'NCBI_ID')
+prop_ph <- propagate(ph)
+
+## Some thresholds
+acidic <- prop_ph$Attribute_value[prop_ph$Attribute_value <= 5]
+neutral <- prop_ph$Attribute_value[prop_ph$Attribute_value > 5 & prop_ph$Attribute_value <= 7]
+alkaline <- prop_ph$Attribute_value[prop_ph$Attribute_value > 7 & prop_ph$Attribute_value <= 9.75]
+very_alkaline <- prop_ph$Attribute_value[prop_ph$Attribute_value > 9.75] 
+
+ph_sigs <- vector('list', 4)
+names(ph_sigs)[1] <- paste0('bugphyzz:optimal ph|', 'acidic', '|', min(acidic), '-', max(acidic))
+names(ph_sigs)[2] <- paste0('bugphyzz:optimal ph|', 'neutral', '|', min(neutral), '-', max(neutral))
+names(ph_sigs)[3] <- paste0('bugphyzz:optimal ph|', 'alkaline', '|', min(alkaline), '-', max(alkaline))
+names(ph_sigs)[4] <- paste0('bugphyzz:optimal ph|', 'very alkaline', '|', min(very_alkaline), '-', max(very_alkaline))
+
+ph_sigs[[1]] <- prop_ph |> 
+  filter(
+    Rank == 'genus',
+    Attribute_value %in% acidic 
+  ) |> 
+  pull(NCBI_ID) |> 
+  unique()
+
+ph_sigs[[2]] <- prop_ph |> 
+  filter(
+    Rank == 'genus',
+    Attribute_value %in% neutral 
+  ) |> 
+  pull(NCBI_ID) |> 
+  unique()
+
+ph_sigs[[3]] <- prop_ph |> 
+  filter(
+    Rank == 'genus',
+    Attribute_value %in% alkaline 
+  ) |> 
+  pull(NCBI_ID) |> 
+  unique()
+
+ph_sigs[[4]] <- prop_ph |> 
+  filter(
+    Rank == 'genus',
+    Attribute_value %in% very_alkaline 
+  ) |> 
+  pull(NCBI_ID) |> 
+  unique()
+```
+
+Combine signatures
+
+```{r}
+bg_sigs_gn <- c(bg_sigs, ph_sigs)
+```
+
+
+
+```{r}
+background_sigs_gn <- bsdb_feces_gn |> 
+    lapply(function(x) unique(c(x, typical_stool_gn)))
 ```
 
 
 ```{r}
-
+x <- background_sigs_gn[[1]]
+y <- bsdb_feces_gn[[1]]
 ```
+
+
+
+```{r}
+df <- data.frame(background = x)
+df$sig <- ifelse(df$background %in% y, TRUE, FALSE)
+df$anaerobic <- ifelse(df$background %in% bg_sigs_gn$`bugphyzz:aerophilicity|anaerobic`, TRUE, FALSE)
+df$sig <- factor(df$sig, levels = c(TRUE, FALSE), labels = c('yes', 'no'))
+df$anaerobic <- factor(df$anaerobic, levels = c(TRUE, FALSE), labels = c('aerobic', 'not_anaerobic'))
+ct <- stats::xtabs(formula = ~ sig + anaerobic, data = df, drop.unused.levels = TRUE)
+enrich_pvalue <- fisher.test(x = ct, alternative = 'g')$p.value
+```
+
+
+```{r}
+res2 <- bc3net::enrichment(
+    genes = y, reference = x, genesets = bg_sigs_gn[1:5], adj = 'fdr',
+    verbose = FALSE
+)
+```
+
+
+
+
+```{r}
+res <- microbeSetEnrichment(y, x, sig = bg_sigs_gn)
+res
+```
+
+
+```{r}
+x <- 
+    map2(bsdb_feces_gn, background_sigs_gn, ~ microbeSetEnrichment(.x, .y, bg_sigs_gn))
+
+stool <- bind_rows(x, .id = 'busigdb_sig')
+```
+
+
+
 
 

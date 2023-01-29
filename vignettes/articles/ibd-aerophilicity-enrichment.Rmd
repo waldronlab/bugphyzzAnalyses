@@ -105,7 +105,10 @@ attribute_names <- c('aerobic', 'anaerobic', 'facultatively anaerobic')
 aer_sig <- getSignatures(
     aer, tax.id.type = 'NCBI_ID', tax.level = 'species'
 )
-aer_sig <- aer_sig[names(aer_sig) %in% attribute_names]
+
+x_regex <- paste0('(', paste0(attribute_names, collapse = '|'), ')')
+
+aer_sig <- aer_sig[grep(x_regex, names(aer_sig))]
 aer_sig <- lapply(aer_sig, as.character)
 lapply(aer_sig, head)
 ```
@@ -113,10 +116,11 @@ lapply(aer_sig, head)
 For propagated signatures
 
 ```{r, message=FALSE, warning=FALSE}
+aer_plus <- aer_plus[!is.na(aer_plus$Attribute_type),]
 aer_plus_sig <- getSignatures(
     aer_plus, tax.id.type = 'NCBI_ID', tax.level = 'species'
 )
-aer_plus_sig <- aer_plus_sig[names(aer_plus_sig) %in% attribute_names]
+aer_plus_sig <- aer_plus_sig[grep(x_regex, names(aer_sig))]
 aer_plus_sig <- lapply(aer_plus_sig, as.character)
 lapply(aer_plus_sig, head)
 ```
@@ -135,6 +139,7 @@ df
 
 ```{r}
 taxa_data <- as.data.frame(rowData(tse_subset))
+dim(taxa_data)
 ```
 
 
@@ -179,7 +184,7 @@ gsRanking(res = enrich_output_plus, signif.only = TRUE)
 > This means anaerobic taxa are enriched in IBD samples?
 
 ```{r}
-enriched_taxa <- enrich_output_plus$gs$anaerobic
+enriched_taxa <- enrich_output_plus$gs$`bugphyzz:aerophilicity|anaerobic`
 tse_enriched <- da_output[enriched_taxa,]
 enriched_data <- tidySummarizedExperiment::as_tibble(tse_enriched)
 dim(enriched_data)
@@ -198,9 +203,9 @@ relab_data <- tidySummarizedExperiment::as_tibble(tse_relab)
 ```{r}
 relab_data |> 
     mutate(relab = log(relative_abundance + 1)) |> 
-    group_by(.feature, disease) |> 
+    group_by(.feature, disease) |>  
     summarise(mean = mean(relab)) |> 
-    ungroup() |> 
+    ungroup()  |> 
     filter(.feature %in% enriched_taxa) |>
     left_join(enriched_data) |> 
     mutate(direction = ifelse(FC > 0, "up in IBD", "up in healthy")) |> 

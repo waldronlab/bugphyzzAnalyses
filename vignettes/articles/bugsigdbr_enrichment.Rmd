@@ -234,9 +234,6 @@ bg_sigs <- lapply(bg_sigs, function(s) setdiff(s, nt))
 
 
 
-
-
-
 ```{r}
 
 bsdb_sigs <- lapply(bsdb_sigs, function(s) paste0("NCBITaxon:", s))
@@ -259,9 +256,6 @@ res <- ontologySimilarity::get_sim_grid(
 ```{r}
 res_ph <- res[grep('(alkaline|neutral|acid)', rownames(res), value = TRUE),]
 ```
-
-
-
 
 ##  Pairwise Overlaps
 

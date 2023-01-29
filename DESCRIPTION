@@ -28,23 +28,27 @@ Suggests:
     taxize,
     taxizedb,
     EnrichmentBrowser,
-    statmod,
     MicrobiomeBenchmarkData,
     tibble,
-    tidyr
+    tidyr,
+    ontologyIndex,
+    ontologySimilarity
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
     waldronlab/MicrobiomeBenchmarkData,
+    waldronlab/BugSigDBStats
     ropensci/taxize@1.0-rc
 Imports: 
     BiocFileCache,
+    bugsigdbr,
     ComplexHeatmap,
     dplyr,
     DT,
     magrittr,
     purrr,
     readr,
+    statmod,
     stringr,
     tools,
     vroom
