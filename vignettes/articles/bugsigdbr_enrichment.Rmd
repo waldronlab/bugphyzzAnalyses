@@ -1,5 +1,5 @@
 ---
-title: "Enrichment/overlpa with bugsigdb signatures"
+title: "Enrichment analysis of the BugSigDB sets with bugphyzz signatures"
 ---
 
 ```{r, include = FALSE}
@@ -25,7 +25,8 @@ library(BugSigDBStats)
 
 # Typical Signatures
 
-Check https://zenodo.org/record/6656514
+TypicalMicrobiomeSignatures will be used as reference for this enrichment
+analysis (ORA). Check https://zenodo.org/record/6656514
 
 ```{r, message=FALSE}
 temp_dir <- paste0(tempdir(), '/test')

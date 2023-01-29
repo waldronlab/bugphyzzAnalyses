@@ -1,4 +1,6 @@
-contingencyTable <- function(set, reference, sig) {
+
+## A function for creating contingency tables
+.contingencyTable <- function(set, reference, sig) {
     df <- data.frame(
         reference = reference,
         set = ifelse(reference %in% set, TRUE, FALSE),
@@ -9,6 +11,20 @@ contingencyTable <- function(set, reference, sig) {
     stats::xtabs(formula = ~ set + sig, data = df)
 }
 
+#' Microbe Set Enrichment
+#'
+#' \code{microbeSetEnrichment} runs ORA (Fisher's exact test) comparing
+#' a set of microbes (character vector), a reference (character vector),
+#' and a list of signatures (list of vectors). Furthermore,
+#' \code{microbeSetEnrichment} adjusts p values (FDR), and calculate odd ratios.
+#'
+#' @param set A character vector.
+#' @param reference A character vector.
+#' @param sigs A list of character vectors.
+#'
+#' @return A data.frame.
+#' @export
+#'
 microbeSetEnrichment <- function(set, reference, sigs) {
 
     if (is.null(names(sigs)))
@@ -21,7 +37,7 @@ microbeSetEnrichment <- function(set, reference, sigs) {
 
     vct_list <- vector('list', length(sigs))
     for (i in seq_along(sigs)) {
-        ct <- contingencyTable(set, reference, sigs[[i]])
+        ct <- .contingencyTable(set, reference, sigs[[i]])
         n_sig <- ct[1]
         n_total <- ct[1] + ct[2]
         p_value <- fisher.test(ct, alternative = 'g')$p.value

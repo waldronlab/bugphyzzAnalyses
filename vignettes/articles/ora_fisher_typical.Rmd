@@ -1,5 +1,5 @@
 ---
-title: "Over representation analysis (Fisher's exact test) with TypicalMicrobialSignatures"
+title: "Enrichment analysis of BugSigDB sets with bugphyzz signatures"
 ---
 
 ```{r, include = FALSE}
@@ -19,7 +19,11 @@ library(bugsigdbr)
 library(taxPPro)
 ```
 
-Download TypicalMicrobialSignatures
+# Import TypicalMicrobiomeSignaures
+
+TypicalMicrobiomeSignatures will be used as reference. See 
+https://github.com/waldronlab/TypicalMicrobiomeSignatures and 
+https://zenodo.org/record/7544550
 
 ```{r, message=FALSE}
 temp_dir <- paste0(tempdir(), '/TypicalMicrobiomeSignatures')
@@ -33,9 +37,7 @@ extracted_dir <- paste0(base_dir, '/', list.files(base_dir))
 fnames <- grep(
     '\\.csv', list.files(extracted_dir, full.names = TRUE), value = TRUE
 )
-tms <- map(fnames, ~ {
-    df <- read.csv(.x)
-})
+tms <- map(fnames, read.csv)
 names(tms) <- sub('^.*/matrix_(.*)\\.csv$', '\\1', fnames)
 output <- vector('list', length(tms))
 for (i in seq_along(output)) {
@@ -53,39 +55,27 @@ for (i in seq_along(output)) {
         ) |> 
         mutate(age_range = sub('^.*_', '', names(tms)[i]))
 }
-typica <- do.call(rbind, output)
+typical <- do.call(rbind, output)
 typical$prevalence <- round(typical$pravalence, 2)
-typical <- typical[typical$pravalence > 0.01,]
+typical <- typical[typical$pravalence > 0.01,] # prevalence >= 1%
 glimpse(typical, width = 50)
 ```
 
-# Stool - genus
+# Import data from BugSigDB
 
-## Get a signature from TypicalMicrobiomeSignatures (both adults and children, stool, genus, prevalence >= 0.01)
-
-```{r}
-typical_stool_gn <- typical |> 
-    filter(
-        body_site == 'stool', rank == 'genus'
-    ) |> 
-    pull(taxid) |> 
-    unique()
-```
-
-## Import signatures from bsdb (stool samples only)
+We'll use the bugsigdbr package to import the main data.frame of signatures
+(microbe sets) from BugSigDB.
 
 ```{r}
 bsdb <- importBugSigDB()
-bsdb_feces_gn <- bsdb |> 
-    filter(`Body site` == 'feces', `Host species` == 'Homo sapiens') |> 
-    bugsigdbr::getSignatures(
-        tax.id.type = 'ncbi', tax.level = 'genus', min.size = 5
-    )
+head(as_tibble(bsdb))
 ```
 
-## Import signatures from bugphyzz
+# Import signatures from bugphyzz
 
-```{r}
+## Import data.frames
+
+```{r, message=FALSE, warning=FALSE}
 exclude_phys <- c('antimicrobial resistance', 'isolation site')
 phys <- physiologies(remove_false = TRUE) |> 
   keep(~ unique(.x$Attribute_type) == 'categorical') |> 
@@ -93,9 +83,9 @@ phys <- physiologies(remove_false = TRUE) |>
   map(preSteps, tax.id.type = 'NCBI_ID', remove_false = TRUE)
 ```
 
-Propagate bugphyzz signatures
+## Propagate bugphyzz signatures
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 propagation <- vector('list', length(phys))
 for (i in seq_along(propagation)) {
     names(propagation)[i] <- names(phys)[i]
@@ -103,9 +93,9 @@ for (i in seq_along(propagation)) {
 }
 ```
 
-Convert data.frames to signatures
+## Convert bugphyzz data.frames to signatures
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 bg_sigs <- lapply(phys, function(x) {
   bugphyzz::getSignatures(
     df = x, tax.id.type = 'NCBI_ID', tax.level = 'genus', min.size = 5
@@ -115,9 +105,11 @@ bg_sigs <- lapply(phys, function(x) {
 bg_sigs <- flatten(bg_sigs)
 ```
 
-Import pH
+## Import pH
 
-```{r}
+pH is the only numeric signature that I will use right now.
+
+```{r, message=FALSE}
 ph <- physiologies('optimal ph')[[1]]
 ph <- preSteps(ph, tax.id.type = 'NCBI_ID')
 prop_ph <- propagate(ph)
@@ -167,62 +159,56 @@ ph_sigs[[4]] <- prop_ph |>
   unique()
 ```
 
+## Final bugphyzz signatures
+
 Combine signatures
 
 ```{r}
 bg_sigs_gn <- c(bg_sigs, ph_sigs)
+lapply(bg_sigs_gn[1:5], head)
 ```
 
+# Enrichment analysis: stool - genus
 
+## Create lists of BugSigDB microbe sets (feces/stool)
 
 ```{r}
-background_sigs_gn <- bsdb_feces_gn |> 
+bsdb_feces_gn <- bsdb |> 
+    filter(`Body site` == 'feces', `Host species` == 'Homo sapiens') |> 
+    bugsigdbr::getSignatures(
+        tax.id.type = 'ncbi', tax.level = 'genus', min.size = 5
+    )
+lapply(bsdb_feces_gn[1:5], head)
+```
+
+## Get a reference set from TypicalMicrobiomeSignatures (feces/stool)
+
+This step is accomplished by mergin the TypicalMicrobiomeSignatures with
+a BugSigDB microbe set.
+
+```{r}
+typical_stool_gn <- typical |> 
+    filter(body_site == 'stool', rank == 'genus') |> 
+    pull(taxid) |> 
+    unique()
+
+reference_sigs_gn <- bsdb_feces_gn |> 
     lapply(function(x) unique(c(x, typical_stool_gn)))
+
+lapply(reference_sigs_gn[1:5], head)
 ```
+## Run microbe set enrichment (Fisher)
 
+```{r, message=FALSE}
+res_stool <- map2(
+  .x = bsdb_feces_gn, 
+  .y = reference_sigs_gn, 
+  .f = ~ microbeSetEnrichment(.x, .y, bg_sigs_gn)
+) |> 
+  bind_rows(.id = 'busigdb_sig')
 
-```{r}
-x <- background_sigs_gn[[1]]
-y <- bsdb_feces_gn[[1]]
+res_stool_significant <- res_stool |> 
+  filter(fdr < 0.05)
+
+dim(res_stool_significant)
 ```
-
-
-
-```{r}
-df <- data.frame(background = x)
-df$sig <- ifelse(df$background %in% y, TRUE, FALSE)
-df$anaerobic <- ifelse(df$background %in% bg_sigs_gn$`bugphyzz:aerophilicity|anaerobic`, TRUE, FALSE)
-df$sig <- factor(df$sig, levels = c(TRUE, FALSE), labels = c('yes', 'no'))
-df$anaerobic <- factor(df$anaerobic, levels = c(TRUE, FALSE), labels = c('aerobic', 'not_anaerobic'))
-ct <- stats::xtabs(formula = ~ sig + anaerobic, data = df, drop.unused.levels = TRUE)
-enrich_pvalue <- fisher.test(x = ct, alternative = 'g')$p.value
-```
-
-
-```{r}
-res2 <- bc3net::enrichment(
-    genes = y, reference = x, genesets = bg_sigs_gn[1:5], adj = 'fdr',
-    verbose = FALSE
-)
-```
-
-
-
-
-```{r}
-res <- microbeSetEnrichment(y, x, sig = bg_sigs_gn)
-res
-```
-
-
-```{r}
-x <- 
-    map2(bsdb_feces_gn, background_sigs_gn, ~ microbeSetEnrichment(.x, .y, bg_sigs_gn))
-
-stool <- bind_rows(x, .id = 'busigdb_sig')
-```
-
-
-
-
-
