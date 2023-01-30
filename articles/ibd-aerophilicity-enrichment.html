@@ -50,7 +50,13 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/Figure_1.html">Figure 1 - Completeness of annotations</a>
+    </li>
+    <li>
       <a href="../articles/ibd-aerophilicity-enrichment.html">Enrichment of facultative anaerobes in IBD samples</a>
+    </li>
+    <li>
+      <a href="../articles/ora_fisher_typical.html">Enrichment analysis of BugSigDB sets with bugphyzz signatures</a>
     </li>
     <li>
       <a href="../articles/stats.html">Stats</a>
@@ -78,10 +84,11 @@
 
       
 
-      </header><script src="ibd-aerophilicity-enrichment_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Enrichment of facultative anaerobes in IBD samples</h1>
+      <h1 data-toc-skip>Enrichment of facultative anaerobes in IBD
+samples</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/waldronlab/bugphyzzAnalyses/blob/HEAD/vignettes/articles/ibd-aerophilicity-enrichment.Rmd" class="external-link"><code>vignettes/articles/ibd-aerophilicity-enrichment.Rmd</code></a></small>
@@ -105,7 +112,8 @@
 </h2>
 <ul>
 <li>Enrichment of anaerobic bacteria in healthy samples (gut).</li>
-<li>Enrichment of facultative anaerobic bacteria in IBD samples (gut).</li>
+<li>Enrichment of facultative anaerobic bacteria in IBD samples
+(gut).</li>
 </ul>
 </div>
 <div class="section level2">
@@ -114,7 +122,8 @@
 <div class="section level3">
 <h3 id="abundance-data">Abundance data<a class="anchor" aria-label="anchor" href="#abundance-data"></a>
 </h3>
-<p>For this example, let’s use the data of the HMP_2019_bidmdb study through cMD:</p>
+<p>For this example, let’s use the data of the HMP_2019_bidmdb study
+through cMD:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data_name</span> <span class="op">&lt;-</span> <span class="st">"HallAB_2017.relative_abundance"</span></span>
 <span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/curatedMetagenomicData/man/curatedMetagenomicData.html" class="external-link">curatedMetagenomicData</a></span><span class="op">(</span></span>
@@ -185,14 +194,18 @@
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">taxa_data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 110   8</span></span></code></pre></div>
-<p>Annotations and microbe signatures come from the bugphyzz package. Since cMD contains data at the species level, let’s use signatures at the species level. We need to check the completness (number of taxa in cMD samples annotated in bugphyzz)</p>
+<p>Annotations and microbe signatures come from the bugphyzz package.
+Since cMD contains data at the species level, let’s use signatures at
+the species level. We need to check the completness (number of taxa in
+cMD samples annotated in bugphyzz)</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">aer</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/physiologies.html" class="external-link">physiologies</a></span><span class="op">(</span><span class="st">'aerophilicity'</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="va">aer_species</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">aer</span>, <span class="va">Rank</span> <span class="op">==</span> <span class="st">'species'</span><span class="op">)</span></span>
 <span><span class="co">## Check completeness</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">taxa_data</span><span class="op">$</span><span class="va">taxon_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">aer_species</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
 <span><span class="co">#&gt; [1] 59.09091</span></span></code></pre></div>
-<p>Let’s try to increase the completeness with ASR/inheritance propagation using majority vote:</p>
+<p>Let’s try to increase the completeness with ASR/inheritance
+propagation using majority vote:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">aer_plus</span> <span class="op">&lt;-</span> <span class="va">aer</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://rdrr.io/pkg/taxPPro/man/propagate.html" class="external-link">propagate</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -200,39 +213,56 @@
 <span><span class="co">## Check completeness</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">taxa_data</span><span class="op">$</span><span class="va">taxon_name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">aer_plus_species</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span></span>
 <span><span class="co">#&gt; [1] 76.36364</span></span></code></pre></div>
-<p>Let’s get some signatures for aerobic, anaerobic, and facultatively anaerobic:</p>
+<p>Let’s get some signatures for aerobic, anaerobic, and facultatively
+anaerobic:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">attribute_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'aerobic'</span>, <span class="st">'anaerobic'</span>, <span class="st">'facultatively anaerobic'</span><span class="op">)</span></span>
 <span><span class="va">aer_sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getSignatures.html" class="external-link">getSignatures</a></span><span class="op">(</span></span>
 <span>    <span class="va">aer</span>, tax.id.type <span class="op">=</span> <span class="st">'NCBI_ID'</span>, tax.level <span class="op">=</span> <span class="st">'species'</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">aer_sig</span> <span class="op">&lt;-</span> <span class="va">aer_sig</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">aer_sig</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">attribute_names</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">x_regex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'('</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">attribute_names</span>, collapse <span class="op">=</span> <span class="st">'|'</span><span class="op">)</span>, <span class="st">')'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">aer_sig</span> <span class="op">&lt;-</span> <span class="va">aer_sig</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="va">x_regex</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">aer_sig</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">aer_sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">aer_sig</span>, <span class="va">as.character</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">aer_sig</span>, <span class="va">head</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $aerobic</span></span>
+<span><span class="co">#&gt; $`bugphyzz:aerophilicity|aerobic`</span></span>
 <span><span class="co">#&gt; [1] "291968" "435"    "178900" "146475" "178901" "304077"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $anaerobic</span></span>
+<span><span class="co">#&gt; $`bugphyzz:aerophilicity|anaerobic`</span></span>
 <span><span class="co">#&gt; [1] "65403"  "905"    "187327" "1748"   "1749"   "118367"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`facultatively anaerobic`</span></span>
-<span><span class="co">#&gt; [1] "716"     "644"     "645"     "1282886" "654"     "714"</span></span></code></pre></div>
+<span><span class="co">#&gt; $`bugphyzz:aerophilicity|facultatively anaerobic`</span></span>
+<span><span class="co">#&gt; [1] "716"     "644"     "645"     "1282886" "654"     "714"    </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`bugphyzz:aerophilicity|obligately aerobic`</span></span>
+<span><span class="co">#&gt; [1] "285268"  "1287735" "524"     "80867"   "80869"   "202950" </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`bugphyzz:aerophilicity|obligately anaerobic`</span></span>
+<span><span class="co">#&gt; [1] "384638" "1490"   "208479" "1521"   "358743" "288965"</span></span></code></pre></div>
 <p>For propagated signatures</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">aer_plus_sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getSignatures.html" class="external-link">getSignatures</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">aer_plus</span> <span class="op">&lt;-</span> <span class="va">aer_plus</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">aer_plus</span><span class="op">$</span><span class="va">Attribute_type</span><span class="op">)</span>,<span class="op">]</span></span>
+<span><span class="va">aer_plus_sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getSignatures.html" class="external-link">getSignatures</a></span><span class="op">(</span></span>
 <span>    <span class="va">aer_plus</span>, tax.id.type <span class="op">=</span> <span class="st">'NCBI_ID'</span>, tax.level <span class="op">=</span> <span class="st">'species'</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">aer_plus_sig</span> <span class="op">&lt;-</span> <span class="va">aer_plus_sig</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">aer_plus_sig</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">attribute_names</span><span class="op">]</span></span>
+<span><span class="va">aer_plus_sig</span> <span class="op">&lt;-</span> <span class="va">aer_plus_sig</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="va">x_regex</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">aer_sig</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">aer_plus_sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">aer_plus_sig</span>, <span class="va">as.character</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">aer_plus_sig</span>, <span class="va">head</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $aerobic</span></span>
+<span><span class="co">#&gt; $`bugphyzz:aerophilicity|aerobic`</span></span>
 <span><span class="co">#&gt; [1] "291968" "435"    "178900" "146475" "178901" "304077"</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $anaerobic</span></span>
+<span><span class="co">#&gt; $`bugphyzz:aerophilicity|anaerobic`</span></span>
 <span><span class="co">#&gt; [1] "65403"  "1748"   "1749"   "118367" "1751"   "1658"  </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`facultatively anaerobic`</span></span>
-<span><span class="co">#&gt; [1] "644"     "1282886" "714"     "739"     "728"     "137722"</span></span></code></pre></div>
+<span><span class="co">#&gt; $`bugphyzz:aerophilicity|facultatively anaerobic`</span></span>
+<span><span class="co">#&gt; [1] "644"     "1282886" "714"     "739"     "728"     "137722" </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`bugphyzz:aerophilicity|microaerophilic`</span></span>
+<span><span class="co">#&gt; [1] "675090"  "999183"  "1302235" "1315211" "28197"   "28198"  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`bugphyzz:aerophilicity|obligately aerobic`</span></span>
+<span><span class="co">#&gt; [1] "285268"  "524"     "80867"   "80869"   "1148157" "1866"</span></span></code></pre></div>
 <p>Comparing numbers</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -240,16 +270,20 @@
 <span>    aer_plus <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">aer_plus_sig</span>, <span class="va">length</span>, <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">df</span></span>
-<span><span class="co">#&gt;                          aer aer_plus</span></span>
-<span><span class="co">#&gt; aerobic                 3420    13078</span></span>
-<span><span class="co">#&gt; anaerobic                280     1994</span></span>
-<span><span class="co">#&gt; facultatively anaerobic  352     2157</span></span></code></pre></div>
+<span><span class="co">#&gt;                                                 aer aer_plus</span></span>
+<span><span class="co">#&gt; bugphyzz:aerophilicity|aerobic                 3420    10585</span></span>
+<span><span class="co">#&gt; bugphyzz:aerophilicity|anaerobic                281     1518</span></span>
+<span><span class="co">#&gt; bugphyzz:aerophilicity|facultatively anaerobic  352     1771</span></span>
+<span><span class="co">#&gt; bugphyzz:aerophilicity|obligately aerobic       456      177</span></span>
+<span><span class="co">#&gt; bugphyzz:aerophilicity|obligately anaerobic     581     1047</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="add-annotations-to-rowdata">Add annotations to rowData<a class="anchor" aria-label="anchor" href="#add-annotations-to-rowdata"></a>
 </h3>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">taxa_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">tse_subset</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">taxa_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">tse_subset</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">taxa_data</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 110   7</span></span></code></pre></div>
 <p>We got a lot more species</p>
 </div>
 </div>
@@ -279,10 +313,11 @@
 <span>    padj.method <span class="op">=</span> <span class="st">'none'</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">enrich_output</span>, signif.only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 1 row and 2 columns</span></span>
-<span><span class="co">#&gt;      GENE.SET      PVAL</span></span>
-<span><span class="co">#&gt;   &lt;character&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1   anaerobic   0.00168</span></span></code></pre></div>
+<span><span class="co">#&gt; DataFrame with 2 rows and 2 columns</span></span>
+<span><span class="co">#&gt;                 GENE.SET      PVAL</span></span>
+<span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt;</span></span>
+<span><span class="co">#&gt; 1 bugphyzz:aerophilici..   0.00168</span></span>
+<span><span class="co">#&gt; 2 bugphyzz:aerophilici..   0.00436</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">enrich_output_plus</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
 <span>    method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">da_output</span>, gs <span class="op">=</span> <span class="va">aer_plus_sig</span>, alpha <span class="op">=</span> <span class="fl">0.05</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
@@ -290,18 +325,18 @@
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">enrich_output_plus</span>, signif.only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; DataFrame with 1 row and 2 columns</span></span>
-<span><span class="co">#&gt;      GENE.SET      PVAL</span></span>
-<span><span class="co">#&gt;   &lt;character&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1   anaerobic  0.000128</span></span></code></pre></div>
+<span><span class="co">#&gt;                 GENE.SET      PVAL</span></span>
+<span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt;</span></span>
+<span><span class="co">#&gt; 1 bugphyzz:aerophilici..  3.35e-05</span></span></code></pre></div>
 <blockquote>
 <p>This means anaerobic taxa are enriched in IBD samples?</p>
 </blockquote>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">enriched_taxa</span> <span class="op">&lt;-</span> <span class="va">enrich_output_plus</span><span class="op">$</span><span class="va">gs</span><span class="op">$</span><span class="va">anaerobic</span></span>
+<code class="sourceCode R"><span><span class="va">enriched_taxa</span> <span class="op">&lt;-</span> <span class="va">enrich_output_plus</span><span class="op">$</span><span class="va">gs</span><span class="op">$</span><span class="va">`bugphyzz:aerophilicity|anaerobic`</span></span>
 <span><span class="va">tse_enriched</span> <span class="op">&lt;-</span> <span class="va">da_output</span><span class="op">[</span><span class="va">enriched_taxa</span>,<span class="op">]</span></span>
 <span><span class="va">enriched_data</span> <span class="op">&lt;-</span> <span class="fu">tidySummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="va">tse_enriched</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">enriched_data</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 5328   39</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 4736   39</span></span></code></pre></div>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tse_relab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/curatedMetagenomicData/man/curatedMetagenomicData.html" class="external-link">curatedMetagenomicData</a></span><span class="op">(</span></span>
 <span>    pattern <span class="op">=</span> <span class="va">data_name</span>, </span>
@@ -312,9 +347,9 @@
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">relab_data</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>relab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">relative_abundance</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">.feature</span>, <span class="va">disease</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">.feature</span>, <span class="va">disease</span><span class="op">)</span> <span class="op">|&gt;</span>  </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">relab</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span>  <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">.feature</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">enriched_taxa</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">enriched_data</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>direction <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">FC</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="st">"up in IBD"</span>, <span class="st">"up in healthy"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -334,118 +369,121 @@
 </h2>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; R version 4.2.2 (2022-10-31)</span></span>
+<span><span class="co">#&gt; R Under development (unstable) (2023-01-26 r83699)</span></span>
 <span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
-<span><span class="co">#&gt; Running under: Ubuntu 20.04.5 LTS</span></span>
+<span><span class="co">#&gt; Running under: Ubuntu 22.04.1 LTS</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Matrix products: default</span></span>
-<span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/blas/libblas.so.3.9.0</span></span>
-<span><span class="co">#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.9.0</span></span>
+<span><span class="co">#&gt; BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
+<span><span class="co">#&gt; LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/libopenblasp-r0.3.20.so;  LAPACK version 3.10.0</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; locale:</span></span>
-<span><span class="co">#&gt;  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       </span></span>
-<span><span class="co">#&gt;  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   </span></span>
-<span><span class="co">#&gt;  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          </span></span>
-<span><span class="co">#&gt; [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   </span></span>
+<span><span class="co">#&gt;  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              </span></span>
+<span><span class="co">#&gt;  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    </span></span>
+<span><span class="co">#&gt;  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   </span></span>
+<span><span class="co">#&gt;  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 </span></span>
+<span><span class="co">#&gt;  [9] LC_ADDRESS=C               LC_TELEPHONE=C            </span></span>
+<span><span class="co">#&gt; [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; time zone: Etc/UTC</span></span>
+<span><span class="co">#&gt; tzcode source: system (glibc)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; attached base packages:</span></span>
 <span><span class="co">#&gt; [1] stats4    stats     graphics  grDevices utils     datasets  methods  </span></span>
 <span><span class="co">#&gt; [8] base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt;  [1] npGSEA_1.32.0                  GSEABase_1.58.0               </span></span>
-<span><span class="co">#&gt;  [3] annotate_1.74.0                XML_3.99-0.12                 </span></span>
-<span><span class="co">#&gt;  [5] AnnotationDbi_1.58.0           DESeq2_1.36.0                 </span></span>
-<span><span class="co">#&gt;  [7] ggplot2_3.4.0                  EnrichmentBrowser_2.26.0      </span></span>
-<span><span class="co">#&gt;  [9] graph_1.74.0                   taxPPro_0.1.0                 </span></span>
-<span><span class="co">#&gt; [11] tidySummarizedExperiment_1.6.1 dplyr_1.0.10                  </span></span>
-<span><span class="co">#&gt; [13] curatedMetagenomicData_3.4.2   TreeSummarizedExperiment_2.4.0</span></span>
-<span><span class="co">#&gt; [15] Biostrings_2.64.1              XVector_0.36.0                </span></span>
-<span><span class="co">#&gt; [17] SingleCellExperiment_1.18.1    SummarizedExperiment_1.26.1   </span></span>
-<span><span class="co">#&gt; [19] Biobase_2.56.0                 GenomicRanges_1.48.0          </span></span>
-<span><span class="co">#&gt; [21] GenomeInfoDb_1.32.4            IRanges_2.30.1                </span></span>
-<span><span class="co">#&gt; [23] S4Vectors_0.34.0               BiocGenerics_0.42.0           </span></span>
-<span><span class="co">#&gt; [25] MatrixGenerics_1.8.1           matrixStats_0.63.0            </span></span>
+<span><span class="co">#&gt;  [1] npGSEA_1.35.0                  GSEABase_1.61.0               </span></span>
+<span><span class="co">#&gt;  [3] annotate_1.77.0                XML_3.99-0.13                 </span></span>
+<span><span class="co">#&gt;  [5] AnnotationDbi_1.61.0           DESeq2_1.39.4                 </span></span>
+<span><span class="co">#&gt;  [7] ggplot2_3.4.0                  EnrichmentBrowser_2.29.0      </span></span>
+<span><span class="co">#&gt;  [9] graph_1.77.1                   taxPPro_0.1.0                 </span></span>
+<span><span class="co">#&gt; [11] tidySummarizedExperiment_1.9.4 dplyr_1.1.0                   </span></span>
+<span><span class="co">#&gt; [13] curatedMetagenomicData_3.7.2   TreeSummarizedExperiment_2.7.0</span></span>
+<span><span class="co">#&gt; [15] Biostrings_2.67.0              XVector_0.39.0                </span></span>
+<span><span class="co">#&gt; [17] SingleCellExperiment_1.21.0    SummarizedExperiment_1.29.1   </span></span>
+<span><span class="co">#&gt; [19] Biobase_2.59.0                 GenomicRanges_1.51.4          </span></span>
+<span><span class="co">#&gt; [21] GenomeInfoDb_1.35.13           IRanges_2.33.0                </span></span>
+<span><span class="co">#&gt; [23] S4Vectors_0.37.3               BiocGenerics_0.45.0           </span></span>
+<span><span class="co">#&gt; [25] MatrixGenerics_1.11.0          matrixStats_0.63.0            </span></span>
 <span><span class="co">#&gt; [27] bugphyzz_0.0.1.3               bugphyzzAnalyses_0.1.0        </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;   [1] utf8_1.2.2                    taxa_0.4.2                   </span></span>
-<span><span class="co">#&gt;   [3] tidyselect_1.2.0              RSQLite_2.2.19               </span></span>
-<span><span class="co">#&gt;   [5] htmlwidgets_1.5.4             grid_4.2.2                   </span></span>
-<span><span class="co">#&gt;   [7] hoardr_0.5.2                  BiocParallel_1.30.4          </span></span>
-<span><span class="co">#&gt;   [9] munsell_0.5.0                 ScaledMatrix_1.4.1           </span></span>
-<span><span class="co">#&gt;  [11] codetools_0.2-18              ragg_1.2.4                   </span></span>
-<span><span class="co">#&gt;  [13] statmod_1.4.37                withr_2.5.0                  </span></span>
-<span><span class="co">#&gt;  [15] colorspace_2.0-3              filelock_1.0.2               </span></span>
-<span><span class="co">#&gt;  [17] highr_0.9                     knitr_1.41                   </span></span>
-<span><span class="co">#&gt;  [19] uuid_1.1-0                    labeling_0.4.2               </span></span>
-<span><span class="co">#&gt;  [21] KEGGgraph_1.56.0              conditionz_0.1.0             </span></span>
-<span><span class="co">#&gt;  [23] GenomeInfoDbData_1.2.8        farver_2.1.1                 </span></span>
-<span><span class="co">#&gt;  [25] bit64_4.0.5                   rprojroot_2.0.3              </span></span>
-<span><span class="co">#&gt;  [27] vctrs_0.5.1                   treeio_1.20.2                </span></span>
-<span><span class="co">#&gt;  [29] generics_0.1.3                xfun_0.35                    </span></span>
-<span><span class="co">#&gt;  [31] BiocFileCache_2.4.0           R6_2.5.1                     </span></span>
-<span><span class="co">#&gt;  [33] ggbeeswarm_0.6.0              rsvd_1.0.5                   </span></span>
-<span><span class="co">#&gt;  [35] taxize_1.0                    locfit_1.5-9.6               </span></span>
-<span><span class="co">#&gt;  [37] bitops_1.0-7                  cachem_1.0.6                 </span></span>
-<span><span class="co">#&gt;  [39] reshape_0.8.9                 DelayedArray_0.22.0          </span></span>
-<span><span class="co">#&gt;  [41] assertthat_0.2.1              promises_1.2.0.1             </span></span>
-<span><span class="co">#&gt;  [43] scales_1.2.1                  vroom_1.6.0                  </span></span>
-<span><span class="co">#&gt;  [45] beeswarm_0.4.0                gtable_0.3.1                 </span></span>
-<span><span class="co">#&gt;  [47] beachmat_2.12.0               bold_1.2.0                   </span></span>
-<span><span class="co">#&gt;  [49] rlang_1.0.6                   genefilter_1.78.0            </span></span>
-<span><span class="co">#&gt;  [51] systemfonts_1.0.4             splines_4.2.2                </span></span>
-<span><span class="co">#&gt;  [53] lazyeval_0.2.2                BiocManager_1.30.19          </span></span>
-<span><span class="co">#&gt;  [55] mgsub_1.7.3                   yaml_2.3.6                   </span></span>
-<span><span class="co">#&gt;  [57] reshape2_1.4.4                httpuv_1.6.6                 </span></span>
-<span><span class="co">#&gt;  [59] tools_4.2.2                   ellipsis_0.3.2               </span></span>
-<span><span class="co">#&gt;  [61] decontam_1.16.0               RColorBrewer_1.1-3           </span></span>
-<span><span class="co">#&gt;  [63] jquerylib_0.1.4               MultiAssayExperiment_1.22.0  </span></span>
-<span><span class="co">#&gt;  [65] Rcpp_1.0.9                    plyr_1.8.8                   </span></span>
-<span><span class="co">#&gt;  [67] sparseMatrixStats_1.8.0       zlibbioc_1.42.0              </span></span>
-<span><span class="co">#&gt;  [69] purrr_0.3.5                   RCurl_1.98-1.9               </span></span>
-<span><span class="co">#&gt;  [71] viridis_0.6.2                 ggrepel_0.9.2                </span></span>
-<span><span class="co">#&gt;  [73] cluster_2.1.4                 fs_1.5.2                     </span></span>
-<span><span class="co">#&gt;  [75] crul_1.3                      DECIPHER_2.24.0              </span></span>
-<span><span class="co">#&gt;  [77] magrittr_2.0.3                data.table_1.14.6            </span></span>
-<span><span class="co">#&gt;  [79] hms_1.1.2                     mime_0.12                    </span></span>
-<span><span class="co">#&gt;  [81] evaluate_0.18                 xtable_1.8-4                 </span></span>
-<span><span class="co">#&gt;  [83] gridExtra_2.3                 compiler_4.2.2               </span></span>
-<span><span class="co">#&gt;  [85] scater_1.24.0                 tibble_3.1.8                 </span></span>
-<span><span class="co">#&gt;  [87] crayon_1.5.2                  htmltools_0.5.3              </span></span>
-<span><span class="co">#&gt;  [89] mgcv_1.8-41                   later_1.3.0                  </span></span>
-<span><span class="co">#&gt;  [91] tzdb_0.3.0                    geneplotter_1.74.0           </span></span>
-<span><span class="co">#&gt;  [93] tidyr_1.2.1                   DBI_1.1.3                    </span></span>
-<span><span class="co">#&gt;  [95] ExperimentHub_2.4.0           dbplyr_2.2.1                 </span></span>
-<span><span class="co">#&gt;  [97] taxizedb_0.3.0                MASS_7.3-58.1                </span></span>
-<span><span class="co">#&gt;  [99] rappdirs_0.3.3                Matrix_1.5-3                 </span></span>
-<span><span class="co">#&gt; [101] readr_2.1.3                   permute_0.9-7                </span></span>
-<span><span class="co">#&gt; [103] cli_3.4.1                     parallel_4.2.2               </span></span>
-<span><span class="co">#&gt; [105] pkgconfig_2.0.3               pkgdown_2.0.6                </span></span>
-<span><span class="co">#&gt; [107] plotly_4.10.1                 scuttle_1.6.3                </span></span>
-<span><span class="co">#&gt; [109] xml2_1.3.3                    vipor_0.4.5                  </span></span>
-<span><span class="co">#&gt; [111] bslib_0.4.1                   DirichletMultinomial_1.38.0  </span></span>
-<span><span class="co">#&gt; [113] mia_1.4.0                     yulab.utils_0.0.5            </span></span>
-<span><span class="co">#&gt; [115] stringr_1.5.0                 digest_0.6.30                </span></span>
-<span><span class="co">#&gt; [117] vegan_2.6-4                   httpcode_0.3.0               </span></span>
-<span><span class="co">#&gt; [119] rmarkdown_2.18                tidytree_0.4.1               </span></span>
-<span><span class="co">#&gt; [121] edgeR_3.38.4                  DelayedMatrixStats_1.18.2    </span></span>
-<span><span class="co">#&gt; [123] curl_4.3.3                    shiny_1.7.3                  </span></span>
-<span><span class="co">#&gt; [125] lifecycle_1.0.3               nlme_3.1-160                 </span></span>
-<span><span class="co">#&gt; [127] jsonlite_1.8.3                BiocNeighbors_1.14.0         </span></span>
-<span><span class="co">#&gt; [129] desc_1.4.2                    viridisLite_0.4.1            </span></span>
-<span><span class="co">#&gt; [131] limma_3.52.4                  fansi_1.0.3                  </span></span>
-<span><span class="co">#&gt; [133] pillar_1.8.1                  lattice_0.20-45              </span></span>
-<span><span class="co">#&gt; [135] survival_3.4-0                KEGGREST_1.36.3              </span></span>
-<span><span class="co">#&gt; [137] fastmap_1.1.0                 httr_1.4.4                   </span></span>
-<span><span class="co">#&gt; [139] interactiveDisplayBase_1.34.0 glue_1.6.2                   </span></span>
-<span><span class="co">#&gt; [141] png_0.1-8                     BiocVersion_3.15.2           </span></span>
-<span><span class="co">#&gt; [143] bit_4.0.5                     Rgraphviz_2.40.0             </span></span>
-<span><span class="co">#&gt; [145] stringi_1.7.8                 sass_0.4.4                   </span></span>
-<span><span class="co">#&gt; [147] blob_1.2.3                    textshaping_0.3.6            </span></span>
-<span><span class="co">#&gt; [149] BiocSingular_1.12.0           AnnotationHub_3.4.0          </span></span>
-<span><span class="co">#&gt; [151] memoise_2.0.1                 irlba_2.3.5.1                </span></span>
-<span><span class="co">#&gt; [153] ape_5.6-2</span></span></code></pre></div>
+<span><span class="co">#&gt;   [1] splines_4.3.0                 later_1.3.0                  </span></span>
+<span><span class="co">#&gt;   [3] bitops_1.0-7                  filelock_1.0.2               </span></span>
+<span><span class="co">#&gt;   [5] tibble_3.1.8                  taxizedb_0.3.0               </span></span>
+<span><span class="co">#&gt;   [7] DirichletMultinomial_1.41.0   lifecycle_1.0.3              </span></span>
+<span><span class="co">#&gt;   [9] edgeR_3.41.2                  bold_1.2.0                   </span></span>
+<span><span class="co">#&gt;  [11] rprojroot_2.0.3               vroom_1.6.1                  </span></span>
+<span><span class="co">#&gt;  [13] lattice_0.20-45               MASS_7.3-58.2                </span></span>
+<span><span class="co">#&gt;  [15] MultiAssayExperiment_1.25.7   magrittr_2.0.3               </span></span>
+<span><span class="co">#&gt;  [17] limma_3.55.4                  plotly_4.10.1                </span></span>
+<span><span class="co">#&gt;  [19] sass_0.4.5                    rmarkdown_2.20               </span></span>
+<span><span class="co">#&gt;  [21] jquerylib_0.1.4               yaml_2.3.7                   </span></span>
+<span><span class="co">#&gt;  [23] httpuv_1.6.8                  DBI_1.1.3                    </span></span>
+<span><span class="co">#&gt;  [25] zlibbioc_1.45.0               purrr_1.0.1                  </span></span>
+<span><span class="co">#&gt;  [27] RCurl_1.98-1.10               yulab.utils_0.0.6            </span></span>
+<span><span class="co">#&gt;  [29] rappdirs_0.3.3                GenomeInfoDbData_1.2.9       </span></span>
+<span><span class="co">#&gt;  [31] ggrepel_0.9.2                 irlba_2.3.5.1                </span></span>
+<span><span class="co">#&gt;  [33] tidytree_0.4.2                crul_1.3                     </span></span>
+<span><span class="co">#&gt;  [35] vegan_2.6-4                   conditionz_0.1.0             </span></span>
+<span><span class="co">#&gt;  [37] pkgdown_2.0.7                 permute_0.9-7                </span></span>
+<span><span class="co">#&gt;  [39] DelayedMatrixStats_1.21.0     codetools_0.2-18             </span></span>
+<span><span class="co">#&gt;  [41] DelayedArray_0.25.0           scuttle_1.9.4                </span></span>
+<span><span class="co">#&gt;  [43] xml2_1.3.3                    tidyselect_1.2.0             </span></span>
+<span><span class="co">#&gt;  [45] farver_2.1.1                  httpcode_0.3.0               </span></span>
+<span><span class="co">#&gt;  [47] ScaledMatrix_1.7.0            viridis_0.6.2                </span></span>
+<span><span class="co">#&gt;  [49] BiocFileCache_2.7.1           jsonlite_1.8.4               </span></span>
+<span><span class="co">#&gt;  [51] BiocNeighbors_1.17.1          decontam_1.19.0              </span></span>
+<span><span class="co">#&gt;  [53] ellipsis_0.3.2                mia_1.7.4                    </span></span>
+<span><span class="co">#&gt;  [55] scater_1.27.2                 systemfonts_1.0.4            </span></span>
+<span><span class="co">#&gt;  [57] tools_4.3.0                   treeio_1.23.0                </span></span>
+<span><span class="co">#&gt;  [59] ragg_1.2.5                    Rcpp_1.0.10                  </span></span>
+<span><span class="co">#&gt;  [61] glue_1.6.2                    gridExtra_2.3                </span></span>
+<span><span class="co">#&gt;  [63] xfun_0.36                     mgcv_1.8-41                  </span></span>
+<span><span class="co">#&gt;  [65] withr_2.5.0                   BiocManager_1.30.19          </span></span>
+<span><span class="co">#&gt;  [67] fastmap_1.1.0                 fansi_1.0.4                  </span></span>
+<span><span class="co">#&gt;  [69] digest_0.6.31                 rsvd_1.0.5                   </span></span>
+<span><span class="co">#&gt;  [71] R6_2.5.1                      mime_0.12                    </span></span>
+<span><span class="co">#&gt;  [73] textshaping_0.3.6             colorspace_2.1-0             </span></span>
+<span><span class="co">#&gt;  [75] RSQLite_2.2.20                utf8_1.2.2                   </span></span>
+<span><span class="co">#&gt;  [77] tidyr_1.3.0                   generics_0.1.3               </span></span>
+<span><span class="co">#&gt;  [79] data.table_1.14.6             DECIPHER_2.27.0              </span></span>
+<span><span class="co">#&gt;  [81] httr_1.4.4                    htmlwidgets_1.6.1            </span></span>
+<span><span class="co">#&gt;  [83] pkgconfig_2.0.3               gtable_0.3.1                 </span></span>
+<span><span class="co">#&gt;  [85] blob_1.2.3                    mgsub_1.7.3                  </span></span>
+<span><span class="co">#&gt;  [87] htmltools_0.5.4               scales_1.2.1                 </span></span>
+<span><span class="co">#&gt;  [89] png_0.1-8                     knitr_1.42                   </span></span>
+<span><span class="co">#&gt;  [91] tzdb_0.3.0                    reshape2_1.4.4               </span></span>
+<span><span class="co">#&gt;  [93] uuid_1.1-0                    nlme_3.1-161                 </span></span>
+<span><span class="co">#&gt;  [95] curl_5.0.0                    cachem_1.0.6                 </span></span>
+<span><span class="co">#&gt;  [97] stringr_1.5.0                 BiocVersion_3.17.1           </span></span>
+<span><span class="co">#&gt;  [99] parallel_4.3.0                vipor_0.4.5                  </span></span>
+<span><span class="co">#&gt; [101] desc_1.4.2                    pillar_1.8.1                 </span></span>
+<span><span class="co">#&gt; [103] grid_4.3.0                    reshape_0.8.9                </span></span>
+<span><span class="co">#&gt; [105] vctrs_0.5.2                   promises_1.2.0.1             </span></span>
+<span><span class="co">#&gt; [107] BiocSingular_1.15.0           dbplyr_2.3.0                 </span></span>
+<span><span class="co">#&gt; [109] beachmat_2.15.0               xtable_1.8-4                 </span></span>
+<span><span class="co">#&gt; [111] cluster_2.1.4                 beeswarm_0.4.0               </span></span>
+<span><span class="co">#&gt; [113] Rgraphviz_2.43.0              KEGGgraph_1.59.3             </span></span>
+<span><span class="co">#&gt; [115] evaluate_0.20                 readr_2.1.3                  </span></span>
+<span><span class="co">#&gt; [117] locfit_1.5-9.7                cli_3.6.0                    </span></span>
+<span><span class="co">#&gt; [119] taxize_1.0                    compiler_4.3.0               </span></span>
+<span><span class="co">#&gt; [121] rlang_1.0.6                   crayon_1.5.2                 </span></span>
+<span><span class="co">#&gt; [123] labeling_0.4.2                plyr_1.8.8                   </span></span>
+<span><span class="co">#&gt; [125] fs_1.6.0                      ggbeeswarm_0.7.1             </span></span>
+<span><span class="co">#&gt; [127] stringi_1.7.12                viridisLite_0.4.1            </span></span>
+<span><span class="co">#&gt; [129] BiocParallel_1.33.9           assertthat_0.2.1             </span></span>
+<span><span class="co">#&gt; [131] munsell_0.5.0                 lazyeval_0.2.2               </span></span>
+<span><span class="co">#&gt; [133] Matrix_1.5-3                  ExperimentHub_2.7.0          </span></span>
+<span><span class="co">#&gt; [135] hms_1.1.2                     hoardr_0.5.3                 </span></span>
+<span><span class="co">#&gt; [137] sparseMatrixStats_1.11.1      bit64_4.0.5                  </span></span>
+<span><span class="co">#&gt; [139] taxa_0.4.2                    statmod_1.5.0                </span></span>
+<span><span class="co">#&gt; [141] KEGGREST_1.39.0               shiny_1.7.4                  </span></span>
+<span><span class="co">#&gt; [143] highr_0.10                    interactiveDisplayBase_1.37.0</span></span>
+<span><span class="co">#&gt; [145] AnnotationHub_3.7.0           memoise_2.0.1                </span></span>
+<span><span class="co">#&gt; [147] bslib_0.4.2                   bit_4.0.5                    </span></span>
+<span><span class="co">#&gt; [149] ape_5.6-2</span></span></code></pre></div>
 </div>
   </div>
 
@@ -466,7 +504,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

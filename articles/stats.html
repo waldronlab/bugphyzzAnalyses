@@ -50,7 +50,13 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="../articles/Figure_1.html">Figure 1 - Completeness of annotations</a>
+    </li>
+    <li>
       <a href="../articles/ibd-aerophilicity-enrichment.html">Enrichment of facultative anaerobes in IBD samples</a>
+    </li>
+    <li>
+      <a href="../articles/ora_fisher_typical.html">Enrichment analysis of BugSigDB sets with bugphyzz signatures</a>
     </li>
     <li>
       <a href="../articles/stats.html">Stats</a>
@@ -78,8 +84,8 @@
 
       
 
-      </header><script src="stats_files/accessible-code-block-0.0.1/empty-anchor.js"></script><script src="stats_files/htmlwidgets-1.5.4/htmlwidgets.js"></script><link href="stats_files/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
-<script src="stats_files/datatables-binding-0.26/datatables.js"></script><link href="stats_files/dt-core-1.12.1/css/jquery.dataTables.min.css" rel="stylesheet">
+      </header><script src="stats_files/htmlwidgets-1.6.1/htmlwidgets.js"></script><link href="stats_files/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="stats_files/datatables-binding-0.27/datatables.js"></script><link href="stats_files/dt-core-1.12.1/css/jquery.dataTables.min.css" rel="stylesheet">
 <link href="stats_files/dt-core-1.12.1/css/jquery.dataTables.extra.css" rel="stylesheet">
 <script src="stats_files/dt-core-1.12.1/js/jquery.dataTables.min.js"></script><script src="stats_files/jszip-1.12.1/jszip.min.js"></script><script src="stats_files/pdfmake-1.12.1/pdfmake.js"></script><script src="stats_files/pdfmake-1.12.1/vfs_fonts.js"></script><link href="stats_files/dt-ext-buttons-1.12.1/css/buttons.dataTables.min.css" rel="stylesheet">
 <script src="stats_files/dt-ext-buttons-1.12.1/js/dataTables.buttons.min.js"></script><script src="stats_files/dt-ext-buttons-1.12.1/js/buttons.html5.min.js"></script><script src="stats_files/dt-ext-buttons-1.12.1/js/buttons.colVis.min.js"></script><script src="stats_files/dt-ext-buttons-1.12.1/js/buttons.print.min.js"></script><link href="stats_files/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet">
@@ -115,7 +121,8 @@
 <div class="section level2">
 <h2 id="sources">Sources<a class="anchor" aria-label="anchor" href="#sources"></a>
 </h2>
-<p>Use the ‘Literature’ keyword for all published articles with the format <code>\\w[0-9]{4}</code>:</p>
+<p>Use the ‘Literature’ keyword for all published articles with the
+format <code>\\w[0-9]{4}</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">phys_sources_mod</span> <span class="op">&lt;-</span> <span class="va">phys</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span><span class="op">{</span></span>
@@ -131,7 +138,7 @@
 <span></span>
 <span><span class="va">sources_tbl</span> <span class="op">&lt;-</span> <span class="va">phys_sources_mod</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">Attribute_source</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">'Attribute'</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">'Attribute'</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="table-of-sources">Table of sources<a class="anchor" aria-label="anchor" href="#table-of-sources"></a>
 </h3>
@@ -147,17 +154,18 @@
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>Sources <span class="op">=</span> <span class="va">Attribute_source</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/createDT.html">createDT</a></span><span class="op">(</span><span class="va">sources_cat</span><span class="op">)</span></span></code></pre></div>
-<div id="htmlwidget-3227c693644e08de5aa4" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-3227c693644e08de5aa4">{"x":{"filter":"none","vertical":false,"extensions":["Buttons"],"data":[["BacMap","Bergey's Manual","https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data","Kegg","Literature","Microbial Fatty Acid Compositions","MiDAS","PATRIC","ProTraits","The Microbe Directory"],["aerophilicity, arrangement, disease association, gram stain, growth temperature, habitat, isolation site, shape","aerophilicity, arrangement, gram stain, length, shape, sphingolipid producing, spore shape, width","aerophilicity, isolation site","coding genes, genome size","acetate producing, butyrate producing, habitat, health associated, hydrogen gas producing, lactate producing, mutation rate per site per generation, mutation rates per site per year, sphingolipid producing, spore shape","fatty acid compositions, growth medium, growth temperature","habitat","antimicrobial resistance","aerophilicity, arrangement, gram stain, habitat, shape","animal pathogen, antimicrobial sensitivity, biofilm forming, COGEM pathogenicity rating, extreme environment, gram stain, growth temperature, habitat, optimal ph, plant pathogenicity"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Sources<\/th>\n      <th>Attributes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Brti","buttons":[{"extend":"copy","title":null},{"extend":"csv","title":null},{"extend":"excel","title":null},{"extend":"pdf","title":null},{"extend":"print","title":null}],"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script><p>Create count table of all of the attributes</p>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b07ef7e8a41bbbf9444f" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-b07ef7e8a41bbbf9444f">{"x":{"filter":"none","vertical":false,"extensions":["Buttons"],"data":[["BacMap","Bergey's Manual","Kegg","Literature","MiDAS","Microbial Fatty Acid Compositions","PATRIC","ProTraits","The Microbe Directory","https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data"],["aerophilicity, arrangement, disease association, gram stain, growth temperature, habitat, isolation site, shape","aerophilicity, arrangement, gram stain, length, shape, sphingolipid producing, spore shape, width","coding genes, genome size","acetate producing, butyrate producing, habitat, health associated, hydrogen gas producing, lactate producing, mutation rate per site per generation, mutation rates per site per year, sphingolipid producing, spore shape","habitat","fatty acid compositions, growth medium, growth temperature","antimicrobial resistance","aerophilicity, arrangement, gram stain, habitat, shape","COGEM pathogenicity rating, animal pathogen, antimicrobial sensitivity, biofilm forming, extreme environment, gram stain, growth temperature, habitat, optimal ph, plant pathogenicity","aerophilicity, isolation site"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Sources<\/th>\n      <th>Attributes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Brti","buttons":[{"extend":"copy","title":null},{"extend":"csv","title":null},{"extend":"excel","title":null},{"extend":"pdf","title":null},{"extend":"print","title":null}],"columnDefs":[],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script><p>Create count table of all of the attributes</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sources_counts</span> <span class="op">&lt;-</span> <span class="va">phys_sources_mod</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">Attribute_source</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">'Attribute'</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">'Attribute'</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="count-mattrix">Count mattrix<a class="anchor" aria-label="anchor" href="#count-mattrix"></a>
 </h3>
-<p>Create count matrix and matrix of proportions for each source and attribute</p>
+<p>Create count matrix and matrix of proportions for each source and
+attribute</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">count_mat</span> <span class="op">&lt;-</span> <span class="va">sources_counts</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_wider.html" class="external-link">pivot_wider</a></span><span class="op">(</span></span>
@@ -196,7 +204,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
