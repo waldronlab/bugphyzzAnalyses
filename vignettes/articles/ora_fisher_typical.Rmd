@@ -251,7 +251,7 @@ p <- res_stool_significant |>
       size = n_sig / n_background 
     )
   ) +
-  scale_color_viridis_c(option = 'B') +
+  scale_color_viridis_c(name = '-log10(p-value)', option = 'B') +
   scale_size(
     name = expression(
     frac('# annotated BugSigDB', '# annotated background')
@@ -262,7 +262,7 @@ p <- res_stool_significant |>
     x = 'bugphyzz sets',
     y = 'BugSigDB sets - Group 1 name',
     title = 'Microbe set enrichment (ORA/Fisher\'s exact test)',
-    subtitle = 'Hypotehsis: "greater"; FDR < 0.05; stool/feces; genus'
+    subtitle = 'Hypothesis: "greater"; FDR < 0.05; stool/feces; genus'
   ) +
   theme_bw()  +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))

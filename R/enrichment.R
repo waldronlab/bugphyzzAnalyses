@@ -40,7 +40,7 @@ microbeSetEnrichment <- function(set, reference, sigs) {
         ct <- .contingencyTable(set, reference, sigs[[i]])
         n_sig <- ct[1]
         n_background <- ct[1] + ct[2]
-        p_value <- fisher.test(ct, alternative = 'g')$p.value
+        p_value <- stats::fisher.test(ct, alternative = 'g')$p.value
 
         odds_ratio <- suppressWarnings(
             epitools::oddsratio.wald(ct + 0.5)$measure[2,1]
