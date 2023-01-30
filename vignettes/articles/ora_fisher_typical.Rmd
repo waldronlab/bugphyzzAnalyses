@@ -249,9 +249,10 @@ p <- res_stool_significant |>
     aes(
       color = -log10(p_value),
       size = n_sig / n_background 
-    )
+    ),
+    position = 'jitter'
   ) +
-  scale_color_viridis_c(name = '-log10(p-value)', option = 'B') +
+  scale_color_viridis_c(name = '-log10(p-value)', option = 'C') +
   scale_size(
     name = expression(
     frac('# annotated BugSigDB', '# annotated background')
