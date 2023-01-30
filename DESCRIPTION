@@ -34,7 +34,11 @@ Suggests:
     ontologyIndex,
     ontologySimilarity,
     BugSigDBStats,
-    zen4R
+    zen4R,
+    forcats,
+    circlize,
+    viridis,
+    tibble
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
