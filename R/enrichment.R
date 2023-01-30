@@ -31,7 +31,7 @@ microbeSetEnrichment <- function(set, reference, sigs) {
         stop('List of signatures must be named.', call. = FALSE)
 
     cols_order <- c(
-        'sig_name', 'n_sig', 'n_total', 'p_value', 'fdr', 'odds_ratio',
+        'sig_name', 'n_sig', 'n_background', 'p_value', 'fdr', 'odds_ratio',
         'upper_ci', 'lower_ci'
     )
 
@@ -39,7 +39,7 @@ microbeSetEnrichment <- function(set, reference, sigs) {
     for (i in seq_along(sigs)) {
         ct <- .contingencyTable(set, reference, sigs[[i]])
         n_sig <- ct[1]
-        n_total <- ct[1] + ct[2]
+        n_background <- ct[1] + ct[2]
         p_value <- fisher.test(ct, alternative = 'g')$p.value
 
         odds_ratio <- suppressWarnings(
@@ -49,7 +49,7 @@ microbeSetEnrichment <- function(set, reference, sigs) {
         lower_ci <- exp(log(odds_ratio) - 1.96 * sqrt(sum(1 / (ct + 1) )))
 
         vct_list[[i]] <- data.frame(
-            n_sig = n_sig, n_total = n_total, p_value = p_value,
+            n_sig = n_sig, n_background = n_background, p_value = p_value,
             odds_ratio = odds_ratio, upper_ci = upper_ci, lower_ci = lower_ci
         )
     }

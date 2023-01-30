@@ -215,9 +215,7 @@ res_stool <- map2(
   .y = reference_sigs_gn, 
   .f = ~ microbeSetEnrichment(.x, .y, bg_sigs_gn)
 ) |> 
-  bind_rows(.id = 'bugsigdb_sig')
-
-res_stool <- res_stool |>
+  bind_rows(.id = 'bugsigdb_sig') |> 
   mutate(id = sub('_.*$', '', bugsigdb_sig)) |> 
   relocate(id) |> 
   rename(bp_sig = sig_name) |> 
@@ -250,20 +248,26 @@ p <- res_stool_significant |>
   geom_point(
     aes(
       color = -log10(p_value),
-      size = n_sig / n_total
+      size = n_sig / n_background 
     )
   ) +
   scale_color_viridis_c(option = 'B') +
-  scale_size(name = 'n_BugSigDB / n_reference') +
+  scale_size(
+    name = expression(
+    frac('# annotated BugSigDB', '# annotated background')
+    )
+  ) +
   facet_wrap(~`Abundance in Group 1`, ncol = 2, scales = 'free_x') +
   labs(
-    x = 'bugphyzz microbe sets (signatures)',
-    y = 'BugSigDB microbe sets (signatures) - Group 1 name',
-    title = 'Microbe Set Enrichment (ORA/Fisher, "hypotehsis greater") FDR < 0.05 - Stool/feces/gut - Genus'
+    x = 'bugphyzz sets',
+    y = 'BugSigDB sets - Group 1 name',
+    title = 'Microbe set enrichment (ORA/Fisher\'s exact test)',
+    subtitle = 'Hypotehsis: "greater"; FDR < 0.05; stool/feces; genus'
   ) +
   theme_bw()  +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 p
+# ggsave(filename = 'enrichment_stool.png', plot = p, width = 15, height = 7)
 ```
 
 
