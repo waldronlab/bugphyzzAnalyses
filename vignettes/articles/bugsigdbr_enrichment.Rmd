@@ -23,69 +23,6 @@ library(ontologySimilarity)
 library(BugSigDBStats)
 ```
 
-# Typical Signatures
-
-TypicalMicrobiomeSignatures will be used as reference for this enrichment
-analysis (ORA). Check https://zenodo.org/record/6656514
-
-```{r, message=FALSE}
-temp_dir <- paste0(tempdir(), '/test')
-dir.create(temp_dir, showWarnings = FALSE)
-doi <- "10.5281/zenodo.6656514"
-zen4R::download_zenodo(doi = doi, path = temp_dir)
-fnames <- list.files(temp_dir, full.names = TRUE)
-fnames
-```
-
-Read csv files
-
-```{r}
-csv_fnames <- fnames[grepl('\\.csv$', fnames)]
-stool_data <- lapply(csv_fnames, function(x) {
-    df <- read.csv(x)
-    colnames(df) <- c('NCBI_ID', 'Taxon_name', 'Prevalence')
-    df[df$Prevalence >= 0.01,]
-})
-names(stool_data) <- sub('^.*/(.*)\\.csv$', '\\1', csv_fnames)
-lapply(stool_data, dim)
-```
-
-## Some exploratory data
-
-```{r}
-hsg <- stool_data$healthystool_genus
-usg <- stool_data$unhealthystool_genus
-common_ids <- intersect(hsg$NCBI_ID, usg$NCBI_ID)
-length(common_ids)
-```
-
-```{r}
-hsg_ <- hsg[hsg$NCBI_ID %in% common_ids,]
-usg_ <- usg[usg$NCBI_ID %in% common_ids, ]
-df <- left_join(
-    hsg_, usg_, by = c('NCBI_ID', 'Taxon_name'), suffix = c('.h', '.u')
-) |> 
-    mutate(ratio = Prevalence.h / Prevalence.u)
-df |> 
-    ggplot(aes(Prevalence.h, Prevalence.u)) +
-    geom_point(aes(color = ratio)) +
-    labs(
-        x = 'Prevalence in healthy stool',
-        y = 'Prevalence in unhealty stool',
-        title = 'Exploring genera present in both healthy and unhealthy stool'
-    ) +
-    scale_color_viridis_c(name = 'ratio h/u', option = 'C') +
-    theme_minimal() 
-```
-
-I'll use the healthy data only.
-
-## Healthy stool genus 
-
-```{r}
-hsg
-```
-
 # Import bugphyzz 
 
 ```{r, message=FALSE}
@@ -176,7 +113,6 @@ bg_sigs <- c(bg_sigs, ph_sigs)
 ```
 
 
-
 Let's create a plot
 
 ```{r, message=FALSE}
@@ -201,29 +137,14 @@ bsdb <- importBugSigDB()
 bsdb_sigs <- bugsigdbr::getSignatures(bsdb, tax.id.type = 'ncbi')
 ```
 
-```{r, eval = FALSE}
+```{r}
 onto <- ontologyIndex::get_ontology("http://purl.obolibrary.org/obo/ncbitaxon.obo")
-```
-
-```{r heinzcache, echo = FALSE} 
-# onto <- BugSigDBStats:::.getResourceFromCache("ncbi.onto")
-# if (is.null(onto))
-# {
-    # onto <- ontologyIndex::get_ontology("http://purl.obolibrary.org/obo/ncbitaxon.obo")
-    # BugSigDBStats:::.cacheResource(onto, "ncbi.onto")
-# } 
 ```
 
 ```{r}
 onto
 head(onto$id)
 ```
-
-```{r}
-
-```
-
-
 
 ```{r}
 bg_sigs <- lapply(bg_sigs, function(s) paste0("NCBITaxon:", s))
@@ -234,9 +155,7 @@ bg_sigs <- lapply(bg_sigs, function(s) setdiff(s, nt))
 ```
 
 
-
 ```{r}
-
 bsdb_sigs <- lapply(bsdb_sigs, function(s) paste0("NCBITaxon:", s))
 utax <- unique(unlist(bsdb_sigs))
 nt <- utax[!(utax %in% onto$id)]
@@ -277,6 +196,4 @@ res2_subset <- res2 |>
 ```{r}
 hist(res2$jaccard)
 ```
-
-
 

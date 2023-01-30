@@ -96,16 +96,16 @@ for (i in seq_along(propagation)) {
 ## Convert bugphyzz data.frames to signatures
 
 ```{r, message=FALSE, warning=FALSE}
-bg_sigs <- lapply(phys, function(x) {
+bg_sigs_gn <- lapply(phys, function(x) {
   bugphyzz::getSignatures(
     df = x, tax.id.type = 'NCBI_ID', tax.level = 'genus', min.size = 5
   )
 })
 
-bg_sigs <- flatten(bg_sigs)
+bg_sigs_gn <- flatten(bg_sigs_gn)
 ```
 
-## Import pH
+## Import pH signatures
 
 pH is the only numeric signature that I will use right now.
 
@@ -113,20 +113,24 @@ pH is the only numeric signature that I will use right now.
 ph <- physiologies('optimal ph')[[1]]
 ph <- preSteps(ph, tax.id.type = 'NCBI_ID')
 prop_ph <- propagate(ph)
+```
 
+Create some signatures for pH
+
+```{r}
 ## Some thresholds
 acidic <- prop_ph$Attribute_value[prop_ph$Attribute_value <= 5]
 neutral <- prop_ph$Attribute_value[prop_ph$Attribute_value > 5 & prop_ph$Attribute_value <= 7]
 alkaline <- prop_ph$Attribute_value[prop_ph$Attribute_value > 7 & prop_ph$Attribute_value <= 9.75]
 very_alkaline <- prop_ph$Attribute_value[prop_ph$Attribute_value > 9.75] 
 
-ph_sigs <- vector('list', 4)
-names(ph_sigs)[1] <- paste0('bugphyzz:optimal ph|', 'acidic', '|', min(acidic), '-', max(acidic))
-names(ph_sigs)[2] <- paste0('bugphyzz:optimal ph|', 'neutral', '|', min(neutral), '-', max(neutral))
-names(ph_sigs)[3] <- paste0('bugphyzz:optimal ph|', 'alkaline', '|', min(alkaline), '-', max(alkaline))
-names(ph_sigs)[4] <- paste0('bugphyzz:optimal ph|', 'very alkaline', '|', min(very_alkaline), '-', max(very_alkaline))
+ph_sigs_gn <- vector('list', 4)
+names(ph_sigs_gn)[1] <- paste0('bugphyzz:optimal ph|', 'acidic', '|', min(acidic), '-', max(acidic))
+names(ph_sigs_gn)[2] <- paste0('bugphyzz:optimal ph|', 'neutral', '|', min(neutral), '-', max(neutral))
+names(ph_sigs_gn)[3] <- paste0('bugphyzz:optimal ph|', 'alkaline', '|', min(alkaline), '-', max(alkaline))
+names(ph_sigs_gn)[4] <- paste0('bugphyzz:optimal ph|', 'very alkaline', '|', min(very_alkaline), '-', max(very_alkaline))
 
-ph_sigs[[1]] <- prop_ph |> 
+ph_sigs_gn[[1]] <- prop_ph |> 
   filter(
     Rank == 'genus',
     Attribute_value %in% acidic 
@@ -134,7 +138,7 @@ ph_sigs[[1]] <- prop_ph |>
   pull(NCBI_ID) |> 
   unique()
 
-ph_sigs[[2]] <- prop_ph |> 
+ph_sigs_gn[[2]] <- prop_ph |> 
   filter(
     Rank == 'genus',
     Attribute_value %in% neutral 
@@ -142,7 +146,7 @@ ph_sigs[[2]] <- prop_ph |>
   pull(NCBI_ID) |> 
   unique()
 
-ph_sigs[[3]] <- prop_ph |> 
+ph_sigs_gn[[3]] <- prop_ph |> 
   filter(
     Rank == 'genus',
     Attribute_value %in% alkaline 
@@ -150,7 +154,7 @@ ph_sigs[[3]] <- prop_ph |>
   pull(NCBI_ID) |> 
   unique()
 
-ph_sigs[[4]] <- prop_ph |> 
+ph_sigs_gn[[4]] <- prop_ph |> 
   filter(
     Rank == 'genus',
     Attribute_value %in% very_alkaline 
@@ -164,7 +168,7 @@ ph_sigs[[4]] <- prop_ph |>
 Combine signatures
 
 ```{r}
-bg_sigs_gn <- c(bg_sigs, ph_sigs)
+bg_sigs_gn <- c(bg_sigs, ph_sigs_gn)
 lapply(bg_sigs_gn[1:5], head)
 ```
 
@@ -212,3 +216,17 @@ res_stool_significant <- res_stool |>
 
 dim(res_stool_significant)
 ```
+
+## Enrichment analysis: stool - species
+
+```{r}
+
+
+
+
+
+```
+
+
+
+
