@@ -33,7 +33,8 @@ Suggests:
     tidyr,
     ontologyIndex,
     ontologySimilarity,
-    BugSigDBStats
+    BugSigDBStats,
+    zen4R
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
