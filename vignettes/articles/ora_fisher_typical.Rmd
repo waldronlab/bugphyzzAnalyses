@@ -174,7 +174,7 @@ ph_sigs_gn[[4]] <- prop_ph |>
 Combine signatures
 
 ```{r}
-bg_sigs_gn <- c(bg_sigs, ph_sigs_gn)
+bg_sigs_gn <- c(bg_sigs_gn, ph_sigs_gn)
 lapply(bg_sigs_gn[1:5], head)
 ```
 
@@ -265,16 +265,5 @@ p <- res_stool_significant |>
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 p
 ```
-
-
-## Enrichment analysis: stool - species
-
-```{r}
-res_stool_significant |> 
-  filter(`Abundance in Group 1` == 'increased') |> 
-  View()
-```
-
-
 
 
