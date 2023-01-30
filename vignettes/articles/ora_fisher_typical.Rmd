@@ -17,6 +17,7 @@ library(tidyr)
 library(dplyr)
 library(bugsigdbr)
 library(taxPPro)
+library(ggplot2)
 ```
 
 # Import TypicalMicrobiomeSignaures
@@ -68,6 +69,11 @@ We'll use the bugsigdbr package to import the main data.frame of signatures
 
 ```{r}
 bsdb <- importBugSigDB()
+id1 <- sub(".* ", "", bsdb$Study)
+id2 <- sub(".* ", "", bsdb$Experiment)
+id3 <- sub(".* ", "", bsdb$`Signature page name`)
+bsdb$id <- paste0('bsdb:', id1, '/', id2, '/', id3)
+bsdb <- relocate(bsdb, id)
 head(as_tibble(bsdb))
 ```
 
@@ -209,22 +215,64 @@ res_stool <- map2(
   .y = reference_sigs_gn, 
   .f = ~ microbeSetEnrichment(.x, .y, bg_sigs_gn)
 ) |> 
-  bind_rows(.id = 'busigdb_sig')
+  bind_rows(.id = 'bugsigdb_sig')
+
+res_stool <- res_stool |>
+  mutate(id = sub('_.*$', '', bugsigdb_sig)) |> 
+  relocate(id) |> 
+  rename(bp_sig = sig_name) |> 
+  as_tibble() |> 
+  left_join(as_tibble(bsdb), by = 'id')
 
 res_stool_significant <- res_stool |> 
   filter(fdr < 0.05)
 
+head(as_tibble(res_stool_significant))
+```
+
+```{r}
 dim(res_stool_significant)
 ```
+
+
+```{r}
+p <- res_stool_significant |> 
+  mutate(
+    bugsigdb_sig = sub('^.*_(.*)_vs_.*$', '\\1', bugsigdb_sig),
+    bp_sig = sub('^bugphyzz:', '', bp_sig),
+    `Abundance in Group 1` = case_when(
+      `Abundance in Group 1` == 'increased' ~ 'Increased abundance in group 1',
+      `Abundance in Group 1` == 'decreased' ~ 'Decreased abundance in group 1',
+      TRUE ~ `Abundance in Group 1`
+    )
+  ) |>
+  ggplot(aes(bp_sig, bugsigdb_sig)) +
+  geom_point(
+    aes(
+      color = -log10(p_value),
+      size = n_sig / n_total
+    )
+  ) +
+  scale_color_viridis_c(option = 'B') +
+  scale_size(name = 'n_BugSigDB / n_reference') +
+  facet_wrap(~`Abundance in Group 1`, ncol = 2, scales = 'free_x') +
+  labs(
+    x = 'bugphyzz microbe sets (signatures)',
+    y = 'BugSigDB microbe sets (signatures) - Group 1 name',
+    title = 'Microbe Set Enrichment (ORA/Fisher, "hypotehsis greater") FDR < 0.05 - Stool/feces/gut - Genus'
+  ) +
+  theme_bw()  +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p
+```
+
 
 ## Enrichment analysis: stool - species
 
 ```{r}
-
-
-
-
-
+res_stool_significant |> 
+  filter(`Abundance in Group 1` == 'increased') |> 
+  View()
 ```
 
 
