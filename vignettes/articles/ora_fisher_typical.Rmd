@@ -303,7 +303,7 @@ plotEnrichmentRes <- function(res, body_site, tax_level) {
 
 **stool - genus**
 
-```{r enrichment - stool - genus}
+```{r enrichment - stool - genus, fig.height=7, fig.width=15}
 sets_stool_gn <- getSets(b = 'feces', t = 'stool', tax_level = 'genus')
 res_stool_gn <- runEnrichment(
   sets_stool_gn$bsdb_sets, 
@@ -315,7 +315,7 @@ p_stool_gn
 
 **stool - species**
 
-```{r enrichment - stool - species}
+```{r enrichment - stool - species, fig.width=15, fig.height=7}
 sets_stool_sp <- getSets(b = 'feces', t = 'stool', tax_level = 'species')
 res_stool_sp <- runEnrichment(
   sets_stool_sp$bsdb_sets, 
@@ -440,7 +440,7 @@ p_oc_gn
 
 **oral cavity/saliva - species **
 
-```{r enrihcment - oral cavity - species}
+```{r enrihcment - oral cavity - species, fig.width=10, fig.height=4}
 sets_oc_sp <- getSets(
   b = 'oral cavity', t = 'oralcavity', tax_level = 'species'
 )
