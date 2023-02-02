@@ -346,7 +346,7 @@ bsdb <- bsdb |>
 
 **vagina - genus**
 
-```{r enrichemnt - vagina - genus}
+```{r enrichemnt - vagina - genus, fig.height=4, fig.width=10}
 sets_vagina_gn <- getSets(b = 'vagina', t = 'vagina', tax_level = 'genus')
 res_vagina_gn <- runEnrichment(
   sets_vagina_gn$bsdb_sets, 
@@ -358,7 +358,7 @@ p_vagina_gn
 
 **vagina - species **
 
-```{r enrichment - vagina - species}
+```{r enrichment - vagina - species, fig.height=4, fig.width=10}
 sets_vagina_sp <- getSets(b = 'vagina', t = 'vagina', tax_level = 'species')
 res_vagina_sp <- runEnrichment(
   bsdb_sets = sets_vagina_sp$bsdb_sets, 
@@ -426,7 +426,7 @@ bsdb <- bsdb |>
 
 Maybe I need to combine several samples of oral cavity in bsdb
 
-```{r enrichment - oral cavity - genus}
+```{r enrichment - oral cavity - genus, fig.height=4, fig.width=10}
 sets_oc_gn <- getSets(
   b = 'oral cavity', t = 'oralcavity', tax_level = 'genus'
 )
@@ -467,7 +467,7 @@ bsdb <- bsdb |>
 
 **Skin - genus**
 
-```{r enrichment - skin - genus}
+```{r enrichment - skin - genus, fig.width=7, fig.height=3}
 sets_skin_gn <- getSets(
   b = 'skin', t = 'skin', tax_level = 'genus'
 )
@@ -481,7 +481,7 @@ p_skin_gn
 
 **Skin - species**
 
-```{r enrichment - skin - species}
+```{r enrichment - skin - species, fig.height=4, fig.width=10}
 sets_skin_sp <- getSets(
   b = 'skin', t = 'skin', tax_level = 'species'
 )
