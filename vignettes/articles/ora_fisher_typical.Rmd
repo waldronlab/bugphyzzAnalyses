@@ -494,9 +494,82 @@ p_skin_sp <- plotEnrichmentRes(res_skin_sp, 'skin', 'species')
 p_skin_sp
 ```
 
+# A step by step case
+
+Get bsdb signatures
+
+```{r get bsdb signatures}
+bsdb_sets_ <- bsdb |> 
+    filter(`Body site` == 'feces', `Host species` == 'Homo sapiens') |> 
+    bugsigdbr::getSignatures(
+        tax.id.type = 'ncbi', tax.level = 'genus', min.size = 5
+    ) 
+length(bsdb_sets_)
+```
+
+```{r}
+lapply(bsdb_sets_[1:3], head)
+```
+
+Create background sets
+
+```{r get typical set}
+typical_set_ <- typical |> 
+    filter(body_site == 'stool', rank == 'genus') |> 
+    pull(taxid) |> 
+    unique()
+length(typical_set_) 
+```
+
+```{r}
+head(typical_set_)
+```
+
+```{r get background sets}
+background_sets_ <- lapply(bsdb_sets_, function(x) unique(c(x, typical_set_)))
+length(background_sets_)
+```
+
+Create contingency tables
+
+```{r example contingency tables}
+taxa_name_ <- 'bsdb:237/1/1_chronic-hepatitis-C-virus-infection:cirrhosis-patients_vs_healthy-controls_UP'
+ct <- bugphyzzAnalyses:::.contingencyTable(
+    set = bsdb_sets_[[taxa_name_]],
+    reference = background_sets_[[taxa_name_]],
+    sig = bp_sigs_gn$`bugphyzz:aerophilicity|aerobic`
+)
+ct
+```
+
+```{r}
+some_taxids <- 
+    bsdb_sets_[[taxa_name_]][bsdb_sets_[[taxa_name_]] %in% bp_sigs_gn$`bugphyzz:aerophilicity|aerobic`]
+
+bsdb_taxa <- propagation$aerophilicity |> 
+    filter(NCBI_ID %in% some_taxids) |> 
+    arrange(NCBI_ID)
+bsdb_taxa
+```
+
+```{r}
+some_taxids_2 <- 
+    background_sets_[[taxa_name_]][background_sets_[[taxa_name_]] %in% bp_sigs_gn$`bugphyzz:aerophilicity|aerobic`]
+
+propagation$aerophilicity |> 
+    filter(NCBI_ID %in% some_taxids_2, !NCBI_ID %in% some_taxids) |> 
+    arrange(NCBI_ID)
+```
+
+Enrichment
+
+```{r}
+p_value_ <- stats::fisher.test(ct, alternative = 'g')$p.value
+p_value_
+```
+
 # Session information
 
 ```{r session info}
 sessioninfo::session_info()
 ```
-
