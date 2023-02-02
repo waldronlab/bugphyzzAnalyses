@@ -262,15 +262,18 @@ plotEnrichmentRes <- function(res, body_site, tax_level) {
   }
   p <- dat |>  
     mutate(
-      bugsigdb_sig = sub('^.*_(.*)_vs_.*$', '\\1', bugsigdb_sig),
+      bugsigdb_sig = sub('^(.*_.*)_vs_.*$', '\\1', bugsigdb_sig),
       bp_sig = sub('^bugphyzz:', '', bp_sig),
       `Abundance in Group 1` = case_when(
         `Abundance in Group 1` == 'increased' ~ 'Increased abundance in group 1',
         `Abundance in Group 1` == 'decreased' ~ 'Decreased abundance in group 1',
         TRUE ~ `Abundance in Group 1`
-      )
+      ),
+      `Abundance in Group 1` = forcats::fct_relevel(
+          `Abundance in Group 1`, 'Increased abundance in group 1'
+        )
     ) |>
-    ggplot(aes(bp_sig, bugsigdb_sig)) +
+    ggplot(aes(bp_sig, reorder(bugsigdb_sig, -log10(p_value)))) +
       geom_point(
       aes(
         color = -log10(p_value),
@@ -283,7 +286,7 @@ plotEnrichmentRes <- function(res, body_site, tax_level) {
       frac('# annotated BugSigDB', '# annotated background')
       )
     ) +
-    facet_wrap(~`Abundance in Group 1`, ncol = 2, scales = 'free_x') +
+    facet_wrap(~`Abundance in Group 1`, nrow = 2, scales = 'free_y') +
     labs(
       x = 'bugphyzz sets',
       y = 'BugSigDB sets - Group 1 name',
@@ -303,7 +306,7 @@ plotEnrichmentRes <- function(res, body_site, tax_level) {
 
 **stool - genus**
 
-```{r enrichment - stool - genus, fig.height=7, fig.width=15}
+```{r enrichment - stool - genus, fig.height=8, fig.width=10}
 sets_stool_gn <- getSets(b = 'feces', t = 'stool', tax_level = 'genus')
 res_stool_gn <- runEnrichment(
   sets_stool_gn$bsdb_sets, 
@@ -315,7 +318,7 @@ p_stool_gn
 
 **stool - species**
 
-```{r enrichment - stool - species, fig.width=15, fig.height=7}
+```{r enrichment - stool - species, fig.width=10, fig.height=8}
 sets_stool_sp <- getSets(b = 'feces', t = 'stool', tax_level = 'species')
 res_stool_sp <- runEnrichment(
   sets_stool_sp$bsdb_sets, 
@@ -346,7 +349,7 @@ bsdb <- bsdb |>
 
 **vagina - genus**
 
-```{r enrichemnt - vagina - genus, fig.height=4, fig.width=10}
+```{r enrichemnt - vagina - genus, fig.height=5, fig.width=8}
 sets_vagina_gn <- getSets(b = 'vagina', t = 'vagina', tax_level = 'genus')
 res_vagina_gn <- runEnrichment(
   sets_vagina_gn$bsdb_sets, 
@@ -358,7 +361,7 @@ p_vagina_gn
 
 **vagina - species **
 
-```{r enrichment - vagina - species, fig.height=4, fig.width=10}
+```{r enrichment - vagina - species, fig.height=4, fig.width=8}
 sets_vagina_sp <- getSets(b = 'vagina', t = 'vagina', tax_level = 'species')
 res_vagina_sp <- runEnrichment(
   bsdb_sets = sets_vagina_sp$bsdb_sets, 
@@ -426,7 +429,7 @@ bsdb <- bsdb |>
 
 Maybe I need to combine several samples of oral cavity in bsdb
 
-```{r enrichment - oral cavity - genus, fig.height=4, fig.width=10}
+```{r enrichment - oral cavity - genus, fig.height=5, fig.width=8}
 sets_oc_gn <- getSets(
   b = 'oral cavity', t = 'oralcavity', tax_level = 'genus'
 )
@@ -440,7 +443,7 @@ p_oc_gn
 
 **oral cavity/saliva - species **
 
-```{r enrihcment - oral cavity - species, fig.width=10, fig.height=4}
+```{r enrihcment - oral cavity - species, fig.width=8, fig.height=5}
 sets_oc_sp <- getSets(
   b = 'oral cavity', t = 'oralcavity', tax_level = 'species'
 )
@@ -543,6 +546,24 @@ ct
 ```
 
 ```{r}
+ct2 <- contingencyTable2(
+    set = bsdb_sets_[[taxa_name_]],
+    reference = background_sets_[[taxa_name_]],
+    sig = bp_sigs_gn$`bugphyzz:aerophilicity|aerobic`
+)
+ct2
+```
+
+
+```{r}
+p_value_2 <- stats::fisher.test(ct2, alternative = 'g')$p.value
+p_value_2
+```
+
+
+
+
+```{r}
 some_taxids <- 
     bsdb_sets_[[taxa_name_]][bsdb_sets_[[taxa_name_]] %in% bp_sigs_gn$`bugphyzz:aerophilicity|aerobic`]
 
@@ -567,6 +588,7 @@ Enrichment
 p_value_ <- stats::fisher.test(ct, alternative = 'g')$p.value
 p_value_
 ```
+
 
 # Session information
 
