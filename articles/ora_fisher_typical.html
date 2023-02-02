@@ -569,9 +569,252 @@ use right now.</p>
 <span><span class="co">#&gt; NULL</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="a-step-by-step-case">A step by step case<a class="anchor" aria-label="anchor" href="#a-step-by-step-case"></a>
+</h2>
+<p>Get bsdb signatures</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bsdb_sets_</span> <span class="op">&lt;-</span> <span class="va">bsdb</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Body site`</span> <span class="op">==</span> <span class="st">'feces'</span>, <span class="va">`Host species`</span> <span class="op">==</span> <span class="st">'Homo sapiens'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">bugsigdbr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/getSignatures.html" class="external-link">getSignatures</a></span><span class="op">(</span></span>
+<span>        tax.id.type <span class="op">=</span> <span class="st">'ncbi'</span>, tax.level <span class="op">=</span> <span class="st">'genus'</span>, min.size <span class="op">=</span> <span class="fl">5</span></span>
+<span>    <span class="op">)</span> </span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">bsdb_sets_</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 251</span></span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">bsdb_sets_</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span>, <span class="va">head</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $`bsdb:1/1/1_adenoma:conventional-adenoma-cases_vs_controls_UP`</span></span>
+<span><span class="co">#&gt; [1] "1654"   "1716"   "1301"   "162289" "189330" "33024" </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`bsdb:1/4/1_adenoma:Proximal-conventional-adenoma-cases_vs_controls_UP`</span></span>
+<span><span class="co">#&gt; [1] "1654"   "1716"   "1485"   "836"    "162289" "1301"  </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`bsdb:1/6/1_adenoma:Non-advanced-conventional-adenoma-cases_vs_controls_UP`</span></span>
+<span><span class="co">#&gt; [1] "1654"   "283168" "1301"   "189330" "40544"  "33024"</span></span></code></pre></div>
+<p>Create background sets</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">typical_set_</span> <span class="op">&lt;-</span> <span class="va">typical</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">body_site</span> <span class="op">==</span> <span class="st">'stool'</span>, <span class="va">rank</span> <span class="op">==</span> <span class="st">'genus'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">taxid</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">typical_set_</span><span class="op">)</span> </span>
+<span><span class="co">#&gt; [1] 170</span></span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">typical_set_</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1]    1279 1912216    1716    1301  150022   32207</span></span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">background_sets_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">bsdb_sets_</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">typical_set_</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">background_sets_</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 251</span></span></code></pre></div>
+<p>Create contingency tables</p>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">taxa_name_</span> <span class="op">&lt;-</span> <span class="st">'bsdb:237/1/1_chronic-hepatitis-C-virus-infection:cirrhosis-patients_vs_healthy-controls_UP'</span></span>
+<span><span class="va">ct</span> <span class="op">&lt;-</span> <span class="fu">bugphyzzAnalyses</span><span class="fu">:::</span><span class="fu">.contingencyTable</span><span class="op">(</span></span>
+<span>    set <span class="op">=</span> <span class="va">bsdb_sets_</span><span class="op">[[</span><span class="va">taxa_name_</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>    reference <span class="op">=</span> <span class="va">background_sets_</span><span class="op">[[</span><span class="va">taxa_name_</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>    sig <span class="op">=</span> <span class="va">bp_sigs_gn</span><span class="op">$</span><span class="va">`bugphyzz:aerophilicity|aerobic`</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">ct</span></span>
+<span><span class="co">#&gt;           sig</span></span>
+<span><span class="co">#&gt; set        inSig notInSig</span></span>
+<span><span class="co">#&gt;   inSet        4        6</span></span>
+<span><span class="co">#&gt;   notInSet     6      157</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">some_taxids</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="va">bsdb_sets_</span><span class="op">[[</span><span class="va">taxa_name_</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">bsdb_sets_</span><span class="op">[[</span><span class="va">taxa_name_</span><span class="op">]</span><span class="op">]</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">bp_sigs_gn</span><span class="op">$</span><span class="va">`bugphyzz:aerophilicity|aerobic`</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">bsdb_taxa</span> <span class="op">&lt;-</span> <span class="va">propagation</span><span class="op">$</span><span class="va">aerophilicity</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">NCBI_ID</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">some_taxids</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">NCBI_ID</span><span class="op">)</span></span>
+<span><span class="va">bsdb_taxa</span></span>
+<span><span class="co">#&gt;    NCBI_ID Genome_ID Accession_ID        Taxon_name               Attribute</span></span>
+<span><span class="co">#&gt; 1     1269        NA                    Micrococcus                 aerobic</span></span>
+<span><span class="co">#&gt; 2     1578        NA              Paralactobacillus                 aerobic</span></span>
+<span><span class="co">#&gt; 3     1578        NA              Paralactobacillus facultatively anaerobic</span></span>
+<span><span class="co">#&gt; 4     1578        NA         &lt;NA&gt;     Lactobacillus                 aerobic</span></span>
+<span><span class="co">#&gt; 5     1578        NA         &lt;NA&gt;     Lactobacillus               anaerobic</span></span>
+<span><span class="co">#&gt; 6     1578        NA         &lt;NA&gt;     Lactobacillus facultatively anaerobic</span></span>
+<span><span class="co">#&gt; 7     1578        NA         &lt;NA&gt;     Lactobacillus         microaerophilic</span></span>
+<span><span class="co">#&gt; 8      561        NA                    Escherichia                 aerobic</span></span>
+<span><span class="co">#&gt; 9      561        NA                    Escherichia facultatively anaerobic</span></span>
+<span><span class="co">#&gt; 10     724        NA                    Haemophilus                 aerobic</span></span>
+<span><span class="co">#&gt; 11     724        NA                    Haemophilus facultatively anaerobic</span></span>
+<span><span class="co">#&gt;    Attribute_value</span></span>
+<span><span class="co">#&gt; 1             TRUE</span></span>
+<span><span class="co">#&gt; 2             TRUE</span></span>
+<span><span class="co">#&gt; 3             TRUE</span></span>
+<span><span class="co">#&gt; 4             TRUE</span></span>
+<span><span class="co">#&gt; 5             TRUE</span></span>
+<span><span class="co">#&gt; 6             TRUE</span></span>
+<span><span class="co">#&gt; 7             TRUE</span></span>
+<span><span class="co">#&gt; 8             TRUE</span></span>
+<span><span class="co">#&gt; 9             TRUE</span></span>
+<span><span class="co">#&gt; 10            TRUE</span></span>
+<span><span class="co">#&gt; 11            TRUE</span></span>
+<span><span class="co">#&gt;                                                                                                                                                                                                                                                                                               Attribute_source</span></span>
+<span><span class="co">#&gt; 1                                                                                                                                                                                                                                                                                              Bergey's Manual</span></span>
+<span><span class="co">#&gt; 2                                                                                                                                                                                                                                                                                              Bergey's Manual</span></span>
+<span><span class="co">#&gt; 3                                                                                                                                                                                                                                                                                              Bergey's Manual</span></span>
+<span><span class="co">#&gt; 4  https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data|https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data|https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data</span></span>
+<span><span class="co">#&gt; 5  https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data|https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data|https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data</span></span>
+<span><span class="co">#&gt; 6                                                                                                                                                                                                ProTraits|ProTraits|ProTraits|ProTraits|ProTraits|ProTraits|ProTraits|ProTraits|ProTraits|ProTraits|ProTraits</span></span>
+<span><span class="co">#&gt; 7                                                                                                                                                                                                          https://github.com/bacteria-archaea-traits/bacteria-archaea-traits/tree/master/output/prepared_data</span></span>
+<span><span class="co">#&gt; 8                                                                                                                                                                                                                                                                                              Bergey's Manual</span></span>
+<span><span class="co">#&gt; 9                                                                                                                                                                                                                                                                                              Bergey's Manual</span></span>
+<span><span class="co">#&gt; 10                                                                                                                                                                                                                                                                                             Bergey's Manual</span></span>
+<span><span class="co">#&gt; 11                                                                                                                                                                                                                                                                                             Bergey's Manual</span></span>
+<span><span class="co">#&gt;    Evidence Frequency</span></span>
+<span><span class="co">#&gt; 1       exp    always</span></span>
+<span><span class="co">#&gt; 2       exp sometimes</span></span>
+<span><span class="co">#&gt; 3       exp sometimes</span></span>
+<span><span class="co">#&gt; 4       asr    rarely</span></span>
+<span><span class="co">#&gt; 5       asr    rarely</span></span>
+<span><span class="co">#&gt; 6       asr sometimes</span></span>
+<span><span class="co">#&gt; 7       asr    rarely</span></span>
+<span><span class="co">#&gt; 8       exp sometimes</span></span>
+<span><span class="co">#&gt; 9       exp sometimes</span></span>
+<span><span class="co">#&gt; 10      exp    always</span></span>
+<span><span class="co">#&gt; 11      exp    always</span></span>
+<span><span class="co">#&gt;                                                          Confidence_in_curation</span></span>
+<span><span class="co">#&gt; 1                                                                          high</span></span>
+<span><span class="co">#&gt; 2                                                                          high</span></span>
+<span><span class="co">#&gt; 3                                                                          high</span></span>
+<span><span class="co">#&gt; 4                                                          medium|medium|medium</span></span>
+<span><span class="co">#&gt; 5                                                          medium|medium|medium</span></span>
+<span><span class="co">#&gt; 6  medium|medium|medium|medium|medium|medium|medium|medium|medium|medium|medium</span></span>
+<span><span class="co">#&gt; 7                                                                        medium</span></span>
+<span><span class="co">#&gt; 8                                                                          high</span></span>
+<span><span class="co">#&gt; 9                                                                          high</span></span>
+<span><span class="co">#&gt; 10                                                                         high</span></span>
+<span><span class="co">#&gt; 11                                                                         high</span></span>
+<span><span class="co">#&gt;    Note Strain  Rank        Parent_name Parent_NCBI_ID Parent_rank</span></span>
+<span><span class="co">#&gt; 1    NA     NA genus     Micrococcaceae           1268      family</span></span>
+<span><span class="co">#&gt; 2    NA     NA genus   Lactobacillaceae          33958      family</span></span>
+<span><span class="co">#&gt; 3    NA     NA genus   Lactobacillaceae          33958      family</span></span>
+<span><span class="co">#&gt; 4    NA     NA genus   Lactobacillaceae          33958      family</span></span>
+<span><span class="co">#&gt; 5    NA     NA genus   Lactobacillaceae          33958      family</span></span>
+<span><span class="co">#&gt; 6    NA     NA genus   Lactobacillaceae          33958      family</span></span>
+<span><span class="co">#&gt; 7    NA     NA genus   Lactobacillaceae          33958      family</span></span>
+<span><span class="co">#&gt; 8    NA     NA genus Enterobacteriaceae            543      family</span></span>
+<span><span class="co">#&gt; 9    NA     NA genus Enterobacteriaceae            543      family</span></span>
+<span><span class="co">#&gt; 10   NA     NA genus    Pasteurellaceae            712      family</span></span>
+<span><span class="co">#&gt; 11   NA     NA genus    Pasteurellaceae            712      family</span></span>
+<span><span class="co">#&gt;    Attribute_type Attribute_group Score</span></span>
+<span><span class="co">#&gt; 1     categorical   aerophilicity   1.0</span></span>
+<span><span class="co">#&gt; 2     categorical   aerophilicity   0.5</span></span>
+<span><span class="co">#&gt; 3     categorical   aerophilicity   0.5</span></span>
+<span><span class="co">#&gt; 4            &lt;NA&gt;            &lt;NA&gt;   0.2</span></span>
+<span><span class="co">#&gt; 5            &lt;NA&gt;            &lt;NA&gt;   0.2</span></span>
+<span><span class="co">#&gt; 6            &lt;NA&gt;            &lt;NA&gt;   0.6</span></span>
+<span><span class="co">#&gt; 7            &lt;NA&gt;            &lt;NA&gt;   0.1</span></span>
+<span><span class="co">#&gt; 8     categorical   aerophilicity   0.5</span></span>
+<span><span class="co">#&gt; 9     categorical   aerophilicity   0.5</span></span>
+<span><span class="co">#&gt; 10    categorical   aerophilicity   1.0</span></span>
+<span><span class="co">#&gt; 11    categorical   aerophilicity   1.0</span></span>
+<span><span class="co">#&gt;                                                    Original_NCBI_ID</span></span>
+<span><span class="co">#&gt; 1                                                              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2                                                              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3                                                              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4                                                237446|1604|116089</span></span>
+<span><span class="co">#&gt; 5                                              147802|227944|227945</span></span>
+<span><span class="co">#&gt; 6  1579|47770|1584|1596|1587|109790|33959|267818|872327|1604|116089</span></span>
+<span><span class="co">#&gt; 7                                                            420645</span></span>
+<span><span class="co">#&gt; 8                                                              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9                                                              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10                                                             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 11                                                             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;                                                                                                                                                                                                                                                                Original_Taxon_name</span></span>
+<span><span class="co">#&gt; 1                                                                                                                                                                                                                                                                             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2                                                                                                                                                                                                                                                                             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3                                                                                                                                                                                                                                                                             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4                                                                                                                                                                                                        Lactobacillus kitasatonis|Lactobacillus amylovorus|Lactobacillus psittaci</span></span>
+<span><span class="co">#&gt; 5                                                                                                                                                                                                            Lactobacillus iners|Lactobacillus kalixensis|Lactobacillus ultunensis</span></span>
+<span><span class="co">#&gt; 6  Lactobacillus acidophilus|Lactobacillus crispatus|Lactobacillus delbrueckii|Lactobacillus gasseri|Lactobacillus helveticus|Lactobacillus jensenii|Lactobacillus johnsonii|Lactobacillus kefiranofaciens|Lactobacillus pasteurii|Lactobacillus amylovorus|Lactobacillus psittaci</span></span>
+<span><span class="co">#&gt; 7                                                                                                                                                                                                                                                       Lactobacillus equicursoris</span></span>
+<span><span class="co">#&gt; 8                                                                                                                                                                                                                                                                             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9                                                                                                                                                                                                                                                                             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10                                                                                                                                                                                                                                                                            &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 11                                                                                                                                                                                                                                                                            &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;           Original_Score                           Original_Evidence</span></span>
+<span><span class="co">#&gt; 1                   &lt;NA&gt;                                        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2                   &lt;NA&gt;                                        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3                   &lt;NA&gt;                                        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4                  1|1|1                     unknown|unknown|unknown</span></span>
+<span><span class="co">#&gt; 5                  1|1|1                     unknown|unknown|unknown</span></span>
+<span><span class="co">#&gt; 6  1|1|1|1|1|1|1|1|1|1|1 igc|igc|igc|igc|igc|igc|igc|igc|igc|igc|igc</span></span>
+<span><span class="co">#&gt; 7                      1                                     unknown</span></span>
+<span><span class="co">#&gt; 8                   &lt;NA&gt;                                        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9                   &lt;NA&gt;                                        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10                  &lt;NA&gt;                                        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 11                  &lt;NA&gt;                                        &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;    Parent_evidence</span></span>
+<span><span class="co">#&gt; 1             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 8             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 9             &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 10            &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 11            &lt;NA&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">some_taxids_2</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="va">background_sets_</span><span class="op">[[</span><span class="va">taxa_name_</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="va">background_sets_</span><span class="op">[[</span><span class="va">taxa_name_</span><span class="op">]</span><span class="op">]</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">bp_sigs_gn</span><span class="op">$</span><span class="va">`bugphyzz:aerophilicity|aerobic`</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">propagation</span><span class="op">$</span><span class="va">aerophilicity</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">NCBI_ID</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">some_taxids_2</span>, <span class="op">!</span><span class="va">NCBI_ID</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">some_taxids</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">NCBI_ID</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   NCBI_ID Genome_ID Accession_ID      Taxon_name Attribute Attribute_value</span></span>
+<span><span class="co">#&gt; 1    1716        NA              Corynebacterium   aerobic            TRUE</span></span>
+<span><span class="co">#&gt; 2     283        NA                    Comamonas   aerobic            TRUE</span></span>
+<span><span class="co">#&gt; 3     286        NA                  Pseudomonas   aerobic            TRUE</span></span>
+<span><span class="co">#&gt; 4     286        NA                      Serpens   aerobic            TRUE</span></span>
+<span><span class="co">#&gt; 5     469        NA                Acinetobacter   aerobic            TRUE</span></span>
+<span><span class="co">#&gt; 6     482        NA                    Neisseria   aerobic            TRUE</span></span>
+<span><span class="co">#&gt; 7   48736        NA                    Ralstonia   aerobic            TRUE</span></span>
+<span><span class="co">#&gt;   Attribute_source Evidence Frequency Confidence_in_curation Note Strain  Rank</span></span>
+<span><span class="co">#&gt; 1  Bergey's Manual      exp    always                   high   NA     NA genus</span></span>
+<span><span class="co">#&gt; 2  Bergey's Manual      exp    always                   high   NA     NA genus</span></span>
+<span><span class="co">#&gt; 3  Bergey's Manual      exp    always                   high   NA     NA genus</span></span>
+<span><span class="co">#&gt; 4  Bergey's Manual      exp    always                   high   NA     NA genus</span></span>
+<span><span class="co">#&gt; 5  Bergey's Manual      exp    always                   high   NA     NA genus</span></span>
+<span><span class="co">#&gt; 6  Bergey's Manual      exp    always                   high   NA     NA genus</span></span>
+<span><span class="co">#&gt; 7  Bergey's Manual      exp    always                   high   NA     NA genus</span></span>
+<span><span class="co">#&gt;          Parent_name Parent_NCBI_ID Parent_rank Attribute_type Attribute_group</span></span>
+<span><span class="co">#&gt; 1 Corynebacteriaceae           1653      family    categorical   aerophilicity</span></span>
+<span><span class="co">#&gt; 2     Comamonadaceae          80864      family    categorical   aerophilicity</span></span>
+<span><span class="co">#&gt; 3   Pseudomonadaceae         135621      family    categorical   aerophilicity</span></span>
+<span><span class="co">#&gt; 4   Pseudomonadaceae         135621      family    categorical   aerophilicity</span></span>
+<span><span class="co">#&gt; 5      Moraxellaceae            468      family    categorical   aerophilicity</span></span>
+<span><span class="co">#&gt; 6      Neisseriaceae            481      family    categorical   aerophilicity</span></span>
+<span><span class="co">#&gt; 7   Burkholderiaceae         119060      family    categorical   aerophilicity</span></span>
+<span><span class="co">#&gt;   Score Original_NCBI_ID Original_Taxon_name Original_Score Original_Evidence</span></span>
+<span><span class="co">#&gt; 1     1             &lt;NA&gt;                &lt;NA&gt;           &lt;NA&gt;              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2     1             &lt;NA&gt;                &lt;NA&gt;           &lt;NA&gt;              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3     1             &lt;NA&gt;                &lt;NA&gt;           &lt;NA&gt;              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4     1             &lt;NA&gt;                &lt;NA&gt;           &lt;NA&gt;              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5     1             &lt;NA&gt;                &lt;NA&gt;           &lt;NA&gt;              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6     1             &lt;NA&gt;                &lt;NA&gt;           &lt;NA&gt;              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7     1             &lt;NA&gt;                &lt;NA&gt;           &lt;NA&gt;              &lt;NA&gt;</span></span>
+<span><span class="co">#&gt;   Parent_evidence</span></span>
+<span><span class="co">#&gt; 1            &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 2            &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 3            &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 4            &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 5            &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 6            &lt;NA&gt;</span></span>
+<span><span class="co">#&gt; 7            &lt;NA&gt;</span></span></code></pre></div>
+<p>Enrichment</p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">p_value_</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/fisher.test.html" class="external-link">fisher.test</a></span><span class="op">(</span><span class="va">ct</span>, alternative <span class="op">=</span> <span class="st">'g'</span><span class="op">)</span><span class="op">$</span><span class="va">p.value</span></span>
+<span><span class="va">p_value_</span></span>
+<span><span class="co">#&gt; [1] 0.001027639</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/sessioninfo/reference/session_info.html" class="external-link">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Session info ───────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">setting </span> <span style="color: #555555; font-style: italic;">value</span></span></span>
