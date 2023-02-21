@@ -25,7 +25,10 @@ library(data.tree)
 # Import bugphzz data
 
 ```{r, message=FALSE, warning=FALSE}
-exclude_phys <- c('antimicrobial resistance', 'isolation site')
+exclude_phys <- c(
+  'antimicrobial resistance', 'isolation site',
+  'COGEM pathogenicity rating', 'growth medium'
+)
 phys <- physiologies(remove_false = TRUE) |> 
   keep(~ unique(.x$Attribute_type) == 'categorical') |> 
   {\(y) y[!names(y) %in% exclude_phys]}() |> 
