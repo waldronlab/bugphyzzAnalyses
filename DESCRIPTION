@@ -38,7 +38,8 @@ Suggests:
     forcats,
     circlize,
     viridis,
-    tibble
+    tibble,
+    data.tree
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,

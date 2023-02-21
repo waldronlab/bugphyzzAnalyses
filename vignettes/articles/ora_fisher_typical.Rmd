@@ -247,8 +247,8 @@ runEnrichment <- function(bsdb_sets, background_sets, bp_sigs) {
     relocate(id) |> 
     rename(bp_sig = sig_name) |> 
     as_tibble() |> 
-    left_join(as_tibble(bsdb), by = 'id') |>
-    filter(fdr < 0.05) 
+    left_join(as_tibble(bsdb), by = 'id')
+    # filter(fdr < 0.05) 
 }
 
 ## A function to plot enrichment results
@@ -344,8 +344,8 @@ bsdb <- bsdb |>
       `Body site` %in% vagina_terms, 'vagina', `Body site`
     )
   )
+dim(filter(bsdb, `Body site` == 'vagina'))
 ```
-
 
 **vagina - genus**
 
@@ -358,6 +358,35 @@ res_vagina_gn <- runEnrichment(
 p_vagina_gn <- plotEnrichmentRes(res_vagina_gn, 'vagina', 'genus')
 p_vagina_gn
 ```
+ **vagina genus 2**
+ 
+ A single study
+ 
+```{r vagina genus 2}
+bv_sig <- bsdb |> 
+  filter(Study == 'Study 187', Experiment == 'Experiment 3') |> 
+  getSignatures(tax.id.type = 'ncbi', min.size = 5)
+
+tax_names <- taxize::id2name(bv_sig[[1]], db = 'ncbi') |> 
+  map_chr(~.x$name)
+names(bv_sig[[1]]) <- tax_names
+
+bv_sig
+```
+
+
+```{r enrichment vagina genus 2}
+res_vagina_gn_2 <- runEnrichment(
+  bsdb_sets = sets_vagina_gn$bsdb_sets, 
+  background_sets = sets_vagina_gn$background_sets, 
+  bp_sigs = bp_sigs_gn
+)
+
+```
+
+
+
+
 
 **vagina - species **
 

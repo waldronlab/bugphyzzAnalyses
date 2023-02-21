@@ -19,6 +19,7 @@ library(tidyr)
 library(ComplexHeatmap)
 library(purrr)
 library(ggplot2)
+library(data.tree)
 ```
 
 # Import bugphzz data
@@ -48,12 +49,133 @@ for (i in seq_along(propagation)) {
     # end_time <- Sys.time()
     # message('>>> Done ', difftime(end_time, stat_time), '. <<<')
 }
+names(propagation) <- names(phys)
+propagation <- discard(propagation, is.null)
 after <- map_int(propagation, nrow) |> 
   as.data.frame() |> 
   tibble::rownames_to_column(var = 'physiology') |> 
   mutate(group = 'after')
 colnames(after)[2] <- 'n'
 ```
+
+## Propagation II
+
+```{r}
+data('tree_list')
+tree <- as.Node(tree_list)
+```
+
+```{r}
+aer <- physiologies(
+  'aerophilicity', remove_false = TRUE, full_source = FALSE
+)[[1]]
+aer <- preSteps(aer, tax.id.type = 'NCBI_ID', remove_false = TRUE)
+dic <- c('g__', 's__', 't__')
+names(dic) <- c('genus', 'species', 'strain')
+aer$NCBI_ID <- paste0(dic[aer$Rank], aer$NCBI_ID)
+select_cols <- c(
+  'NCBI_ID', 'Attribute', 'Evidence', 'Attribute_source', 'Score'
+)
+aer <- unique(aer[, select_cols])
+aer <- aer[which(grepl('^[gs]__', aer$NCBI_ID)),]
+```
+
+
+```{r, message=FALSE}
+res <- addAttributes(data_tree = tree, df = aer)
+res$Do(asrUpstream, traversal = 'post-order')
+res$Do(inhDownstream, traversal = 'pre-order')
+```
+
+
+
+```{r}
+args1 <- list(x = res, row.names = NULL, optional = FALSE)
+attr_cols <- res$attributesAll 
+args2 <- as.list(attr_cols)
+args <- c(args1, args2)
+tbl <- do.call('as.data.frame', args)
+
+attrs <- unique(sub('__.*$', '', attr_cols))
+
+output <- vector('list', length(attrs))
+for (i in seq_along(output)) {
+  cols <- colnames(tbl)[which(startsWith(colnames(tbl), attrs[i]))]
+  cols <- c('levelName', cols)
+  output[[i]] <- tbl[, cols]
+  names(output)[i] <- attrs[i]
+}
+output2 <- lapply(output, function(x) {
+  x$levelName <- sub('^.*([dpcofgst]__)', '\\1', x$levelName)
+  colnames(x)[1] <- 'NCBI_ID'
+  colnames(x) <- sub('.*__', '', colnames(x))
+  x
+})
+output3 <- bind_rows(output2, .id = 'Attribute')
+output3$NCBI_ID <- sub(' *$', '', output3$NCBI_ID)
+output3point5 <- output3
+output3point5$NCBI_ID <- sub('.*__', '', output3point5$NCBI_ID)
+output4 <- left_join(output3point5, ncbi_taxonomy, by = 'NCBI_ID')
+output4 <- output4[which(output4$Score > 0),]
+output4 <- output4[which(output4$NCBI_ID != 'ArcBac'),]
+```
+
+
+
+```{r}
+output5 <- split(output4, factor(output4$Rank))
+output6 <- lapply(output5, function(x) {
+  x |> 
+    select(kingdom, phylum, NCBI_ID) |> 
+    distinct() |> 
+    count(kingdom, phylum, name = 'n') |> 
+    arrange(desc(kingdom), -n)
+})
+```
+
+
+
+```{r}
+output6$genus <- output6$genus |> 
+  rename(n_bp_gn = n)
+completeness_gn_2 <- left_join(
+  ncbi_summary_gn, output6$genus, by = c('kingdom', 'phylum')
+)  |> 
+  filter(!is.na(phylum), !grepl('(C|c)andidatus', phylum)) |> 
+  mutate(
+    n_bp_gn = ifelse(is.na(n_bp_gn), 0, n_bp_gn),
+    completeness_gn = n_bp_gn / n_ncbi_gn
+  )
+
+output6$species <- output6$species |> 
+  rename(n_bp_sp = n)
+completeness_sp_2 <- left_join(
+  ncbi_summary_sp, output6$species, by = c('kingdom', 'phylum')
+)  |> 
+  filter(!is.na(phylum), !grepl('(C|c)andidatus', phylum)) |> 
+  mutate(
+    n_bp_sp = ifelse(is.na(n_bp_sp), 0, n_bp_sp),
+    completeness_sp = n_bp_sp / n_ncbi_sp
+  )
+
+output6$strain <- output6$strain |> 
+  rename(n_bp_st = n)
+completeness_st_2 <- left_join(
+  ncbi_summary_st, output6$strain, by = c('kingdom', 'phylum')
+)  |> 
+  filter(!is.na(phylum), !grepl('(C|c)andidatus', phylum)) |> 
+  mutate(
+    n_bp_st = ifelse(is.na(n_bp_st), 0, n_bp_st),
+    completeness_st = n_bp_st / n_ncbi_st
+  )
+```
+
+
+
+
+
+
+
 
 # Comparing raw total numbers
 
@@ -283,6 +405,7 @@ prop_completeness_st <- left_join(
 ```
 
 
+
 ### Merge all completeness data for a single physiology
 
 ```{r, warning=FALSE, message=FALSE}
@@ -302,6 +425,27 @@ prop_completeness <- purrr::reduce(
 prop_completeness[is.na(prop_completeness)] <- 0
 ```
 
+
+```{r}
+completeness_2 <- purrr::reduce(
+  list(completeness_gn_2, completeness_sp_2, completeness_st_2), left_join
+) |> 
+  mutate(group = paste0(kingdom, ' - ', phylum))  |> 
+  select(group, starts_with('completeness')) |> 
+  rename(
+    strain = completeness_st, species = completeness_sp,
+    genus = completeness_gn
+  ) |>
+  tibble::column_to_rownames(var = 'group') |> 
+  as.matrix()
+completeness_2[is.na(completeness_2)] <- 0
+```
+
+
+
+
+
+
 # Create a heatmap
 
 ```{r}
@@ -310,25 +454,50 @@ row_names <- sort(
   decreasing = TRUE
 )
 
+row_names <- sort(
+  intersect(row_names, rownames(completeness_2)),
+  decreasing = TRUE
+)
+
 colnames(completeness) <- paste0('before_', colnames(completeness)) 
 colnames(prop_completeness) <- paste0('after_', colnames(prop_completeness)) 
+colnames(completeness_2) <- paste0('after2_', colnames(completeness_2)) 
 # mat <- cbind(completeness[row_names,], prop_completeness[row_names,])
 # mat[is.na(mat)] <- 0
 ```
 
 ```{r}
-mat <- cbind(completeness[row_names,], prop_completeness[row_names,])
+
+# mat <- cbind(completeness[row_names,], prop_completeness[row_names,])
+
+mat <- do.call(
+  'cbind', 
+  list(completeness[row_names,],
+  prop_completeness[row_names,],
+  completeness_2[row_names,])
+)
+
+
 mat[is.na(mat)] <- 0
+
+colnames(mat) <- c(
+ "before_genus",       "before_species",
+ "before_strain",     "after_genus", 
+ "after_species", "after_strain",
+ "after2_genus",              "after2_species",          
+ "after2_strain"
+)
+
 ```
 
 ```{r}
 rep1 <- sum(grepl('^Bacteria -', rownames(mat)))
 rep2 <- sum(grepl('^Archaea -', rownames(mat)))
 row_splits <- c(rep('Bacteria', rep1), rep('Archaea', rep2))
-col_splits <- c(rep('Before', 3), rep('After', 3))
+col_splits <- c(rep('Before', 3), rep('After', 3), rep('After_2', 3) )
 
 rownames(mat) <- sub('^(Archaea|Bacteria) - ', '', rownames(mat))
-colnames(mat) <- sub('^(before|after)_', '', colnames(mat))
+colnames(mat) <- sub('^(before|after|after_2)_', '', colnames(mat))
 
 hp <- Heatmap(
   matrix = mat,
@@ -344,14 +513,14 @@ hp <- Heatmap(
   },
   col = viridis::viridis(1020, option = 'C'),
   row_split = factor(row_splits, levels = c('Bacteria', 'Archaea')),
-  column_split = factor(col_splits, levels = c('Before', 'After')) 
+  column_split = factor(col_splits, levels = c('Before', 'After', 'After_2')) 
 )
 hp
 ```
 
 
 ```{r, echo=FALSE, eval=FALSE}
-png(filename = 'aer-completeness.png', width = 5, height = 7, res = 1020, units = 'in')
+png(filename = 'aer-completeness.png', width = 7, height = 8, res = 1020, units = 'in')
 hp
 dev.off()
 ```
