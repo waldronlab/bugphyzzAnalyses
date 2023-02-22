@@ -45,12 +45,15 @@ colnames(before)[2] <- 'n'
 ```{r, message=FALSE, warning=FALSE}
 propagation <- vector('list', length(phys))
 for (i in seq_along(propagation)) {
-    # message('>>> Propagating ',  names(phys)[i], '. <<<')
-    # stat_time <- Sys.time()
     names(propagation)[i] <- names(phys)[i]
-    propagation[[i]] <- propagate(phys[[i]], max.tax.level = 'genus')
-    # end_time <- Sys.time()
-    # message('>>> Done ', difftime(end_time, stat_time), '. <<<')
+    output_ <- tryCatch(
+      error = function(e) NULL, {
+        propagate(phys[[i]], max.tax.level = 'genus')
+      }
+    )
+    if (!is.null(output_)) {
+      propagation[[i]] <- output_
+    }
 }
 names(propagation) <- names(phys)
 propagation <- discard(propagation, is.null)
@@ -90,6 +93,10 @@ res$Do(asrUpstream, traversal = 'post-order')
 res$Do(inhDownstream, traversal = 'pre-order')
 ```
 
+```{r}
+ncbi_taxonomy <- get_ncbi_taxonomy() |> 
+  select(-Taxon_name, Parent_NCBI_ID, Rank)
+```
 
 
 ```{r}
@@ -134,6 +141,49 @@ output6 <- lapply(output5, function(x) {
     count(kingdom, phylum, name = 'n') |> 
     arrange(desc(kingdom), -n)
 })
+```
+
+
+
+## Get NCBI summary (reference/denominator numbers)
+
+```{r}
+base_numbers <- get_ncbi_taxids('bti') ## base numbers only
+all_numbers <- get_ncbi_taxids('all') ## all numbers
+
+## Let's get total by species with base numbers
+ncbi_summary_sp <- base_numbers |>
+    filter(
+      ## This filter is a double check. The get_ncbi_taxids function already
+      ## makes this filter.
+      NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
+      Rank == 'species'
+    ) |>
+    count(kingdom, phylum, name = 'n_ncbi_sp') |>
+    arrange(desc(kingdom), -n_ncbi_sp)
+
+## Let's get totals by genus with base numbers
+## Number of genus is the same anyway
+ncbi_summary_gn <- base_numbers |>
+    filter(
+      ## This filter is a double check. The get_ncbi_taxids function already
+      ## makes this filter.
+      NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
+      Rank == 'genus'
+    ) |>
+    count(kingdom, phylum, name = 'n_ncbi_gn') |>
+    arrange(desc(kingdom), -n_ncbi_gn)
+
+## Let's get totals by strain with whole numbers?
+ncbi_summary_st <- all_numbers |>
+    filter(
+      ## This filter is a double check. The get_ncbi_taxids function already
+      ## makes this filter.
+      NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
+      Rank == 'strain'
+    ) |>
+    count(kingdom, phylum, name = 'n_ncbi_st') |>
+    arrange(desc(kingdom), -n_ncbi_st)
 ```
 
 
@@ -204,50 +254,10 @@ This is the reference information to filter both the ncbi references and the
 bugphyzz data (before and after propagation).
 
 ```{r}
-ncbi_taxonomy <- get_ncbi_taxonomy() |> 
-  select(-Taxon_name, Parent_NCBI_ID, Rank)
+# ncbi_taxonomy <- get_ncbi_taxonomy() |> 
+#   select(-Taxon_name, Parent_NCBI_ID, Rank)
 ```
 
-## Get NCBI summary (reference/denominator numbers)
-
-```{r}
-base_numbers <- get_ncbi_taxids('b') ## base numbers only
-all_numbers <- get_ncbi_taxids('all') ## all numbers
-
-## Let's get total by species with base numbers
-ncbi_summary_sp <- base_numbers |>
-    filter(
-      ## This filter is a double check. The get_ncbi_taxids function already
-      ## makes this filter.
-      NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
-      Rank == 'species'
-    ) |>
-    count(kingdom, phylum, name = 'n_ncbi_sp') |>
-    arrange(desc(kingdom), -n_ncbi_sp)
-
-## Let's get totals by genus with base numbers
-## Number of genus is the same anyway
-ncbi_summary_gn <- base_numbers |>
-    filter(
-      ## This filter is a double check. The get_ncbi_taxids function already
-      ## makes this filter.
-      NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
-      Rank == 'genus'
-    ) |>
-    count(kingdom, phylum, name = 'n_ncbi_gn') |>
-    arrange(desc(kingdom), -n_ncbi_gn)
-
-## Let's get totals by strain with whole numbers?
-ncbi_summary_st <- all_numbers |>
-    filter(
-      ## This filter is a double check. The get_ncbi_taxids function already
-      ## makes this filter.
-      NCBI_ID %in% unique(ncbi_taxonomy$NCBI_ID),
-      Rank == 'strain'
-    ) |>
-    count(kingdom, phylum, name = 'n_ncbi_st') |>
-    arrange(desc(kingdom), -n_ncbi_st)
-```
 
 ## Calculate completeness before propagation (asr/inheritance)
 
@@ -520,7 +530,6 @@ hp <- Heatmap(
 )
 hp
 ```
-
 
 ```{r, echo=FALSE, eval=FALSE}
 png(filename = 'aer-completeness.png', width = 7, height = 8, res = 1020, units = 'in')
