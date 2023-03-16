@@ -93,10 +93,11 @@ Import data.frames and filtering
 
 ```{r import bp, message=FALSE, warning=FALSE}
 exclude_phys <- c('antimicrobial resistance', 'isolation site')
-phys <- physiologies(remove_false = TRUE) |> 
-  keep(~ unique(.x$Attribute_type) == 'categorical') |> 
-  {\(y) y[!names(y) %in% exclude_phys]}() |> 
-  map(preSteps, tax.id.type = 'NCBI_ID', remove_false = TRUE)
+phys <- physiologies(remove_false = TRUE)
+phys2 <- phys |> 
+  keep(~ unique(.x$Attribute_type) == 'logical') |> 
+  {\(y) y[!names(y) %in% exclude_phys]}() 
+  # map(preSteps, tax.id.type = 'NCBI_ID', remove_false = TRUE)
 ```
 
 Propagate bugphyzz signatures
