@@ -76,3 +76,55 @@ createDT <- function(x){
         )
     )
 }
+
+#' Import tidy Typical Microbiome Signatures
+#'
+#' \code{importTidyTMS} imports prevalence data from the
+#' TypicalMicrobiomeSignatures project.
+#'
+#' @param doi DOI, a string character. Default: "10.5281/zenodo.7544550"
+#' @param prevalence_threshold A numeric value: 0.01.
+#'
+#' @return A data.frame.
+#' @export
+#'
+importTidyTMS <- function(
+        doi = "10.5281/zenodo.7544550", prevalence_threshold = 0.01
+) {
+    temp_dir <- paste0(tempdir(), '/TypicalMicrobiomeSignatures')
+    if (dir.exists(temp_dir)) {
+        unlink(paste0(temp_dir, '/*'), recursive = TRUE, force = TRUE)
+    }
+    dir.create(temp_dir, showWarnings = FALSE)
+    doi <- doi
+    zen4R::download_zenodo(doi = doi, path = temp_dir, quiet = TRUE)
+    zip_file <- list.files(temp_dir, full.names = TRUE)
+    base_dir <- sub('\\.zip', '', zip_file)
+    unzip(zip_file, exdir = base_dir)
+    extracted_dir <- paste0(base_dir, '/', list.files(base_dir))
+    fnames <- grep(
+        '\\.csv', list.files(extracted_dir, full.names = TRUE), value = TRUE
+    )
+    tms <- purrr::map(fnames, read.csv)
+    names(tms) <- sub('^.*/matrix_(.*)\\.csv$', '\\1', fnames)
+    output <- vector('list', length(tms))
+    for (i in seq_along(output)) {
+        output[[i]] <- tms[[i]] |>
+            tidyr::pivot_longer(
+                cols = ends_with('_prevalence'), names_to = 'body_site',
+                values_to = 'pravalence'
+            ) |>
+            dplyr::mutate(body_site = sub('_prevalence$', '', body_site)) |>
+            tidyr::separate(
+                col = 'body_site', into = c('body_site', 'rank'), sep = '_'
+            ) |>
+            dplyr::rename(
+                taxid = NCBI, taxon_name = name
+            ) |>
+            dplyr::mutate(age_range = sub('^.*_', '', names(tms)[i]))
+    }
+    typical <- do.call(rbind, output)
+    typical$prevalence <- round(typical$pravalence, 2)
+    typical <- typical[typical$pravalence >= 0.01,]
+    return(typical)
+}

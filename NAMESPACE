@@ -3,6 +3,7 @@
 export(classif2Table)
 export(createDT)
 export(filterTaxa)
+export(importTidyTMS)
 export(import_taxids)
 export(microbeSetEnrichment)
 export(preSteps)

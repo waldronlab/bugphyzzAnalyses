@@ -34,7 +34,6 @@ Suggests:
     ontologyIndex,
     ontologySimilarity,
     BugSigDBStats,
-    zen4R,
     forcats,
     circlize,
     viridis,
@@ -60,7 +59,8 @@ Imports:
     tools,
     vroom,
     epitools,
-    sessioninfo
+    sessioninfo,
+    zen4R
 RoxygenNote: 7.2.3
 URL: https://github.com/waldronlab/bugphyzzAnalyses
 BugReports: https://github.com/waldronlab/bugphyzzAnalyses/issues

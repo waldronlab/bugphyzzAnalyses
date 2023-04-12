@@ -23,7 +23,6 @@ library(taxPPro)
 library(ggplot2)
 ```
 
-
 # Some considerations
 + Use only signatures with differential abundance analysis
 (reported as "Abundance in Group").
@@ -43,7 +42,7 @@ doi <- "10.5281/zenodo.7544550"
 zen4R::download_zenodo(doi = doi, path = temp_dir, quiet = TRUE)
 zip_file <- list.files(temp_dir, full.names = TRUE)
 base_dir <- sub('\\.zip', '', zip_file)
-unzip(zip_file, exdir = base_dir, )
+unzip(zipfile = zip_file, exdir = base_dir)
 extracted_dir <- paste0(base_dir, '/', list.files(base_dir))
 fnames <- grep(
     '\\.csv', list.files(extracted_dir, full.names = TRUE), value = TRUE
@@ -92,120 +91,17 @@ head(as_tibble(bsdb))
 Import data.frames and filtering
 
 ```{r import bp, message=FALSE, warning=FALSE}
-exclude_phys <- c('antimicrobial resistance', 'isolation site')
-phys <- physiologies(remove_false = TRUE)
-phys2 <- phys |> 
-  keep(~ unique(.x$Attribute_type) == 'logical') |> 
-  {\(y) y[!names(y) %in% exclude_phys]}() 
-  # map(preSteps, tax.id.type = 'NCBI_ID', remove_false = TRUE)
+bp <- importBugphyzz()
+bp_sigs_gn <- getBugphyzzSignatures(
+  df = bp, tax.id.type = 'NCBI_ID', tax.level = 'genus',
+  frequency = 'always', min.size = 10
+)
+bp_sigs_sp <- getBugphyzzSignatures(
+  df = bp, tax.id.type = 'NCBI_ID', tax.level = 'species',
+  frequency = 'always', min.size = 10
+)
 ```
 
-Propagate bugphyzz signatures
-
-```{r propagate bp, message=FALSE, warning=FALSE}
-propagation <- vector('list', length(phys))
-for (i in seq_along(propagation)) {
-    names(propagation)[i] <- names(phys)[i]
-    propagation[[i]] <- propagate(phys[[i]], max.tax.level = 'genus')
-}
-```
-
-Convert bugphyzz data.frames to signatures
-
-```{r create bp signatures, message=FALSE, warning=FALSE}
-## genus level
-bp_sigs_gn <- lapply(phys, function(x) {
-  bugphyzz::getSignatures(
-    df = x, tax.id.type = 'NCBI_ID', tax.level = 'genus', min.size = 5
-  )
-}) |> 
-  flatten()
-
-## species level
-bp_sigs_sp <- lapply(phys, function(x) {
-  bugphyzz::getSignatures(
-    df = x, tax.id.type = 'NCBI_ID', tax.level = 'species', min.size = 5
-  )
-}) |> 
-  flatten()
-```
-
-Import pH signatures. 
-pH is the only numeric signature that I will use right now.
-
-```{r import pH, message=FALSE}
-ph <- physiologies('optimal ph')[[1]]
-ph <- preSteps(ph, tax.id.type = 'NCBI_ID')
-prop_ph <- propagate(ph)
-```
-
-Create signatures for pH
-
-```{r create pH signatures}
-## Some thresholds
-acidic <- prop_ph$Attribute_value[prop_ph$Attribute_value <= 5]
-neutral <- prop_ph$Attribute_value[prop_ph$Attribute_value > 5 & prop_ph$Attribute_value <= 7]
-alkaline <- prop_ph$Attribute_value[prop_ph$Attribute_value > 7 & prop_ph$Attribute_value <= 9.75]
-very_alkaline <- prop_ph$Attribute_value[prop_ph$Attribute_value > 9.75] 
-
-## signatures at the genus level
-ph_sigs_gn <- vector('list', 4)
-names(ph_sigs_gn)[1] <- paste0('bugphyzz:optimal ph|', 'acidic', '|', min(acidic), '-', max(acidic))
-names(ph_sigs_gn)[2] <- paste0('bugphyzz:optimal ph|', 'neutral', '|', min(neutral), '-', max(neutral))
-names(ph_sigs_gn)[3] <- paste0('bugphyzz:optimal ph|', 'alkaline', '|', min(alkaline), '-', max(alkaline))
-names(ph_sigs_gn)[4] <- paste0('bugphyzz:optimal ph|', 'very alkaline', '|', min(very_alkaline), '-', max(very_alkaline))
-
-ph_sigs_gn[[1]] <- prop_ph |> 
-  filter(Rank == 'genus', Attribute_value %in% acidic) |> 
-  pull(NCBI_ID) |> 
-  unique()
-
-ph_sigs_gn[[2]] <- prop_ph |> 
-  filter(Rank == 'genus', Attribute_value %in% neutral) |> 
-  pull(NCBI_ID) |> 
-  unique()
-
-ph_sigs_gn[[3]] <- prop_ph |> 
-  filter(Rank == 'genus', Attribute_value %in% alkaline) |> 
-  pull(NCBI_ID) |> 
-  unique()
-
-ph_sigs_gn[[4]] <- prop_ph |> 
-  filter(Rank == 'genus', Attribute_value %in% very_alkaline) |> 
-  pull(NCBI_ID) |> 
-  unique()
-
-## signatures at the genus species level 
-ph_sigs_sp <- vector('list', 4)
-names(ph_sigs_sp) <- names(ph_sigs_gn)
-
-ph_sigs_sp[[1]] <- prop_ph |> 
-  filter(Rank == 'species', Attribute_value %in% acidic) |> 
-  pull(NCBI_ID) |> 
-  unique()
-
-ph_sigs_sp[[2]] <- prop_ph |> 
-  filter(Rank == 'species', Attribute_value %in% neutral) |> 
-  pull(NCBI_ID) |> 
-  unique()
-
-ph_sigs_sp[[3]] <- prop_ph |> 
-  filter(Rank == 'species', Attribute_value %in% alkaline) |> 
-  pull(NCBI_ID) |> 
-  unique()
-
-ph_sigs_sp[[4]] <- prop_ph |> 
-  filter(Rank == 'species', Attribute_value %in% very_alkaline) |> 
-  pull(NCBI_ID) |> 
-  unique()
-```
-
-Combine pH and categorical signatures
-
-```{r final bp signatures}
-bp_sigs_gn <- c(bp_sigs_gn, ph_sigs_gn)
-bp_sigs_sp <- c(bp_sigs_sp, ph_sigs_sp)
-```
 
 # Define functions
 
@@ -310,8 +206,9 @@ plotEnrichmentRes <- function(res, body_site, tax_level) {
 ```{r enrichment - stool - genus, fig.height=7, fig.width=15}
 sets_stool_gn <- getSets(b = 'feces', t = 'stool', tax_level = 'genus')
 res_stool_gn <- runEnrichment(
-  sets_stool_gn$bsdb_sets, 
-  sets_stool_gn$background_sets, bp_sigs_gn
+  bsdb_sets = sets_stool_gn$bsdb_sets, 
+  background_sets = sets_stool_gn$background_sets, 
+  bp_sigs = bp_sigs_gn
 )
 p_stool_gn <- plotEnrichmentRes(res_stool_gn, 'feces/stool', 'genus')
 p_stool_gn
@@ -322,8 +219,9 @@ p_stool_gn
 ```{r enrichment - stool - species, fig.width=15, fig.height=7}
 sets_stool_sp <- getSets(b = 'feces', t = 'stool', tax_level = 'species')
 res_stool_sp <- runEnrichment(
-  sets_stool_sp$bsdb_sets, 
-  sets_stool_sp$background_sets, bp_sigs_sp
+  bsdb_sets = sets_stool_sp$bsdb_sets, 
+  background_sets = sets_stool_sp$background_sets, 
+  bp_sigs = bp_sigs_sp
 )
 p_stool_sp <- plotEnrichmentRes(res_stool_sp, 'feces/stool', 'species')
 p_stool_sp
@@ -575,24 +473,6 @@ ct <- bugphyzzAnalyses:::.contingencyTable(
 ct
 ```
 
-```{r}
-some_taxids <- 
-    bsdb_sets_[[taxa_name_]][bsdb_sets_[[taxa_name_]] %in% bp_sigs_gn$`bugphyzz:aerophilicity|aerobic`]
-
-bsdb_taxa <- propagation$aerophilicity |> 
-    filter(NCBI_ID %in% some_taxids) |> 
-    arrange(NCBI_ID)
-bsdb_taxa
-```
-
-```{r}
-some_taxids_2 <- 
-    background_sets_[[taxa_name_]][background_sets_[[taxa_name_]] %in% bp_sigs_gn$`bugphyzz:aerophilicity|aerobic`]
-
-propagation$aerophilicity |> 
-    filter(NCBI_ID %in% some_taxids_2, !NCBI_ID %in% some_taxids) |> 
-    arrange(NCBI_ID)
-```
 
 Enrichment
 
