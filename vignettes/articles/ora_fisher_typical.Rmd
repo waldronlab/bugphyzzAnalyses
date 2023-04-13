@@ -24,144 +24,89 @@ library(ggplot2)
 ```
 
 # Some considerations
-+ Use only signatures with differential abundance analysis
-(reported as "Abundance in Group").
-+ Some terms in bugsigdb were merged. These terms were related to skin, 
-oral cavity, and vagina.
 
-# Import TypicalMicrobiomeSignaures
++ Use only signatures with reported as "Abundance in Group" in bsdb.
++ Some terms in bsdb were merged (skin, oral cavity, and vagina).
 
-TypicalMicrobiomeSignatures will be used as background. See 
-https://github.com/waldronlab/TypicalMicrobiomeSignatures and 
-https://zenodo.org/record/7544550
+# Import data
+
+## Import TypicalMicrobiomeSignatures
+
+TypicalMicrobiomeSignatures will be used to create background sets.
 
 ```{r import typical microbiome signatures, message=FALSE}
-temp_dir <- paste0(tempdir(), '/TypicalMicrobiomeSignatures')
-dir.create(temp_dir, showWarnings = FALSE)
-doi <- "10.5281/zenodo.7544550"
-zen4R::download_zenodo(doi = doi, path = temp_dir, quiet = TRUE)
-zip_file <- list.files(temp_dir, full.names = TRUE)
-base_dir <- sub('\\.zip', '', zip_file)
-unzip(zipfile = zip_file, exdir = base_dir)
-extracted_dir <- paste0(base_dir, '/', list.files(base_dir))
-fnames <- grep(
-    '\\.csv', list.files(extracted_dir, full.names = TRUE), value = TRUE
-)
-tms <- map(fnames, read.csv)
-names(tms) <- sub('^.*/matrix_(.*)\\.csv$', '\\1', fnames)
-output <- vector('list', length(tms))
-for (i in seq_along(output)) {
-    output[[i]] <- tms[[i]] |> 
-        pivot_longer(
-            cols = ends_with('_prevalence'), names_to = 'body_site',
-            values_to = 'pravalence'
-        ) |> 
-        mutate(body_site = sub('_prevalence$', '', body_site)) |> 
-        separate(
-            col = 'body_site', into = c('body_site', 'rank'), sep = '_'
-        ) |> 
-        rename(
-            taxid = NCBI, taxon_name = name
-        ) |> 
-        mutate(age_range = sub('^.*_', '', names(tms)[i]))
-}
-typical <- do.call(rbind, output)
-typical$prevalence <- round(typical$pravalence, 2)
-typical <- typical[typical$pravalence > 0.01,] # prevalence >= 1%
-glimpse(typical, width = 50)
+tms <- importTidyTMS(prevalence_threshold = 0.01)
+head(tms)
 ```
 
-# Import data from BugSigDB
+## Import BugSigDB
 
-We'll use the bugsigdbr package to import the main data.frame of signatures
-(microbe sets) from BugSigDB.
-
-```{r import bsdb}
-bsdb <- importBugSigDB()
-id1 <- sub(".* ", "", bsdb$Study)
-id2 <- sub(".* ", "", bsdb$Experiment)
-id3 <- sub(".* ", "", bsdb$`Signature page name`)
-bsdb$id <- paste0('bsdb:', id1, '/', id2, '/', id3)
-bsdb <- relocate(bsdb, id)
-head(as_tibble(bsdb))
+```{r import bsdb, message=FALSE}
+bsdb <- importBugSigDB(version = 'devel') |> 
+  as_tibble()
+head(bsdb)
 ```
 
-# Import signatures from bugphyzz
-
-Import data.frames and filtering
+## Import bugphyzz
 
 ```{r import bp, message=FALSE, warning=FALSE}
-bp <- importBugphyzz()
+bp <- importBugphyzz(version = 'devel') |> 
+  as_tibble()
+head(bp)
+```
+
+Which attribute groups (physiologies)
+
+```{r}
+unique(bp$Attribute_group)
+```
+
+Which attribute values
+
+```{r}
+head(unique(bp$Attribute))
+```
+
+## Get bugphyzz signatures
+
+Species signatures
+
+```{r}
 bp_sigs_gn <- getBugphyzzSignatures(
   df = bp, tax.id.type = 'NCBI_ID', tax.level = 'genus',
   frequency = 'always', min.size = 10
 )
+lapply(bp_sigs_gn, head)
+```
+
+Genus signatures
+
+```{r}
 bp_sigs_sp <- getBugphyzzSignatures(
   df = bp, tax.id.type = 'NCBI_ID', tax.level = 'species',
   frequency = 'always', min.size = 10
 )
+lapply(bp_sigs_sp, head)
 ```
-
-
-# Define functions
 
 Define some functions to avoid too much repetition in the code:
 
 ```{r define functions}
-## A function to create sets of signatures for bsdb and backgroud
-getSets <- function(b, t, tax_level) {
-  
-  ## get bsdb sets
-  bsdb_sets <- bsdb |> 
-    filter(`Body site` ==  b, `Host species` == 'Homo sapiens') |> 
-    bugsigdbr::getSignatures(
-        tax.id.type = 'ncbi', tax.level = tax_level, min.size = 5
-    ) 
- 
-  ## get typicalMicrobiomeSignatures taxids
-  typical_sets <- typical |> 
-    filter(body_site == t, rank == tax_level) |> 
-    pull(taxid) |> 
-    unique()
- 
-  ## get background sets  (TypicalMicrobiomeSignatures + bsdb)
-  background_sets <- bsdb_sets |> 
-    lapply(function(x) unique(c(x, typical_sets)))
-  
-  output <- list(bsdb_sets = bsdb_sets, background_sets = background_sets)
-  return(output)
-}
-
-## A function to run enrichment with microbiomeSetEnrichment
-runEnrichment <- function(bsdb_sets, background_sets, bp_sigs) {
-  map2(
-   .x = bsdb_sets, 
-   .y = background_sets, 
-   .f = ~ microbeSetEnrichment(.x, .y, bp_sigs)
-  ) |> 
-    bind_rows(.id = 'bugsigdb_sig') |> 
-    mutate(id = sub('_.*$', '', bugsigdb_sig)) |> 
-    relocate(id) |> 
-    rename(bp_sig = sig_name) |> 
-    as_tibble() |> 
-    left_join(as_tibble(bsdb), by = 'id')
-    # filter(fdr < 0.05) 
-}
 
 ## A function to plot enrichment results
 plotEnrichmentRes <- function(res, body_site, tax_level) {
   dat <- res |>
-    filter(!is.na(`Abundance in Group 1`))
+    dplyr::filter(!is.na(`Abundance in Group 1`))
   
   if (!nrow(dat)) {
     warning('No results')
     return(NULL)
   }
   p <- dat |>  
-    mutate(
+    dplur::mutate(
       bugsigdb_sig = sub('^.*_(.*)_vs_.*$', '\\1', bugsigdb_sig),
       bp_sig = sub('^bugphyzz:', '', bp_sig),
-      `Abundance in Group 1` = case_when(
+      `Abundance in Group 1` = dplyr::case_when(
         `Abundance in Group 1` == 'increased' ~ 'Increased abundance in group 1',
         `Abundance in Group 1` == 'decreased' ~ 'Decreased abundance in group 1',
         TRUE ~ `Abundance in Group 1`
@@ -170,21 +115,21 @@ plotEnrichmentRes <- function(res, body_site, tax_level) {
           `Abundance in Group 1`, 'Increased abundance in group 1'
       )
     ) |>
-    ggplot(aes(bp_sig, reorder(bugsigdb_sig, -log10(p_value)))) +
-      geom_point(
-      aes(
+    ggplot2::ggplot(ggplot2::aes(bp_sig, dplyr::reorder(bugsigdb_sig, -log10(p_value)))) +
+      ggplot2::geom_point(
+      ggplot2::aes(
         color = -log10(p_value),
         size = n_sig / n_background 
       )
     ) +
-    scale_color_viridis_c(name = '-log10(p-value)', option = 'C') +
-    scale_size(
+    ggplot2::scale_color_viridis_c(name = '-log10(p-value)', option = 'C') +
+    ggplot2::scale_size(
       name = expression(
       frac('# annotated BugSigDB', '# annotated background')
       )
     ) +
-    facet_wrap(~`Abundance in Group 1`, nrow = 2, scales = 'free_y') +
-    labs(
+    ggplot2::facet_wrap(~`Abundance in Group 1`, nrow = 2, scales = 'free_y') +
+    ggplot2::labs(
       x = 'bugphyzz sets',
       y = 'BugSigDB sets - Group 1 name',
       title = 'Microbe set enrichment (ORA/Fisher\'s exact test)',
@@ -193,8 +138,8 @@ plotEnrichmentRes <- function(res, body_site, tax_level) {
         body_site, '; ',  tax_level
       )
     ) +
-    theme_bw()  +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    ggplot2::theme_bw()  +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
   return(p)
 }
 ```
@@ -202,6 +147,25 @@ plotEnrichmentRes <- function(res, body_site, tax_level) {
 # Enrichment analysis - stool
 
 **stool - genus**
+
+```{r}
+sets_stool_gn <- getSets(
+  bsdb = bsdb, bsdb_body_site = 'Feces',
+  tms = tms, tms_body_site = 'stool',
+  tax_level = 'genus'
+)
+res_stool_gn <- runEnrichment(
+  bsdb_sets = sets_stool_gn$bsdb_sets, 
+  background_sets = sets_stool_gn$background_sets, 
+  bp_sigs = bp_sigs_gn,
+  bsdb = bsdb
+)
+
+```
+
+
+
+
 
 ```{r enrichment - stool - genus, fig.height=7, fig.width=15}
 sets_stool_gn <- getSets(b = 'feces', t = 'stool', tax_level = 'genus')

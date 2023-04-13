@@ -58,3 +58,75 @@ microbeSetEnrichment <- function(set, reference, sigs) {
     df$sig_name <- names(sigs)
     return(df[, cols_order])
 }
+
+#' Get Sets
+#'
+#' \code{getSets} gets sets of signatures.
+#'
+#' @param bsdb Data imported from bsdb.
+#' @param bsdb_body_site Body site in bsdb.
+#' @param tms Tidy TypicalMicrobiomeSignatures imported with
+#' \code{importTypicalTMS}
+#' @param tms_body_site Body site in tms.
+#' @param tax_level Taxonomic rank
+#'
+#' @return A list of bsdb sets and background sets (bsdb + tms).
+#' @export
+#'
+getSets <- function(
+        bsdb, bsdb_body_site,
+        tms, tms_body_site,
+        tax_level
+) {
+    bsdb_sets <- bsdb |>
+        dplyr::filter(
+            `Body site` == bsdb_body_site, `Host species` == 'Homo sapiens'
+        ) |>
+        bugsigdbr::getSignatures(
+            tax.id.type = 'ncbi', tax.level = tax_level, min.size = 5
+        )
+    typical_sets <- tms |>
+        dplyr::filter(body_site == tms_body_site, rank == tax_level) |>
+        dplyr::pull(taxid) |>
+        unique()
+    background_sets <- bsdb_sets |>
+        lapply(function(x) unique(c(x, typical_sets)))
+    output <- list(bsdb_sets = bsdb_sets, background_sets = background_sets)
+    return(output)
+}
+
+#' Run enrichment
+#'
+#' \code{runEnrichment} runs the enrichment
+#'
+#' @param bsdb_sets Vector of bsdb sets (named list).
+#' @param background_sets Vector of background sets (named list).
+#' @param bp_sigs bugphyzz signatures (named list).
+#' @param bsdb BSDB data.frame.
+#' @param fdr_ths Threshold for filtering.
+#'
+#' @return A data.frame.
+#' @export
+#'
+runEnrichment <- function(
+    bsdb_sets, background_sets, bp_sigs, bsdb, fdr_ths = NULL
+) {
+    res <- purrr::map2(
+        .x = bsdb_sets,
+        .y = background_sets,
+        .f = ~ microbeSetEnrichment(.x, .y, bp_sigs)
+    ) |>
+        dplyr::bind_rows(.id = 'bugsigdb_sig') |>
+        dplyr::mutate(`BSDB ID` = sub('_.*$', '', bugsigdb_sig)) |>
+        dplyr::relocate(`BSDB ID`) |>
+        dplyr::rename(bp_sig = sig_name) |>
+        tibble::as_tibble() |>
+        dplyr::left_join(tibble::as_tibble(bsdb), by = 'BSDB ID')
+    if (!is.null(fdr_ths)) {
+        res <- dplyr::filter(res, fdr < fdr_ths)
+    }
+    return(res)
+}
+
+
+

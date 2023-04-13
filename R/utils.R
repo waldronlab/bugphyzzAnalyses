@@ -112,7 +112,7 @@ importTidyTMS <- function(
         output[[i]] <- tms[[i]] |>
             tidyr::pivot_longer(
                 cols = ends_with('_prevalence'), names_to = 'body_site',
-                values_to = 'pravalence'
+                values_to = 'prevalence'
             ) |>
             dplyr::mutate(body_site = sub('_prevalence$', '', body_site)) |>
             tidyr::separate(
@@ -124,7 +124,7 @@ importTidyTMS <- function(
             dplyr::mutate(age_range = sub('^.*_', '', names(tms)[i]))
     }
     typical <- do.call(rbind, output)
-    typical$prevalence <- round(typical$pravalence, 2)
-    typical <- typical[typical$pravalence >= 0.01,]
+    typical$prevalence <- round(typical$prevalence, 2)
+    typical <- typical[typical$prevalence >= 0.01,]
     return(typical)
 }
