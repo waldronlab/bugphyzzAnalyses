@@ -128,5 +128,64 @@ runEnrichment <- function(
     return(res)
 }
 
+#' Plot Enrichment Results
+#'
+#' \code{plotEnrichmentRes} plots the enrichment results.
+#'
+#' @param res Output from \code{runEnrichment}
+#' @param body_site A character string for the title.
+#' @param tax_level A character string for the title.
+#'
+#' @return A ggplot2 object.
+#' @export
+#'
+plotEnrichmentRes <- function(res, body_site, tax_level) {
+    dat <- res |>
+        dplyr::filter(!is.na(`Abundance in Group 1`))
+
+    if (!nrow(dat)) {
+        warning('No results')
+        return(NULL)
+    }
+    p <- dat |>
+        dplyr::mutate(
+            bugsigdb_sig = sub('^.*_(.*)_vs_.*$', '\\1', bugsigdb_sig),
+            bp_sig = sub('^bugphyzz:', '', bp_sig),
+            `Abundance in Group 1` = dplyr::case_when(
+                `Abundance in Group 1` == 'increased' ~ 'Increased abundance in group 1',
+                `Abundance in Group 1` == 'decreased' ~ 'Decreased abundance in group 1',
+                TRUE ~ `Abundance in Group 1`
+            ),
+            `Abundance in Group 1` = forcats::fct_relevel(
+                `Abundance in Group 1`, 'Increased abundance in group 1'
+            )
+        ) |>
+        ggplot2::ggplot(ggplot2::aes(bp_sig, reorder(bugsigdb_sig, -log10(p_value)))) +
+        ggplot2::geom_point(
+            ggplot2::aes(
+                color = -log10(p_value),
+                size = n_sig / n_background
+            )
+        ) +
+        ggplot2::scale_color_viridis_c(name = '-log10(p-value)', option = 'C') +
+        ggplot2::scale_size(
+            name = expression(
+                frac('# annotated BugSigDB', '# annotated background')
+            )
+        ) +
+        ggplot2::facet_wrap(~`Abundance in Group 1`, nrow = 2, scales = 'free_y') +
+        ggplot2::labs(
+            x = 'bugphyzz sets',
+            y = 'BugSigDB sets - Group 1 name',
+            title = 'Microbe set enrichment (ORA/Fisher\'s exact test)',
+            subtitle = paste0(
+                'Hypothesis: "greater"; FDR < 0.1;',
+                body_site, '; ',  tax_level
+            )
+        ) +
+        ggplot2::theme_bw()  +
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+    return(p)
+}
 
 
