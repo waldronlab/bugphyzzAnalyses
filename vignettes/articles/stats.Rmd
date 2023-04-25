@@ -1,5 +1,6 @@
 ---
 title: "Stats"
+subtitle: "(Figure 1)"
 output:
     html_document:
         toc: true
@@ -15,87 +16,186 @@ knitr::opts_chunk$set(
 ```{r setup, message=FALSE}
 library(bugphyzzAnalyses)
 library(bugphyzz)
-library(purrr)
 library(dplyr)
-library(tidyr)
-library(tibble)
-library(ComplexHeatmap)
+library(taxPPro)
+library(ggplot2)
+library(forcats)
+library(ggpubr)
+library(taxPPro)
+
+valid_ranks <- c(
+  'strain', 'species', 'genus', 'family', 'order', 'class', 'phylum',
+  'domain'
+)
+
 ```
 
 # Data
 
-```{r, message=FALSE, warning=FALSE}
-phys <- physiologies()
-phys$`fatty acid compositions` <- fattyAcidComposition()
-phys <- map(phys, as_tibble)
+```{r, message=FALSE}
+bp <- importBugphyzz(version = 'devel', force_download = TRUE)
+dim(bp)
 ```
 
-# Sources
+# Number of taxa
 
-Use the 'Literature' keyword for all published articles with the format
-`\\w[0-9]{4}`:
+## Top 10 species by number of annotations
 
-```{r}
-phys_sources_mod <- phys |> 
-  map(~{
-    .x |> 
-        mutate(
-            Attribute_source = ifelse(
-                grepl('\\w_[0-9]{4}', Attribute_source), 
-                'Literature',
-                Attribute_source
-            )
-        )
-})
+This is not really the top ten species since there are a lot of overlaps (ties)
+in the number of annotations. So these are the first 10 after arranging
+by number of annotations per species and alphabetically.
 
-sources_tbl <- phys_sources_mod |> 
-  map(~ count(.x, Attribute_source)) |> 
-  bind_rows(.id = 'Attribute')
+```{r top 10 species, fig.width=4, fig.height=5}
+top10_sp <- bp |> 
+  filter(Rank == 'species') |>
+  count(NCBI_ID, Taxon_name) |> 
+  arrange(-n, Taxon_name) |> 
+  head(10)
+top10_sp_p <- top10_sp |> 
+  ggplot(aes(reorder(Taxon_name, -n), n)) +
+  geom_col(fill = 'dodgerblue4', alpha = 0.8) +
+  labs(x = 'Top 10 species', y = '# annotations') +
+  scale_y_continuous(breaks = scales::pretty_breaks()) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1), 
+    panel.grid.major.y = element_line(color = 'black', linewidth = 0.2),
+    panel.grid.major.x = element_blank()
+  )
+top10_sp_p
 ```
-## Table of sources
+
+## Frequency of number of annotations per taxon
 
 ```{r}
-sources_cat <- sources_tbl |> 
-  select(-n) |> 
-  distinct() |> 
-  arrange(Attribute) |> 
-  group_by(Attribute_source) |> 
-  summarise(
-    Attributes = paste0(Attribute, collapse = ', ')
+freq_annot_rank <- bp |> 
+  count(Rank, NCBI_ID, name = 'n_annot') |> 
+  count(Rank, n_annot)
+
+freq_rank_p <- freq_annot_rank |> 
+  mutate(
+    Rank = factor(Rank, levels = c(
+      'strain', 'species', 'genus', 'family', 'order', 'class', 'phylum',
+      'domain'
+      ))
   ) |> 
-  ungroup() |> 
-  rename(Sources = Attribute_source)
-createDT(sources_cat)
+  ggplot(aes(n_annot, n)) +
+  geom_col(fill = 'dodgerblue4') +
+  scale_y_continuous(breaks = scales::pretty_breaks()) +
+  scale_x_continuous(breaks = scales::pretty_breaks()) +
+  labs(x = 'Number of annotaions per taxon', y = 'Frequency') +
+  facet_wrap(~Rank, scales = 'free_y') +
+  theme_bw()
+
+freq_rank_p
+```
+
+# Numbers per physiology
+
+## Annotations per physiology
+
+```{r, fig.width=4, fig.height=4}
+phys_summary <- bp |> 
+  count(Attribute_group) |> 
+  arrange(-n)
+phys_summary_plot <- phys_summary |> 
+  ggplot(aes(Attribute_group, n)) +
+  geom_col(fill = 'dodgerblue4', alpha = 0.8) +
+  labs(y = '# annotations', x = 'Top "10" physiologies') +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_line(color = 'black', linewidth = 0.2)
+  )
+phys_summary_plot
 ```
 
 
-Create count table of all of the attributes
+# Figure 1?
 
 ```{r}
-sources_counts <- phys_sources_mod |> 
-  map(~ count(.x, Attribute_source)) |> 
-  bind_rows(.id = 'Attribute')
-```
-
-
-## Count mattrix
-
-Create count matrix and matrix of proportions for each source and attribute
-
-```{r}
-count_mat <- sources_counts |> 
-  pivot_wider(
-    names_from = 'Attribute_source', values_from = 'n' , values_fill = 0
-  ) |> 
-  column_to_rownames(var = 'Attribute') |> 
-  as.matrix()
-
-prop_mat <- apply(count_mat, 1, function(x) (x / sum(x) * 100))
-Heatmap( 
-  matrix = prop_mat,
-  show_row_dend = FALSE, show_column_dend = FALSE,
-  column_names_side = 'bottom', row_names_side = 'left',
-  name = '%', 
-  col = circlize::colorRamp2(c(0, 1, 100), c("white", 'yellow', "red"))
+fig1 <- ggarrange(
+  top10_sp_p,
+  phys_summary_plot, labels = c('A)', 'B)'), hjust = 0
 )
+fig1
 ```
+
+
+# Numbers per source
+
+```{r}
+bp_source <- bp[!is.na(bp$Attribute_source),]
+unique_sources <- bp_source |> 
+    filter(Evidence  %in% c('exp', 'igc', 'tas', 'nas')) |> 
+    pull(Attribute_source) |> 
+    unique() |> 
+    strsplit(';') |> 
+    unlist() |> 
+    unique() |> 
+    sort()
+n_sources <- length(unique_sources)
+n_sources
+```
+
+```{r}
+summary_source <- bp |> 
+    mutate(
+        Attribute_source = ifelse(is.na(Attribute_source), Evidence, Attribute_source)
+    ) |> 
+    count(Attribute_source)
+
+summary_source
+```
+
+# Completeness
+
+Import the taxonomy information of the taxa used to create the tree
+(data structure) with the taxPPro package.
+
+```{r}
+base_taxa <- get_ncbi_taxids('bti') |> 
+  rename(domain =  kingdom) |> 
+  mutate(Rank = ifelse(Rank == 'superkingdom', 'domain', Rank)) |> 
+  filter(Rank %in% valid_ranks) |> 
+  select(-Taxon_name, -Parent_NCBI_ID)
+```
+
+NCBI IDs in data structure
+
+```{r}
+mean(bp$NCBI_ID %in% base_taxa$NCBI_ID)
+```
+
+NCBI IDs not in data structure
+
+```{r}
+mean(!bp$NCBI_ID %in% base_taxa$NCBI_ID)
+```
+
+```{r}
+bp_tax <- left_join(bp, base_taxa, by = 'NCBI_ID')
+```
+
+
+
+```{r}
+base_taxa |> 
+  filter(Rank  = )
+```
+
+
+
+
+
+
+
+
+
+# Session information
+
+```{r}
+sessioninfo::session_info()
+```
+

@@ -22,76 +22,6 @@ library(ggplot2)
 library(data.tree)
 ```
 
-# Import bugphzz data
-
-```{r, message=FALSE, warning=FALSE}
-exclude_phys <- c(
-  'antimicrobial resistance', 'isolation site',
-  'COGEM pathogenicity rating', 'growth medium'
-)
-phys <- physiologies(remove_false = TRUE) |> 
-  keep(~ unique(.x$Attribute_type) == 'categorical') |> 
-  {\(y) y[!names(y) %in% exclude_phys]}() |> 
-  map(preSteps, tax.id.type = 'NCBI_ID', remove_false = TRUE)
-before <- map_int(phys, nrow) |> 
-  as.data.frame() |> 
-  tibble::rownames_to_column(var = 'physiology') |> 
-  mutate(group = 'before')
-colnames(before)[2] <- 'n'
-```
-
-# Run propagation
-
-```{r, message=FALSE, warning=FALSE}
-propagation <- vector('list', length(phys))
-for (i in seq_along(propagation)) {
-    names(propagation)[i] <- names(phys)[i]
-    output_ <- tryCatch(
-      error = function(e) NULL, {
-        propagate(phys[[i]], max.tax.level = 'genus')
-      }
-    )
-    if (!is.null(output_)) {
-      propagation[[i]] <- output_
-    }
-}
-names(propagation) <- names(phys)
-propagation <- discard(propagation, is.null)
-after <- map_int(propagation, nrow) |> 
-  as.data.frame() |> 
-  tibble::rownames_to_column(var = 'physiology') |> 
-  mutate(group = 'after')
-colnames(after)[2] <- 'n'
-```
-
-## Propagation II
-
-```{r}
-data('tree_list')
-tree <- as.Node(tree_list)
-```
-
-```{r}
-aer <- physiologies(
-  'aerophilicity', remove_false = TRUE, full_source = FALSE
-)[[1]]
-aer <- preSteps(aer, tax.id.type = 'NCBI_ID', remove_false = TRUE)
-dic <- c('g__', 's__', 't__')
-names(dic) <- c('genus', 'species', 'strain')
-aer$NCBI_ID <- paste0(dic[aer$Rank], aer$NCBI_ID)
-select_cols <- c(
-  'NCBI_ID', 'Attribute', 'Evidence', 'Attribute_source', 'Score'
-)
-aer <- unique(aer[, select_cols])
-aer <- aer[which(grepl('^[gs]__', aer$NCBI_ID)),]
-```
-
-
-```{r, message=FALSE}
-res <- addAttributes(data_tree = tree, df = aer)
-res$Do(asrUpstream, traversal = 'post-order')
-res$Do(inhDownstream, traversal = 'pre-order')
-```
 
 ```{r}
 ncbi_taxonomy <- get_ncbi_taxonomy() |> 
@@ -143,8 +73,6 @@ output6 <- lapply(output5, function(x) {
 })
 ```
 
-
-
 ## Get NCBI summary (reference/denominator numbers)
 
 ```{r}
@@ -185,7 +113,6 @@ ncbi_summary_st <- all_numbers |>
     count(kingdom, phylum, name = 'n_ncbi_st') |>
     arrange(desc(kingdom), -n_ncbi_st)
 ```
-
 
 
 ```{r}
@@ -416,8 +343,6 @@ prop_completeness_st <- left_join(
     prop_completeness_st = n_prop_st / n_ncbi_st
   )
 ```
-
-
 
 ### Merge all completeness data for a single physiology
 
