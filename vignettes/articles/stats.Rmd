@@ -1,6 +1,6 @@
 ---
 title: "Stats"
-subtitle: "(Figure 1)"
+subtitle: "Data for figures 1?, 2, and 3?"
 output:
     html_document:
         toc: true
@@ -13,6 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
+
 ```{r setup, message=FALSE}
 library(bugphyzzAnalyses)
 library(bugphyzz)
@@ -22,19 +23,213 @@ library(ggplot2)
 library(forcats)
 library(ggpubr)
 library(taxPPro)
+library(tidyr)
+library(ComplexHeatmap)
+```
 
+Useful variables:
+
+```{r}
 valid_ranks <- c(
   'strain', 'species', 'genus', 'family', 'order', 'class', 'phylum',
   'domain'
 )
-
 ```
 
 # Data
 
 ```{r, message=FALSE}
 bp <- importBugphyzz(version = 'devel', force_download = TRUE)
-dim(bp)
+```
+
+# Source data
+
+## Number of original sources
+
+```{r}
+bp_source <- bp[!is.na(bp$Attribute_source),]
+unique_sources <- bp_source |> 
+    filter(Evidence  %in% c('exp', 'igc', 'tas', 'nas')) |> 
+    pull(Attribute_source) |> 
+    unique() |> 
+    strsplit(';') |> 
+    unlist() |> 
+    unique() |> 
+    sort()
+n_sources <- length(unique_sources)
+n_sources
+```
+
+## Number of annotaions per source
+
+Here, inheritance and asr are treated as two separate and new sources.
+Note that the majority of annotations actually come from the propagation step.
+
+```{r}
+summary_source <- bp |> 
+  mutate(
+        Attribute_source = ifelse(is.na(Attribute_source), Evidence, Attribute_source)
+  ) |> 
+  mutate(
+    Attribute_source = case_when(
+      Attribute_source == 'inh' ~ 'Propagation (inheritance)',
+      Attribute_source == 'asr' ~ 'Propagation (ASR)',
+      TRUE ~ Attribute_source
+    )
+  ) |> 
+  filter(!grepl(';', Attribute_source)) |> 
+  count(Attribute_source) |> 
+  arrange(-n) |> 
+  head(10)
+  
+# summary_source
+summary_source_p <- summary_source |> 
+  ggplot(aes(reorder(Attribute_source, -n), n)) +
+  geom_col(fill = 'dodgerblue4', alpha = 0.8) +
+  labs(
+    x = 'Top 10 source', y = '# Annotations'
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_line(color = 'black', linewidth = 0.2)
+  )
+summary_source_p
+```
+
+Note: These are total numbers. Would it be interesting to see these
+by physiology type with percentage?
+
+# Completeness
+
+Import data of taxa used to create the taxonomic tree:
+
+```{r}
+base_taxa <- get_ncbi_taxids('bti') |> 
+  rename(domain =  kingdom) |> 
+  mutate(Rank = ifelse(Rank == 'superkingdom', 'domain', Rank)) |> 
+  filter(Rank %in% valid_ranks) |> 
+  select(-Taxon_name, -Parent_NCBI_ID)
+base_taxa_summary <- base_taxa |> 
+  count(Rank, name = "n_inbase")
+```
+NCBI IDs in data structure
+
+```{r}
+## 90% of the taxa in the original taxa can be found in the tree.
+bp_original_source <- filter(bp, !is.na(Attribute_source))
+mean(bp_original_source$NCBI_ID %in% base_taxa$NCBI_ID)
+```
+
+
+```{r}
+## Create sets for calculating completeness
+## inset are all ids found in the tree structure
+## inset_sources are all ids found in the tree structure and come from 
+## original sources only`
+inset <- bp |> 
+  filter(NCBI_ID %in% base_taxa$NCBI_ID)
+inset_summary <- inset |> 
+  count(Attribute_group, Rank, name = 'n_inset')
+inset_sources <- inset |> 
+  filter(!is.na(Attribute_source))
+inset_sources_summary <- inset_sources |> 
+  count(Attribute_group, Rank, name = 'n_sources')
+
+## Calculate completeness
+completeness <- base_taxa_summary |> 
+  left_join(inset_summary, by = c('Rank') ) |> 
+  left_join(inset_sources_summary, by = c('Attribute_group', 'Rank')) |>
+  mutate(
+    completeness_before = n_sources / n_inbase,
+    completeness_after = n_inset / n_inbase
+) |> 
+  relocate(
+    Attribute_group, Rank, completeness_before, completeness_after,
+    n_inbase, n_inset
+  )
+
+```
+
+```{r}
+completeness <- base_taxa_summary |> 
+  left_join(inset_summary, by = c('Rank') ) |> 
+  left_join(inset_sources_summary, by = c('Attribute_group', 'Rank')) |>
+  mutate(
+    completeness_before = n_original / n_inbase,
+    completeness_after = n_inset / n_inbase
+) |> 
+  relocate(
+    Attribute_group, Rank, completeness_before, completeness_after,
+    n_inbase, n_inset
+  )
+```
+
+
+
+```{r}
+comp_mat_bef <- completeness |> 
+  select(Attribute_group, Rank, completeness_before) |> 
+  filter(!is.na(completeness_before)) |> 
+  pivot_wider(
+    names_from = 'Rank', values_from = 'completeness_before',
+    values_fill = 0
+  ) |> 
+  tibble::column_to_rownames(var = 'Attribute_group') |> 
+  select(all_of(valid_ranks[1:3])) |> 
+  as.matrix() |> 
+  round(digits = 2) 
+
+comp_mat_aft <- completeness |> 
+  select(Attribute_group, Rank, completeness_after) |> 
+  pivot_wider(
+    names_from = 'Rank', values_from = 'completeness_after',
+    values_fill = 0
+  ) |> 
+  tibble::column_to_rownames(var = 'Attribute_group') |> 
+  select(all_of(valid_ranks)) |> 
+  as.matrix() |> 
+  round(digits = 2)
+```
+
+Create heatmaps
+
+```{r}
+color_fun <- circlize::colorRamp2(
+  breaks = c(.1, .9), colors = c('white', 'dodgerblue4')
+)
+lgd <- Legend(col_fun = color_fun, title = "completeness")
+ht_b <- Heatmap(
+  matrix = comp_mat_bef,
+  cluster_rows = FALSE, cluster_columns = FALSE,
+  row_names_side = 'left',
+  show_heatmap_legend = FALSE,
+  col = color_fun,
+  cell_fun = function(j, i, x, y, width, height, fill) {
+        grid.rect(x = x, y = y, width = width, height = height, 
+            gp = gpar(col = "black", fill = NA))
+  }
+)
+ht_a <- Heatmap(
+  matrix = comp_mat_aft,
+  cluster_rows = FALSE, cluster_columns = FALSE,
+  row_names_side = 'left',
+  name = 'completeness',
+  heatmap_legend_param = list(
+    at = c(0, 0.5, 1)
+  ),
+  col = color_fun,
+  cell_fun = function(j, i, x, y, width, height, fill) {
+        grid.rect(x = x, y = y, width = width, height = height, 
+            gp = gpar(col = "black", fill = NA))
+  }
+)
+ht_list <- ht_b + ht_a
+ht <- draw(
+  ht_list, 
+  ht_gap = unit(0.4, "cm")
+)
 ```
 
 # Number of taxa
@@ -67,11 +262,10 @@ top10_sp_p
 
 ## Frequency of number of annotations per taxon
 
-```{r}
+```{r frequency N annotations}
 freq_annot_rank <- bp |> 
   count(Rank, NCBI_ID, name = 'n_annot') |> 
   count(Rank, n_annot)
-
 freq_rank_p <- freq_annot_rank |> 
   mutate(
     Rank = factor(Rank, levels = c(
@@ -80,13 +274,20 @@ freq_rank_p <- freq_annot_rank |>
       ))
   ) |> 
   ggplot(aes(n_annot, n)) +
-  geom_col(fill = 'dodgerblue4') +
+  geom_col(fill = 'dodgerblue4', alpha = 0.8) +
   scale_y_continuous(breaks = scales::pretty_breaks()) +
-  scale_x_continuous(breaks = scales::pretty_breaks()) +
+  scale_x_continuous(
+    limits = c(0, 11),
+    breaks = scales::pretty_breaks()
+  ) +
   labs(x = 'Number of annotaions per taxon', y = 'Frequency') +
   facet_wrap(~Rank, scales = 'free_y') +
-  theme_bw()
-
+  theme_bw() +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_line(color = 'black', linewidth = 0.1)
+  )
 freq_rank_p
 ```
 
@@ -101,7 +302,7 @@ phys_summary <- bp |>
 phys_summary_plot <- phys_summary |> 
   ggplot(aes(Attribute_group, n)) +
   geom_col(fill = 'dodgerblue4', alpha = 0.8) +
-  labs(y = '# annotations', x = 'Top "10" physiologies') +
+  labs(y = '# annotations', x = 'Top 10 physiologies') +
   theme_bw() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
@@ -111,87 +312,15 @@ phys_summary_plot <- phys_summary |>
 phys_summary_plot
 ```
 
-
-# Figure 1?
+# Figure 3?
 
 ```{r}
-fig1 <- ggarrange(
+fig3 <- ggarrange(
   top10_sp_p,
   phys_summary_plot, labels = c('A)', 'B)'), hjust = 0
 )
-fig1
+fig3
 ```
-
-
-# Numbers per source
-
-```{r}
-bp_source <- bp[!is.na(bp$Attribute_source),]
-unique_sources <- bp_source |> 
-    filter(Evidence  %in% c('exp', 'igc', 'tas', 'nas')) |> 
-    pull(Attribute_source) |> 
-    unique() |> 
-    strsplit(';') |> 
-    unlist() |> 
-    unique() |> 
-    sort()
-n_sources <- length(unique_sources)
-n_sources
-```
-
-```{r}
-summary_source <- bp |> 
-    mutate(
-        Attribute_source = ifelse(is.na(Attribute_source), Evidence, Attribute_source)
-    ) |> 
-    count(Attribute_source)
-
-summary_source
-```
-
-# Completeness
-
-Import the taxonomy information of the taxa used to create the tree
-(data structure) with the taxPPro package.
-
-```{r}
-base_taxa <- get_ncbi_taxids('bti') |> 
-  rename(domain =  kingdom) |> 
-  mutate(Rank = ifelse(Rank == 'superkingdom', 'domain', Rank)) |> 
-  filter(Rank %in% valid_ranks) |> 
-  select(-Taxon_name, -Parent_NCBI_ID)
-```
-
-NCBI IDs in data structure
-
-```{r}
-mean(bp$NCBI_ID %in% base_taxa$NCBI_ID)
-```
-
-NCBI IDs not in data structure
-
-```{r}
-mean(!bp$NCBI_ID %in% base_taxa$NCBI_ID)
-```
-
-```{r}
-bp_tax <- left_join(bp, base_taxa, by = 'NCBI_ID')
-```
-
-
-
-```{r}
-base_taxa |> 
-  filter(Rank  = )
-```
-
-
-
-
-
-
-
-
 
 # Session information
 
