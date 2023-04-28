@@ -1,0 +1,91 @@
+---
+title: "chi-square with nychanes data in bugsigdb"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message=FALSE}
+library(bugphyzzAnalyses)
+library(bugsigdbr)
+library(bugphyzz)
+library(dplyr)
+library(purrr)
+```
+
+# Import data
+
+```{r}
+bp <- importBugphyzz(version = 'devel')
+bsdb <- importBugSigDB(version = 'devel')
+```
+
+Import signatures 1 and 2 from experiment 1 in study 727.
+
+```{r}
+study_727 <- bsdb |> 
+    filter(`BSDB ID` %in% c('bsdb:727/1/1', 'bsdb:727/1/2'))
+sigs727 <- bugsigdbr::getSignatures(
+  df = study_727, tax.id.type = 'ncbi', tax.level = 'mixed'
+)
+increased <- sigs727$`bsdb:727/1/2_Tobacco-smoke-exposure-measurement:Current-cigarette-smokers_vs_Never-smokers_UP`
+decreased <- sigs727$`bsdb:727/1/1_Tobacco-smoke-exposure-measurement:Current-cigarette-smokers_vs_Never-smokers_DOWN`
+
+df <- data.frame(
+  NCBI_ID = c(increased, decreased),
+  Abundance = c(rep('increased', length(increased)), rep('decreased', length(decreased)))
+)
+head(df)
+```
+
+```{r}
+aer <- filter(bp, Attribute_group == 'aerophilicity') |> 
+  select(NCBI_ID, Attribute) |> 
+  mutate(Attribute = sub('^.*:', '', Attribute)) |> 
+  distinct()
+head(aer)
+```
+
+Remove taxa marked in both groups
+
+```{r}
+tbl <- left_join(df, aer, by = 'NCBI_ID')
+dups <- tbl$NCBI_ID[which(duplicated(tbl$NCBI_ID))]
+taxizedb::taxid2name(dups)
+```
+
+```{r}
+tbl[tbl$NCBI_ID %in% dups,]
+```
+
+```{r}
+tbl <- tbl[!tbl$NCBI_ID %in% dups, ]
+any(duplicated(tbl$NCBI_ID))
+```
+
+Contingency table
+
+```{r}
+cont <- epitools::epitable(tbl$Attribute, tbl$Abundance)
+cont
+```
+
+```{r}
+res <- chisq.test(x = tbl$Attribute, y = tbl$Abundance, simulate.p.value = TRUE)
+res
+```
+
+# Session information
+
+```{r}
+sessioninfo::session_info()
+```
