@@ -157,7 +157,7 @@ completeness <- base_taxa_summary |>
   left_join(inset_summary, by = c('Rank') ) |> 
   left_join(inset_sources_summary, by = c('Attribute_group', 'Rank')) |>
   mutate(
-    completeness_before = n_original / n_inbase,
+    completeness_before = n_sources / n_inbase,
     completeness_after = n_inset / n_inbase
 ) |> 
   relocate(
