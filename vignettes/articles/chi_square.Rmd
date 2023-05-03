@@ -1,5 +1,5 @@
 ---
-title: "chi-square with nychanes data in bugsigdb"
+title: "Analysis of the NYCHANES signatures"
 output:
   html_document:
     toc: yes
@@ -25,11 +25,14 @@ library(purrr)
 # Import data
 
 ```{r}
-bp <- importBugphyzz(version = 'devel')
+bp <- importBugphyzz(version = 'devel', force_download = TRUE)
 bsdb <- importBugSigDB(version = 'devel')
+tms <- importTidyTMS()
 ```
 
-Import signatures 1 and 2 from experiment 1 in study 727.
++ Study 727 corresponds to the NYCHANES public study.
++ Signature 1 is decreased abundance in smokers.
++ Signature 2 is increased abundance in smokers.
 
 ```{r}
 study_727 <- bsdb |> 
@@ -37,9 +40,8 @@ study_727 <- bsdb |>
 sigs727 <- bugsigdbr::getSignatures(
   df = study_727, tax.id.type = 'ncbi', tax.level = 'mixed'
 )
-increased <- sigs727$`bsdb:727/1/2_Tobacco-smoke-exposure-measurement:Current-cigarette-smokers_vs_Never-smokers_UP`
 decreased <- sigs727$`bsdb:727/1/1_Tobacco-smoke-exposure-measurement:Current-cigarette-smokers_vs_Never-smokers_DOWN`
-
+increased <- sigs727$`bsdb:727/1/2_Tobacco-smoke-exposure-measurement:Current-cigarette-smokers_vs_Never-smokers_UP`
 df <- data.frame(
   NCBI_ID = c(increased, decreased),
   Abundance = c(rep('increased', length(increased)), rep('decreased', length(decreased)))
@@ -51,6 +53,14 @@ head(df)
 aer <- filter(bp, Attribute_group == 'aerophilicity') |> 
   select(NCBI_ID, Attribute) |> 
   mutate(Attribute = sub('^.*:', '', Attribute)) |> 
+  mutate(
+    Attribute = case_when(
+      Attribute == 'obligately_anaerobic' ~ 'anaerobic',
+      Attribute == 'microaerophilic' ~ 'aerobic',
+      Attribute == 'obligately_aerobic' ~ 'aerobic',
+      TRUE ~ Attribute
+    )
+  ) |> 
   distinct()
 head(aer)
 ```
@@ -79,10 +89,71 @@ cont <- epitools::epitable(tbl$Attribute, tbl$Abundance)
 cont
 ```
 
+Chi-square. Test of independence.
+
+> H0: There is no relationship between smoking and aerophilicity in DA microbes.  
+H1: There is a relationship between smoking and aerophilicity in DA microbes.
+
 ```{r}
-res <- chisq.test(x = tbl$Attribute, y = tbl$Abundance, simulate.p.value = TRUE)
-res
+chi_res <- chisq.test(
+  x = tbl$Attribute, y = tbl$Abundance, simulate.p.value = TRUE
+)
+chi_res
 ```
+
+
+```{r}
+tbl2 <- filter(tbl, Attribute %in% c('aerobic', 'anaerobic'))
+cont2 <- epitools::epitable(tbl2$Attribute, tbl2$Abundance)
+cont2
+```
+
+```{r}
+chi_res2 <- chisq.test(
+  x = tbl2$Attribute, y = tbl2$Abundance, simulate.p.value = TRUE
+)
+chi_res2
+```
+
+```{r}
+mouth <- tms |> 
+  filter(body_site == 'oralcavity', rank == 'genus')
+```
+
+
+```{r}
+increased_bkg <- unique(c(increased, mouth$taxid))
+decreased_bkg <- unique(c(decreased, mouth$taxid))
+```
+
+```{r}
+aer2 <- bp |> 
+  filter(grepl('aerophilicity', Attribute))
+bp_sigs <- getBugphyzzSignatures(
+  df = aer2, tax.id.type = 'NCBI_ID', tax.level = 'genus'
+)
+```
+
+
+
+```{r}
+en2 <- runEnrichment(
+  bsdb = bsdb,
+  bsdb_sets = list(`bsdb:727/1/1` = decreased, `bsdb:727/1/2` = increased),
+  background_sets = list(`bsdb:727/1/1` = decreased_bkg, `bsdb:727/1/2` = increased_bkg),
+  bp_sigs = bp_sigs
+)
+data.table::data.table(en2)
+
+```
+
+
+
+
+
+
+
+
 
 # Session information
 
