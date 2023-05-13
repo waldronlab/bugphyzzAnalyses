@@ -232,6 +232,15 @@ ht <- draw(
 )
 ```
 
+Add confidence of annotations for this figure.
+Discuss the meaning of the inference.
+Hold out validation. Choose random annotations (10% ~30-100x). Cross-validation.
+Hold out positives and negatives.
+One rank or physiology at at a time.
+Look for a citation for method implemented for validation.
+Check Mathews Correlation coefficient for balanced/unbalanced prediction. Matthews correlation coefficient
+Try different tissues.
+
 # Number of taxa
 
 ## Top 10 species by number of annotations

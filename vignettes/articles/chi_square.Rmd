@@ -147,14 +147,6 @@ data.table::data.table(en2)
 
 ```
 
-
-
-
-
-
-
-
-
 # Session information
 
 ```{r}

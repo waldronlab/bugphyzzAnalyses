@@ -1,5 +1,5 @@
 ---
-title: "Enrichment analysis of BugSigDB sets with bugphyzz signatures"
+title: "High-througput MSEA of BugSigDB and bugphyzz sets"
 output:
   html_document:
     toc: true
@@ -25,46 +25,77 @@ library(ggplot2)
 
 # Some considerations
 
-+ Use only signatures with reported as "Abundance in Group" in bsdb.
++ Use only signatures with differential abundance results in BugSigDB
+('Abundance in group 1' columns).
 + Some terms in bsdb were merged (skin, oral cavity, and vagina).
++ We'll use [TypicalMicrobiomeSignatures](https://zenodo.org/record/7622129) 
+to create background sets.
 
 # Import data
 
 ## Import TypicalMicrobiomeSignatures
 
-TypicalMicrobiomeSignatures will be used to create background sets.
+Use [TypicalMicrobiomeSignatures](https://zenodo.org/record/7622129) to create
+background sets. Use a cutoff of 0.01 prevalence for filtering.
 
 ```{r import typical microbiome signatures, message=FALSE}
 tms <- importTidyTMS(prevalence_threshold = 0.01)
-head(tms)
+glimpse(tms, width = 70)
+```
+
+Create sets for tms at the genus and species ranks for each of the body sites
+(skin, vagina, oralcavity, nasalcavity, stool):
+
+```{r tms sets}
+l <- length(unique(tms$body_site)) * length(unique(tms$rank))
+tms_sets <- vector('list', l)
+tms_bs <- unique(tms$body_site)
+tms_r <- unique(tms$rank)
+n <- 1
+for (i in seq_along(tms_bs)) {
+  for (j in seq_along(tms_r)) {
+    names(tms_sets)[n] <- paste0(tms_bs[i], '_', tms_r[j])
+    tms_sets[[n]] <- tms |> 
+      filter(body_site == tms_bs[i], rank == tms_r[j]) |> 
+      pull(taxid) |> 
+      unique()
+    n <- n + 1
+  }
+}
+map(tms_sets, head)
 ```
 
 ## Import BugSigDB
 
+Just consider signatures with 'decreased' or 'increased' values in the
+'Abundance in Group 1' column, i.e., signatures from experiments with
+differential abundance results.
+
 ```{r import bsdb, message=FALSE}
 bsdb <- importBugSigDB(version = 'devel') |> 
-  as_tibble()
-head(bsdb)
+  as_tibble() |> 
+  filter(`Abundance in Group 1` %in% c('increased', 'decreased'))
+glimpse(bsdb, width = 70)
 ```
+
+
 
 ## Import bugphyzz
 
 ```{r import bp, message=FALSE, warning=FALSE}
-bp <- importBugphyzz(version = 'devel') |> 
-  as_tibble()
-head(bp)
+bp <- as_tibble(importBugphyzz(version = 'devel'))
+glimpse(bp, width = 70)
 ```
-
-Which attribute groups (physiologies)
+Which attribute groups (also referred to as physiologies in the documentation):
 
 ```{r}
-unique(bp$Attribute_group)
+whichAttrGrp(bp)
 ```
 
-Which attribute values
+Which attributes, which wuold be the names of the signatures:
 
 ```{r}
-head(unique(bp$Attribute))
+whichAttr(bp)
 ```
 
 ## Get bugphyzz signatures
