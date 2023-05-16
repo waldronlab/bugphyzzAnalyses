@@ -24,7 +24,7 @@ jobs:
 
       - name: Install apt dependencies
         run: |
-          sudo apt-get update && sudo apt-get install -y rsync
+          sudo apt-get update && sudo apt-get install -y
 
       - name: Install R dependencies
         run: |
