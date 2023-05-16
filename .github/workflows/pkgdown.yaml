@@ -24,12 +24,12 @@ jobs:
 
       - name: Install apt dependencies
         run: |
-          sudo apt-get update && sudo apt-get install -y
+          sudo apt-get update && sudo apt-get install -y rsync
 
       - name: Install R dependencies
         run: |
-          install.packages("pkgdown", dependencies = TRUE)
           remotes::install_deps(dependencies = TRUE, repos = BiocManager::repositories())
+          install.packages("pkgdown", dependencies = TRUE)
         shell: Rscript {0}
 
       - name: Install package
