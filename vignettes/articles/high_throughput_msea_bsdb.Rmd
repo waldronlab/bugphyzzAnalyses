@@ -217,6 +217,7 @@ for (i in seq_along(bsdb_sets)) {
 }
 enrichment_res <- discard(enrichment_res, ~ !nrow(.x))
 map(enrichment_res, nrow)
+## top hits by odds ratio
 ```
 
 ```{r create plots, warning=FALSE}

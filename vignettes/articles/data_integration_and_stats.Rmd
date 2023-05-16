@@ -240,6 +240,52 @@ Look for a citation for method implemented for validation.
 Check Mathews Correlation coefficient for balanced/unbalanced prediction. Matthews correlation coefficient
 Try different tissues.
 
+
+# Dispersion of sources
+
+```{r}
+srank <- count(bp_source, Attribute_source, Rank, name = 'n_rank') |> 
+  filter(!grepl('BacDive;', Attribute_source))
+sphys <- count(bp_source, Attribute_source, Attribute_group, name = 'n_grp') |> 
+  filter(!grepl('BacDive;', Attribute_source)) 
+
+```
+
+
+```{r}
+data <- count(bp_source, Attribute_source, Attribute_group, Rank) |> 
+  filter(!grepl('BacDive;', Attribute_source)) |> 
+  mutate(new_column = paste0(Rank, '|', Attribute_group)) |>
+  select(new_column, Attribute_source, n) |> 
+  pivot_wider(
+    names_from = 'Attribute_source', values_from = 'n', values_fill = 0
+  ) |> 
+  arrange(new_column) |> 
+  tibble::column_to_rownames(var = 'new_column') |> 
+  as.matrix()
+```
+
+
+```{r}
+# lgd2 <- Legend(col_fun = color_fun, title = "# annotations")
+ht_sources <- Heatmap(
+  matrix = data,
+  cluster_rows = FALSE, cluster_columns = FALSE,
+  row_names_side = 'left',
+  name = '# annotations',
+  show_heatmap_legend = TRUE,
+  col = color_fun,
+  cell_fun = function(j, i, x, y, width, height, fill) {
+        grid.rect(x = x, y = y, width = width, height = height, 
+            gp = gpar(col = "black", fill = NA))
+  }
+)
+## Organize this heatmap by physiology rather than rank.
+## Use gaps betwen physiologies and use bar for annotation of ranks.
+## Use black and one (presence - ausence).
+```
+
+
 # Number of taxa
 
 ## Top 10 species by number of annotations
