@@ -27,19 +27,28 @@ library(ggplot2)
 
 + Use only signatures with differential abundance results in BugSigDB
 ('Abundance in group 1' columns).
-+ Some terms in bsdb were merged (skin, oral cavity, and vagina).
++ Some terms in BugSigDB referring to body site were merged.
 + We'll use [TypicalMicrobiomeSignatures](https://zenodo.org/record/7622129) 
 to create background sets.
++ For this analysis, only ORA (Fishers' exact test) was used.
 
-# Import data
+# Data
 
-## Import TypicalMicrobiomeSignatures
+## TypicalMicrobiomeSignatures sets
 
 Use [TypicalMicrobiomeSignatures](https://zenodo.org/record/7622129) to create
 background sets. Use a cutoff of 0.01 prevalence for filtering.
 
-```{r import typical microbiome signatures, message=FALSE}
-tms <- importTidyTMS(prevalence_threshold = 0.01)
+```{r import tms, message=FALSE}
+tms <- importTidyTMS(prevalence_threshold = 0.01) |> 
+  mutate(
+    body_site = case_when(
+      body_site == 'feces' ~ 'stool',
+      body_site == 'nasalcavity' ~ 'nasal_cavity',
+      body_site == 'oralcavity' ~ 'oral_cavity',
+      TRUE ~ body_site
+    )
+  )
 glimpse(tms, width = 70)
 ```
 
@@ -47,16 +56,16 @@ Create sets for tms at the genus and species ranks for each of the body sites
 (skin, vagina, oralcavity, nasalcavity, stool):
 
 ```{r tms sets}
-l <- length(unique(tms$body_site)) * length(unique(tms$rank))
+body_sites <- c('skin', 'vagina', 'oral_cavity', 'nasal_cavity', 'stool')
+ranks <- c('genus', 'species')
+l <- length(body_sites) * length(ranks)
 tms_sets <- vector('list', l)
-tms_bs <- unique(tms$body_site)
-tms_r <- unique(tms$rank)
 n <- 1
-for (i in seq_along(tms_bs)) {
-  for (j in seq_along(tms_r)) {
-    names(tms_sets)[n] <- paste0(tms_bs[i], '_', tms_r[j])
+for (i in seq_along(body_sites)) {
+  for (j in seq_along(ranks)) {
+    names(tms_sets)[n] <- paste0(body_sites[i], '__', ranks[j])
     tms_sets[[n]] <- tms |> 
-      filter(body_site == tms_bs[i], rank == tms_r[j]) |> 
+      filter(body_site == body_sites[i], rank == ranks[j]) |> 
       pull(taxid) |> 
       unique()
     n <- n + 1
@@ -65,335 +74,170 @@ for (i in seq_along(tms_bs)) {
 map(tms_sets, head)
 ```
 
-## Import BugSigDB
+## BugSigDB sets
 
 Just consider signatures with 'decreased' or 'increased' values in the
 'Abundance in Group 1' column, i.e., signatures from experiments with
 differential abundance results.
 
+I need five body sites, skin, vagina, oral cavity, stool, and nasal cavity,
+because these would match TypicalMicrobiomeSignatures to create a background
+dataset.
+
 ```{r import bsdb, message=FALSE}
-bsdb <- importBugSigDB(version = 'devel') |> 
+oral_terms <- c(
+  "buccal mucosa", "buccal mucosa,lower lip", "dental plaque",
+  "dental plaque,internal cheek pouch,saliva", "gingiva", 
+  "internal cheek pouch", "mouth", 
+  "mouth,skin of cheek,tongue,gingiva,oropharynx", "oral cavity",
+  "oral opening", "saliva", "skin of cheek", "subgingival dental plaque",
+  "superior surface of tongue", "supragingival dental plaque", "tongue"
+)
+stool_terms <- c(
+  'feces', 'feces,mucosa of small intestine', 
+  'feces,stomach,caecum,small intestine,colon'
+)
+bsdb <- importBugSigDB() |> 
   as_tibble() |> 
-  filter(`Abundance in Group 1` %in% c('increased', 'decreased'))
-glimpse(bsdb, width = 70)
+  filter(`Abundance in Group 1` %in% c('increased', 'decreased')) |> 
+  filter(`Host species` == 'Homo sapiens') |> 
+  mutate(`Body site` = tolower(`Body site`)) |> 
+  mutate(`Body site` = case_when(
+    grepl('vagina', `Body site`) ~ 'vagina',
+    `Body site` %in% oral_terms ~ 'oral_cavity',
+    grepl('^skin', `Body site`) ~ 'skin',
+    `Body site` %in% stool_terms ~ 'stool',
+    `Body site` == 'nasal cavity' ~ 'nasal_cavity',
+    TRUE ~ `Body site`
+    )
+  ) |> 
+  filter(
+    `Body site` %in% c('vagina', 'oral_cavity', 'skin', 'stool', 'nasal_cavity')
+  )
+# glimpse(bsdb, width = 70)
+dim(bsdb)
 ```
 
+```{r bsdb sets}
+bsdb_sets <- vector('list', l)
+n <- 1
+for (i in seq_along(body_sites)) {
+  for (j in seq_along(ranks)) {
+  sub_bsdb <- bsdb |> 
+      filter(`Body site` == body_sites[i])
+  names(bsdb_sets)[n] <- paste0(body_sites[i], '__', ranks[j])
+  sig <- bugsigdbr::getSignatures(
+      df = sub_bsdb, tax.id.type = 'ncbi', tax.level = ranks[j], min.size = 5
+  )
+  if (length(sig) > 0) {
+    bsdb_sets[[n]] <- sig
+  }
+  n <- n + 1
+  }
+}
+bsdb_sets <- discard(bsdb_sets, is.null)
+```
 
+## Background sets
 
-## Import bugphyzz
+```{r}
+tms_sets <- tms_sets[names(bsdb_sets)]
+background_sets <- vector('list', length(bsdb_sets))
+for (i in seq_along(background_sets)) {
+  names(background_sets)[i] <- names(bsdb_sets)[i]
+  background_sets[[i]] <- map(
+    bsdb_sets[[names(bsdb_sets)[i]]], ~ {
+      unique(c(.x, tms_sets[[ names(bsdb_sets)[i] ]]))
+      }
+    )
+}
+map(background_sets, length)
+```
+## bugphyzz sets
 
 ```{r import bp, message=FALSE, warning=FALSE}
 bp <- as_tibble(importBugphyzz(version = 'devel'))
 glimpse(bp, width = 70)
 ```
-Which attribute groups (also referred to as physiologies in the documentation):
-
-```{r}
-whichAttrGrp(bp)
-```
-
-Which attributes, which wuold be the names of the signatures:
-
-```{r}
-whichAttr(bp)
-```
-
-## Get bugphyzz signatures
-
-Species signatures
-
-```{r}
-bp_sigs_gn <- getBugphyzzSignatures(
-  df = bp, tax.id.type = 'NCBI_ID', tax.level = 'genus',
-  frequency = 'always', min.size = 10
-)
-lapply(bp_sigs_gn, head)
-```
-
 Genus signatures
 
-```{r}
+```{r bp gn sets}
+bp_sigs_gn <- getBugphyzzSignatures(
+  df = bp, tax.id.type = 'NCBI_ID', tax.level = 'genus', min.size = 10
+)
+head(map(bp_sigs_gn, head))
+```
+Species signatures
+
+```{r bp sp sets}
 bp_sigs_sp <- getBugphyzzSignatures(
-  df = bp, tax.id.type = 'NCBI_ID', tax.level = 'species',
-  frequency = 'always', min.size = 10
+  df = bp, tax.id.type = 'NCBI_ID', tax.level = 'species', min.size = 10
 )
-lapply(bp_sigs_sp, head)
+head(map(bp_sigs_sp, head))
 ```
 
-# Enrichment analysis - stool
+# Enrichment analysis
 
-**stool - genus**
+```{r run enrichment, message=FALSE}
+if (!'BSDB ID' %in% colnames(bsdb)) {
+  bsdb <- bsdb |> 
+    mutate(
+      `BSDB ID`  = paste0(
+        'bsdb:',
+        sub('^.* ', '', Study), '/', 
+        sub('^.* ', '', Experiment), '/', 
+        sub('^.* ', '', `Signature page name`)
+      )
+    ) |> 
+    relocate(`BSDB ID`)
+}
 
-```{r}
-sets_stool_gn <- getSets(
-  bsdb = bsdb, bsdb_body_site = 'Feces',
-  tms = tms, tms_body_site = 'stool',
-  tax_level = 'genus'
-)
-res_stool_gn <- runEnrichment(
-  bsdb_sets = sets_stool_gn$bsdb_sets, 
-  background_sets = sets_stool_gn$background_sets, 
-  bp_sigs = bp_sigs_gn,
-  bsdb = bsdb
-)
-res_stool_gn <- res_stool_gn[res_stool_gn$fdr < 0.1,]
-p_stool_gn <- plotEnrichmentRes(res_stool_gn, 'feces/stool', 'genus')
-p_stool_gn
-```
-
-**stool - species**
-
-```{r}
-sets_stool_sp <- getSets(
-  bsdb = bsdb, bsdb_body_site = 'Feces',
-  tms = tms, tms_body_site = 'stool',
-  tax_level = 'species'
-)
-res_stool_sp <- runEnrichment(
-  bsdb_sets = sets_stool_sp$bsdb_sets, 
-  background_sets = sets_stool_sp$background_sets, 
-  bp_sigs = bp_sigs_sp,
-  bsdb = bsdb
-)
-res_stool_sp <- res_stool_sp[res_stool_sp$fdr < 0.1,]
-p_stool_sp <- plotEnrichmentRes(res_stool_sp, 'feces/stool', 'genus')
-p_stool_sp
-```
-
-# Enrichment analysis - vagina
-
-Change vagina-related terms in bsdb
-
-```{r change vagina-related terms}
-vagina_terms <- c(
-  'cervicovaginal secretion', 'posterior fornix of vagina',
-  'endocervix', 'lower part of vagina', 'posterior fornix of vagina',
-  'Posterior fornix of vagina', 'vagina', 'Vaginal fluid'
-)
-bsdb <- bsdb |> 
-  mutate(
-    `Body site` = ifelse(
-      `Body site` %in% vagina_terms, 'vagina', `Body site`
+enrichment_res <- vector('list', length(bsdb_sets))
+for (i in seq_along(bsdb_sets)) {
+  message('Running enrichment for bsdb ', names(bsdb_sets)[i], '.')
+  names(enrichment_res)[i] <- names(bsdb_sets)[i]
+  if (grepl('genus', names(bsdb_sets)[i])) {
+    res <- runEnrichment(
+      bsdb_sets = bsdb_sets[[i]],
+      background_sets = background_sets[[i]],
+      bp_sigs = bp_sigs_gn,
+      bsdb = bsdb, 
+      fdr_ths = 0.1
     )
-  )
-dim(filter(bsdb, `Body site` == 'vagina'))
-```
-
-**vagina - genus**
-
-```{r enrichemnt - vagina - genus, fig.height=4, fig.width=10}
-sets_vagina_gn <- getSets(
-  bsdb = bsdb, bsdb_body_site = 'Vagina',
-  tms = tms, tms_body_site = 'vagina',
-  tax_level = 'genus'
-)
-res_vagina_gn <- runEnrichment(
-  bsdb_sets = sets_vagina_gn$bsdb_sets, 
-  background_sets = sets_vagina_gn$background_sets, 
-  bp_sigs = bp_sigs_gn,
-  bsdb = bsdb
-)
-# res_vagina_gn <- res_vagina_gn[res_vagina_gn$fdr < 0.1,]
-p_vagina_gn <- plotEnrichmentRes(res_vagina_gn, 'vagina', 'genus')
-p_vagina_gn
-```
- **vagina genus 2**
- 
- A single study
- 
-```{r vagina genus 2}
-bv_sig <- bsdb |> 
-  filter(Study == 'Study 187', Experiment == 'Experiment 3') |> 
-  getSignatures(tax.id.type = 'ncbi', min.size = 5)
-
-tax_names <- taxize::id2name(bv_sig[[1]], db = 'ncbi') |> 
-  map_chr(~.x$name)
-names(bv_sig[[1]]) <- tax_names
-
-bv_sig
-```
-
-
-```{r enrichment vagina genus 2}
-res_vagina_gn_2 <- runEnrichment(
-  bsdb_sets = sets_vagina_gn$bsdb_sets, 
-  background_sets = sets_vagina_gn$background_sets, 
-  bp_sigs = bp_sigs_gn, bsdb = bsdb
-)
-res_vagina_gn_2
-```
-
-**vagina - species **
-
-```{r enrichment - vagina - species, fig.height=4, fig.width=10, warning=FALSE}
-sets_vagina_sp <- getSets(
-  bsdb = bsdb, bsdb_body_site = 'Vagina',
-  tms = tms, tms_body_site = 'vagina',
-  tax_level = 'species'
-)
-res_vagina_sp <- runEnrichment(
-  bsdb_sets = sets_vagina_sp$bsdb_sets, 
-  background_sets = sets_vagina_sp$background_sets, 
-  bp_sigs = bp_sigs_sp,
-  bsdb = bsdb
-)
-res_vagina_sp <- res_vagina_sp[res_vagina_sp$fdr < 0.1,]
-p_vagina_sp <- plotEnrichmentRes(res_vagina_sp, 'vagina', 'genus')
-p_vagina_sp
-```
-
-# Enrichment analysis - nasal cavity
-
-** nasal cavity - genus**
-
-```{r enrichment - nasal cavity - genus}
-sets_nc_gn <- getSets(
-  bsdb = bsdb, bsdb_body_site = 'Nasal cavity',
-  tms = tms, tms_body_site = 'nasalcavity',
-  tax_level = 'genus'
-)
-res_nc_gn <- runEnrichment(
-  bsdb_sets = sets_nc_gn$bsdb_sets, 
-  background_sets = sets_nc_gn$background_sets, 
-  bp_sigs = bp_sigs_gn,
-  bsdb = bsdb
-)
-res_nc_gn <- res_nc_gn[res_nc_gn$fdr < 0.1,]
-p_nc_gn <- plotEnrichmentRes(res_nc_gn, 'vagina', 'genus')
-p_nc_gn
-```
-
-**nasal cavity - species**
-
-```{r enrichment - nasal cavity - species}
-sets_nc_sp <- getSets(
-  bsdb = bsdb, bsdb_body_site = 'Nasal cavity',
-  tms = tms, tms_body_site = 'nasalcavity',
-  tax_level = 'species'
-)
-res_nc_sp <- runEnrichment(
-  bsdb_sets = sets_nc_sp$bsdb_sets, 
-  background_sets = sets_nc_sp$background_sets, 
-  bp_sigs = bp_sigs_sp,
-  bsdb = bsdb
-)
-res_nc_sp <- res_nc_sp[res_nc_sp$fdr < 0.1,]
-p_nc_sp <- plotEnrichmentRes(res_nc_sp, 'vagina', 'species')
-p_nc_sp
-```
-
-# Enrichment analysis - oral cavity
-
-Some terms:
-
-```{r change oral cavity-related terms}
-oral_cavity_terms <- unique(c(
-  'buccal mucosa', 'buccal mucosa, lower lip', 'dental plaque',
-  'gingiva', 'mouth', 'oral gland', 'oropharynx', 'saliva', 
-  'saliva-screting gland', 'subgingival dental plaque', 'throat',
-  'tongue', 'Major salivary gland', 'hypopharinkx'
-))
-
-bsdb <- bsdb |> 
-  mutate(
-    `Body site` = ifelse(
-      `Body site` %in% oral_cavity_terms, 'oral cavity', `Body site`
+  } else if (grepl('species', names(bsdb_sets)[i])) {
+    res <- runEnrichment(
+      bsdb_sets = bsdb_sets[[i]],
+      background_sets = background_sets[[i]],
+      bp_sigs = bp_sigs_sp,
+      bsdb = bsdb, 
+      fdr_ths = 0.1
     )
-  )
-
-## spotum,mouth
+  }
+  enrichment_res[[i]] <- res
+}
+enrichment_res <- discard(enrichment_res, ~ !nrow(.x))
+map(enrichment_res, nrow)
 ```
 
-**oral cavity/saliva - genus**
-
-Maybe I need to combine several samples of oral cavity in bsdb
-
-```{r enrichment - oral cavity - genus, fig.height=4, fig.width=10}
-sets_oc_gn <- getSets(
-  bsdb = bsdb, bsdb_body_site = 'Oral cavity',
-  tms = tms, tms_body_site = 'oralcavity',
-  tax_level = 'genus'
-)
-res_oc_gn <- runEnrichment(
-  bsdb_sets = sets_oc_gn$bsdb_sets, 
-  background_sets = sets_oc_gn$background_sets, 
-  bp_sigs = bp_sigs_gn,
-  bsdb = bsdb
-)
-res_oc_gn <- res_oc_gn[res_oc_gn$fdr < 0.1,]
-p_oc_gn <- plotEnrichmentRes(res_oc_gn, 'vagina', 'species')
-p_oc_gn
+```{r create plots, warning=FALSE}
+plots <- vector('list', length(enrichment_res))
+for (i in seq_along(plots)) {
+  b <- sub('^(.*)__.*$', '\\1', names(enrichment_res)[i])
+  r <- sub('^.*__(.*)$', '\\1', names(enrichment_res)[i])
+  names(plots)[i] <- names(enrichment_res)[i]
+  plots[[i]] <- plotEnrichmentRes(enrichment_res[[i]], b, r)
+}
 ```
 
-**oral cavity/saliva - species **
-
-```{r enrihcment - oral cavity - species, fig.width=10, fig.height=4}
-sets_oc_sp <- getSets(
-  bsdb = bsdb, bsdb_body_site = 'Oral cavity',
-  tms = tms, tms_body_site = 'oralcavity',
-  tax_level = 'species'
-)
-res_oc_sp <- runEnrichment(
-  bsdb_sets = sets_oc_sp$bsdb_sets, 
-  background_sets = sets_oc_sp$background_sets, 
-  bp_sigs = bp_sigs_sp,
-  bsdb = bsdb
-)
-res_oc_sp <- res_oc_sp[res_oc_sp$fdr < 0.1,]
-p_oc_sp <- plotEnrichmentRes(res_oc_sp, 'vagina', 'species')
-p_oc_sp
-```
-
-# Enrichment analysis - skin
-
-An adjustment to the bsdb data to include all types of skin:
-
-```{r change skin-related terms}
-skin_terms <- grep('skin', unique(bsdb$`Body site`), value = TRUE)
-bsdb <- bsdb |> 
-  mutate(
-    `Body site` = ifelse(`Body site` %in% skin_terms, 'skin', `Body site`)
-  )
-```
-
-**Skin - genus**
-
-```{r enrichment - skin - genus, fig.width=7, fig.height=3}
-sets_skin_gn <- getSets(
-  b = 'skin', t = 'skin', tax_level = 'genus'
-)
-res_skin_gn <- runEnrichment(
-  sets_skin_gn$bsdb_sets, 
-  sets_skin_gn$background_sets, bp_sigs_gn
-)
-p_skin_gn <- plotEnrichmentRes(res_skin_gn, 'skin', 'genus')
-p_skin_gn
-```
-
-**Skin - species**
-
-```{r enrichment - skin - species, fig.height=4, fig.width=10}
-sets_skin_sp <- getSets(
-  b = 'skin', t = 'skin', tax_level = 'species'
-)
-res_skin_sp <- runEnrichment(
-  sets_skin_sp$bsdb_sets, 
-  sets_skin_sp$background_sets, bp_sigs_sp
-)
-## no results because Abundance in Group 1 are all NAs
-p_skin_sp <- plotEnrichmentRes(res_skin_sp, 'skin', 'species')
-p_skin_sp
-```
-
-# A step by step case
+# A single case (step by step)
 
 Get bsdb signatures
 
 ```{r get bsdb signatures}
 bsdb_sets_ <- bsdb |> 
-    filter(`Body site` == 'feces', `Host species` == 'Homo sapiens') |> 
+    filter(`Body site` == 'stool', `Host species` == 'Homo sapiens') |> 
     bugsigdbr::getSignatures(
-        tax.id.type = 'ncbi', tax.level = 'genus', min.size = 5
+      tax.id.type = 'ncbi', tax.level = 'genus', min.size = 5
     ) 
 length(bsdb_sets_)
 ```
@@ -405,7 +249,7 @@ lapply(bsdb_sets_[1:3], head)
 Create background sets
 
 ```{r get typical set}
-typical_set_ <- typical |> 
+typical_set_ <- tms |> 
     filter(body_site == 'stool', rank == 'genus') |> 
     pull(taxid) |> 
     unique()
@@ -428,7 +272,7 @@ taxa_name_ <- 'bsdb:237/1/1_chronic-hepatitis-C-virus-infection:cirrhosis-patien
 ct <- bugphyzzAnalyses:::.contingencyTable(
     set = bsdb_sets_[[taxa_name_]],
     reference = background_sets_[[taxa_name_]],
-    sig = bp_sigs_gn$`bugphyzz:aerophilicity|aerobic`
+    sig = bp_sigs_gn$`aerophilicity:aerobic`
 )
 ct
 ```
@@ -439,7 +283,6 @@ Enrichment
 ```{r}
 p_value_ <- stats::fisher.test(ct, alternative = 'g')$p.value
 p_value_
-
 ```
 
 # Session information
@@ -447,10 +290,3 @@ p_value_
 ```{r session info}
 sessioninfo::session_info()
 ```
-
-
-
-Notes:
-
-Smoking vs controls
-

@@ -1,8 +1,11 @@
 ---
-title: "Enrichment of facultative anaerobes in IBD samples"
+title: "MSEA control vs IBD in cMD for aerophilicity attributes"
+output:
+  html_document:
+    toc: true
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -11,15 +14,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, message=FALSE}
-library(bugphyzzAnalyses)
+```{r packages, message=FALSE}
 library(bugphyzz)
 library(curatedMetagenomicData)
 library(dplyr)
-library(tidySummarizedExperiment)
-library(taxPPro)
 library(EnrichmentBrowser)
-library(ggplot2)
 ```
 
 # Expected result
@@ -29,195 +28,89 @@ library(ggplot2)
 
 # Data
 
-## Abundance data
+Use the HMP_2019_bidmdb study in cMD:
 
-For this example, let's use the data of the HMP_2019_bidmdb study through cMD:
-
-```{r, message=FALSE, warning=FALSE}
-data_name <- "HallAB_2017.relative_abundance"
+```{r import tse, message=FALSE, warning=FALSE}
+dataset_name <- "HallAB_2017.relative_abundance"
 tse <- curatedMetagenomicData(
-    pattern = data_name, 
+    pattern = dataset_name, 
     dryrun = FALSE, rownames = 'NCBI',
     counts = TRUE
 )[[1]]
+colData(tse)$GROUP <- ifelse(colData(tse)$study_condition == 'control', 0, 1)
 tse 
 ```
+# bugphyzz data
 
-Use only a subset:
+```{r bp signatures species}
+bp <- importBugphyzz()
+bp <- bp |> 
+  filter(Attribute_group == 'aerophilicity')
+sp_sigs <- getBugphyzzSignatures(
+  df = bp, tax.id.type = 'NCBI_ID', tax.level = 'species'
+)
+```
+
+# DESEQ2 + ORA and GSEA
+
+DA:
+
+```{r}
+assay(tse, 'relab_plus_1') <- assay(tse, 'relative_abundance') + 1
+deseq <- deAna(
+    expr = tse, de.method = 'DESeq2', padj.method = 'BH', 
+    assay = 'relab_plus_1'
+)
+dim(deseq)
+```
+
+ORA:
 
 ```{r, message=FALSE, warning=FALSE}
-rank_cols <- colnames(rowData(tse))
-tidy_data <- tidySummarizedExperiment::as_tibble(tse) |> 
-    rename(taxon_name = .feature, sample = .sample) 
-sample_data <- tidy_data |> 
-    select(-rank_cols, -taxon_name, -relative_abundance) |> 
-    distinct()
-sample_data_split <- split(sample_data, factor(sample_data$disease))
-min_n <- min(vapply(sample_data_split, nrow, integer(1)))
-samples <- lapply(sample_data_split, function(x) {
-    set.seed(1234)
-    int_vct <- sample(1:nrow(x), size = min_n)
-    x[int_vct,]$sample
-}) |> 
-    unlist(use.names = FALSE)
-tse_subset <- tse[,samples] |> 
-    filterTaxa()
-tse_subset
+deseq_ora <- sbea(
+    method = 'ora', se = deseq, gs = sp_sigs, alpha = 0.1, perm = 0,
+    padj.method = 'BH', assay = 'relab_plus_1'
+)
+gsRanking(res = deseq_ora, signif.only = FALSE)
 ```
 
-## Signatures and annotations
-
-```{r}
-taxa_data <- tidy_data |> 
-    dplyr::filter(taxon_name %in% rownames(tse_subset)) |> 
-    select(all_of(c('taxon_name', rank_cols))) |> 
-    distinct()
-dim(taxa_data)
-```
-
-Annotations and microbe signatures come from the bugphyzz package. Since
-cMD contains data at the species level, let's use signatures at the species
-level. We need to check the completness (number of taxa in cMD samples
-annotated in bugphyzz)
-
-```{r, message=FALSE}
-aer <- physiologies('aerophilicity')[[1]]
-aer_species <- filter(aer, Rank == 'species')
-## Check completeness
-mean(taxa_data$taxon_name %in% aer_species$NCBI_ID) * 100
-```
-
-Let's try to increase the completeness with ASR/inheritance propagation using
-majority vote:
+GSEA:
 
 ```{r, message=FALSE, warning=FALSE}
-aer_plus <- aer |> 
-    propagate()
-aer_plus_species <- filter(aer_plus, Rank == 'species')
-## Check completeness
-mean(taxa_data$taxon_name %in% aer_plus_species$NCBI_ID) * 100
-```
-
-Let's get some signatures for aerobic, anaerobic, and facultatively anaerobic:
-
-```{r, message=FALSE, warning=FALSE}
-attribute_names <- c('aerobic', 'anaerobic', 'facultatively anaerobic')
-aer_sig <- getSignatures(
-    aer, tax.id.type = 'NCBI_ID', tax.level = 'species'
+deseq_gsea <- sbea(
+    method = 'gsea', se = deseq, gs = sp_sigs, alpha = 0.1, perm = 0,
+    padj.method = 'BH', assay = 'relab_plus_1'
 )
-
-x_regex <- paste0('(', paste0(attribute_names, collapse = '|'), ')')
-
-aer_sig <- aer_sig[grep(x_regex, names(aer_sig))]
-aer_sig <- lapply(aer_sig, as.character)
-lapply(aer_sig, head)
+gsRanking(res = deseq_gsea, signif.only = FALSE)
 ```
 
-For propagated signatures
+# edgeR
 
-```{r, message=FALSE, warning=FALSE}
-aer_plus <- aer_plus[!is.na(aer_plus$Attribute_type),]
-aer_plus_sig <- getSignatures(
-    aer_plus, tax.id.type = 'NCBI_ID', tax.level = 'species'
+```{r}
+edger <- deAna(
+    expr = tse, de.method = 'edgeR', padj.method = 'BH', 
+    assay = 'relab_plus_1'
 )
-aer_plus_sig <- aer_plus_sig[grep(x_regex, names(aer_sig))]
-aer_plus_sig <- lapply(aer_plus_sig, as.character)
-lapply(aer_plus_sig, head)
 ```
 
-Comparing numbers
+ORA:
 
 ```{r}
-df <- data.frame(
-    aer = vapply(aer_sig, length, integer(1)),
-    aer_plus = vapply(aer_plus_sig, length, integer(1))
+edger_ora <- sbea(
+    method = 'ora', se = edger, gs = sp_sigs, alpha = 0.1, perm = 0,
+    padj.method = 'BH', assay = 'relab_plus_1'
 )
-df
+gsRanking(edger_ora, signif.only = FALSE)
 ```
 
-## Add annotations to rowData
+GSEA:
 
 ```{r}
-taxa_data <- as.data.frame(rowData(tse_subset))
-dim(taxa_data)
-```
-
-
-We got a lot more species
-
-# Differential abundance analysis
-
-Let's use `EnrichmentBrowser` for this
-
-```{r}
-## Let's add a column with groups 0 and 1
-colData(tse_subset)$GROUP <- 
-    ifelse(colData(tse_subset)$disease == 'healthy', 0, 1)
-
-assay(tse_subset) <- assay(tse_subset) + 1 
-
-da_output <- deAna(
-    expr = tse_subset, de.method = 'DESeq2', padj.method = 'BH' 
+edger_gsea <- sbea(
+    method = 'gsea', se = edger, gs = sp_sigs, alpha = 0.1, perm = 0,
+    padj.method = 'BH', assay = 'relab_plus_1'
 )
-dim(da_output)
-```
-
-
-# Enrichment Analysis
-
-```{r, message=FALSE, warning=FALSE}
-enrich_output <- sbea(
-    method = 'gsea', se = da_output, gs = aer_sig, alpha = 0.05, perm = 0,
-    padj.method = 'none'
-)
-gsRanking(res = enrich_output, signif.only = TRUE)
-```
-
-```{r}
-enrich_output_plus <- sbea(
-    method = 'gsea', se = da_output, gs = aer_plus_sig, alpha = 0.05, perm = 0,
-    padj.method = 'none'
-)
-gsRanking(res = enrich_output_plus, signif.only = TRUE)
-```
-
-> This means anaerobic taxa are enriched in IBD samples?
-
-```{r}
-enriched_taxa <- enrich_output_plus$gs$`bugphyzz:aerophilicity|anaerobic`
-tse_enriched <- da_output[enriched_taxa,]
-enriched_data <- tidySummarizedExperiment::as_tibble(tse_enriched)
-dim(enriched_data)
-```
-
-```{r}
-tse_relab <- curatedMetagenomicData(
-    pattern = data_name, 
-    dryrun = FALSE, rownames = 'NCBI',
-    counts = FALSE 
-)[[1]]
-relab_data <- tidySummarizedExperiment::as_tibble(tse_relab)
-```
-
-
-```{r}
-relab_data |> 
-    mutate(relab = log(relative_abundance + 1)) |> 
-    group_by(.feature, disease) |>  
-    summarise(mean = mean(relab)) |> 
-    ungroup()  |> 
-    filter(.feature %in% enriched_taxa) |>
-    left_join(enriched_data) |> 
-    mutate(direction = ifelse(FC > 0, "up in IBD", "up in healthy")) |> 
-    ggplot(aes(.feature, mean)) +
-    geom_col(aes(fill = disease), position = 'dodge') +
-    # scale_fill_manual(
-    #     values = c('firebrick', 'dodgerblue'),
-    #     labels = c('IBD', 'healthy')
-    # ) +
-    facet_wrap(~direction, ncol = 2, scale = 'free_y') +
-    theme_bw() +
-    coord_flip()
+gsRanking(edger_gsea, signif.only = FALSE)
 ```
 
 # Session Information

@@ -1,6 +1,5 @@
 ---
-title: "Stats"
-subtitle: "Data for figures 1?, 2, and 3?"
+title: "Data integration and bugphyzz stats"
 output:
     html_document:
         toc: true

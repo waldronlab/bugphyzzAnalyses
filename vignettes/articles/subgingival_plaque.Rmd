@@ -1,8 +1,11 @@
 ---
-title: "Enrichment of aerobic taxa in supragingival plaque - WMS"
+title: "MSEA gingival plaque - MicrobiomeBenchmarkData - WMS"
+output:
+  html_document:
+    toc: true
 ---
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -10,21 +13,24 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup, message=FALSE, warning=FALSE}
+```{r packages, message=FALSE, warning=FALSE}
 library(bugphyzzAnalyses)
 library(MicrobiomeBenchmarkData)
 library(bugphyzz)
-library(taxPPro)
+library(dplyr)
 library(EnrichmentBrowser)
 ```
 
 
-```{r, message=FALSE}
+```{r get data, message=FALSE}
 dat_name <- 'HMP_2012_WMS_gingival'
 tse <- getBenchmarkData(dat_name, dryrun = FALSE)[[1]]
+colData(tse)$GROUP <- ifelse(
+  colData(tse)$body_subsite == 'subgingival_plaque', 0, 1
+)
+tse
 ```
-
-```{r}
+```{r convert taxa names}
 taxa_names <- gsub('_', ' ', rownames(tse))
 taxa_ids_file <- system.file(
     'extdata/taxa_info_wms.tsv', package = 'bugphyzzAnalyses'
@@ -43,83 +49,86 @@ rownames(tse) <- taxids
 tse_subset <- filterTaxa(tse)
 tse_subset
 ```
+# bugphyzz data
 
+```{r bp signatures species}
+bp <- importBugphyzz()
+bp <- bp |> 
+  filter(Attribute_group == 'aerophilicity')
+sp_sigs <- getBugphyzzSignatures(
+  df = bp, tax.id.type = 'NCBI_ID', tax.level = 'species'
+)
+```
 
-# Get annotations
+# DESEQ2 + ORA and GSEA
+
+DA:
+
+```{r}
+assay(tse_subset, 'counts_plus_1') <- assay(tse_subset, 'counts') + 1
+deseq <- deAna(
+    expr = tse_subset, de.method = 'DESeq2', padj.method = 'BH', 
+    assay = 'counts_plus_1'
+)
+dim(deseq)
+```
+
+ORA:
 
 ```{r, message=FALSE, warning=FALSE}
-aer <- physiologies('aerophilicity')[[1]]
-aer_plus <- aer |> 
-    propagate()
-```
-
-# Get signatures
-
-```{r, message=FALSE}
-attribute_names <- c(
-    'aerobic', 'anaerobic', 'facultatively anaerobic'
+deseq_ora <- sbea(
+    method = 'ora', se = deseq, gs = sp_sigs, alpha = 0.1, perm = 0,
+    padj.method = 'BH', assay = 'counts_plus_1'
 )
-aer_sig <- getSignatures(aer, tax.id.type = 'NCBI_ID', tax.level = 'species')
-
-x_regex <- paste0('(', paste0(attribute_names, collapse = '|'), ')')
-
-aer_sig <- aer_sig[grep(x_regex, attribute_names)]
-aer_sig <- lapply(aer_sig, as.character)
-
-aer_plus <- aer_plus[!is.na(aer_plus$Attribute_type),]
-aer_plus_sig <- 
-    getSignatures(aer_plus, tax.id.type = 'NCBI_ID', tax.level = 'species')
-aer_plus_sig <- aer_plus_sig[grep(x_regex, attribute_names)]
-aer_plus_sig <- lapply(aer_plus_sig, as.character)
+gsRanking(res = deseq_ora, signif.only = FALSE)
 ```
 
+GSEA:
 
 ```{r}
-df <- data.frame(
-    aer = vapply(aer_sig, length, integer(1)),
-    aer_plus = vapply(aer_plus_sig, length, integer(1))
+deseq_gsea <- sbea(
+    method = 'gsea', se = deseq, gs = sp_sigs, alpha = 0.1, perm = 0,
+    padj.method = 'BH', assay = 'counts_plus_1'
 )
-df
+gsRanking(res = deseq_gsea, signif.only = FALSE)
 ```
 
-```{r}
-mean(rownames(tse_subset) %in% aer$NCBI_ID) * 100
+# edgeR + ORA and GSEA
 
+DA:
+
+```{r}
+edger <- deAna(
+    expr = tse_subset, de.method = 'edgeR', padj.method = 'BH', 
+    assay = 'counts_plus_1'
+)
+dim(edger)
 ```
 
-Better completeness with asr/inheritance propagation
+ORA:
 
 ```{r}
-mean(rownames(tse_subset) %in% aer_plus$NCBI_ID) * 100
+edger_ora <- sbea(
+    method = 'ora', se = edger, gs = sp_sigs, alpha = 0.1, perm = 0,
+    padj.method = 'BH', assay = 'counts_plus_1'
+)
+gsRanking(res = edger_ora, signif.only = FALSE)
 ```
 
 
-```{r}
-colData(tse_subset)$GROUP <- 
-    ifelse(colData(tse_subset)$body_subsite == 'subgingival_plaque', 0, 1)
-da_res <- deAna(expr = tse_subset, de.method = 'DESeq2')
-da_res
-```
-
+GSEA:
 
 ```{r}
-enrich_res <- 
-    sbea(method = 'ora', se = da_res, gs = aer_sig, alpha = 0.05, perm = 0)
-gsRanking(enrich_res, signif.only = TRUE)
-```
-
-```{r}
-enrich_res <- 
-    sbea(method = 'ora', se = da_res, gs = aer_plus_sig, alpha = 0.05, perm = 0)
-gsRanking(enrich_res, signif.only = TRUE)
+edger_gsea <- sbea(
+    method = 'gsea', se = edger, gs = sp_sigs, alpha = 0.1, perm = 0,
+    padj.method = 'BH', assay = 'counts_plus_1'
+)
+gsRanking(res = edger_gsea, signif.only = FALSE)
 ```
 
 # Session information
 
 ```{r}
-sessionInfo()
+sessioninfo::session_info()
 ```
-
-
-
 
