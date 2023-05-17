@@ -10,22 +10,19 @@
     <loc>/LICENSE.html</loc>
   </url>
   <url>
-    <loc>/articles/Figure_1.html</loc>
+    <loc>/articles/chi_square.html</loc>
+  </url>
+  <url>
+    <loc>/articles/data_integration_and_stats.html</loc>
+  </url>
+  <url>
+    <loc>/articles/high_throughput_msea_bsdb.html</loc>
   </url>
   <url>
     <loc>/articles/ibd-aerophilicity-enrichment.html</loc>
   </url>
   <url>
     <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/articles/ora_fisher_typical.html</loc>
-  </url>
-  <url>
-    <loc>/articles/some_numbers.html</loc>
-  </url>
-  <url>
-    <loc>/articles/stats.html</loc>
   </url>
   <url>
     <loc>/articles/subgingival_plaque.html</loc>
@@ -49,6 +46,12 @@
     <loc>/reference/filterTaxa.html</loc>
   </url>
   <url>
+    <loc>/reference/getSets.html</loc>
+  </url>
+  <url>
+    <loc>/reference/importTidyTMS.html</loc>
+  </url>
+  <url>
     <loc>/reference/import_taxids.html</loc>
   </url>
   <url>
@@ -56,6 +59,15 @@
   </url>
   <url>
     <loc>/reference/microbeSetEnrichment.html</loc>
+  </url>
+  <url>
+    <loc>/reference/plotEnrichmentRes.html</loc>
+  </url>
+  <url>
+    <loc>/reference/preSteps.html</loc>
+  </url>
+  <url>
+    <loc>/reference/runEnrichment.html</loc>
   </url>
   <url>
     <loc>/reference/taxTable2taxid.html</loc>
