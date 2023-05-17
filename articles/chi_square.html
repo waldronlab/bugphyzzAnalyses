@@ -112,7 +112,7 @@
 <span><span class="co">#&gt;   method           from  </span></span>
 <span><span class="co">#&gt;   print.cache_info hoardr</span></span>
 <span><span class="co">#&gt; Downloading, full_dump_categorical.csv.bz2.</span></span>
-<span><span class="co">#&gt; Using data downloaded on 2023-05-17 05:25:03.</span></span>
+<span><span class="co">#&gt; Using data downloaded on 2023-05-17 05:55:13.</span></span>
 <span><span class="va">bsdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/importBugSigDB.html" class="external-link">importBugSigDB</a></span><span class="op">(</span>version <span class="op">=</span> <span class="st">'devel'</span><span class="op">)</span></span>
 <span><span class="va">tms</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/importTidyTMS.html">importTidyTMS</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <ul>
@@ -216,7 +216,7 @@ microbes.</p>
 <span><span class="co">#&gt;  replicates)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; data:  tbl$Attribute and tbl$Abundance</span></span>
-<span><span class="co">#&gt; X-squared = 6.7429, df = NA, p-value = 0.03298</span></span></code></pre></div>
+<span><span class="co">#&gt; X-squared = 6.7429, df = NA, p-value = 0.04198</span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">Attribute</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'aerobic'</span>, <span class="st">'anaerobic'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">cont2</span> <span class="op">&lt;-</span> <span class="fu">epitools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/epitools/man/epitable.html" class="external-link">epitable</a></span><span class="op">(</span><span class="va">tbl2</span><span class="op">$</span><span class="va">Attribute</span>, <span class="va">tbl2</span><span class="op">$</span><span class="va">Abundance</span><span class="op">)</span></span>
@@ -235,7 +235,7 @@ microbes.</p>
 <span><span class="co">#&gt;  replicates)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; data:  tbl2$Attribute and tbl2$Abundance</span></span>
-<span><span class="co">#&gt; X-squared = 0.29805, df = NA, p-value = 0.6327</span></span></code></pre></div>
+<span><span class="co">#&gt; X-squared = 0.29805, df = NA, p-value = 0.6587</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mouth</span> <span class="op">&lt;-</span> <span class="va">tms</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">body_site</span> <span class="op">==</span> <span class="st">'oralcavity'</span>, <span class="va">rank</span> <span class="op">==</span> <span class="st">'genus'</span><span class="op">)</span></span></code></pre></div>
