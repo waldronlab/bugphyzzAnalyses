@@ -28,7 +28,7 @@ jobs:
 
       - name: Install R dependencies
         run: |
-       	  remotes::install_deps(dependencies = TRUE, repos = BiocManager::repositories())
+          remotes::install_deps(dependencies = TRUE, repos = BiocManager::repositories())
           install.packages("pkgdown", dependencies = TRUE)
         shell: Rscript {0}
 
