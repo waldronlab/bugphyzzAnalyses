@@ -24,6 +24,7 @@ library(ggpubr)
 library(taxPPro)
 library(tidyr)
 library(ComplexHeatmap)
+library(purrr)
 ```
 
 Useful variables:
@@ -190,6 +191,7 @@ comp_mat_aft <- completeness |>
   select(all_of(valid_ranks)) |> 
   as.matrix() |> 
   round(digits = 2)
+comp_mat_bef <- comp_mat_bef[rownames(comp_mat_aft),]
 ```
 
 Create heatmaps
@@ -243,19 +245,25 @@ Try different tissues.
 
 # Dispersion of sources
 
-```{r}
-srank <- count(bp_source, Attribute_source, Rank, name = 'n_rank') |> 
-  filter(!grepl('BacDive;', Attribute_source))
-sphys <- count(bp_source, Attribute_source, Attribute_group, name = 'n_grp') |> 
-  filter(!grepl('BacDive;', Attribute_source)) 
+Import bugphyzz data before propagation and before resolving conflicts, 
+agreements, and double annotations.
 
+```{r import bp spreadsheets}
+phys <- physiologies(remove_false = TRUE, full_source = FALSE)
+phys_ <- map(phys, ~ prepareDatForPropagation(.x, resolve = FALSE))
 ```
 
 
-```{r}
-data <- count(bp_source, Attribute_source, Attribute_group, Rank) |> 
+
+```{r source summaries (s) by rank and physiologie}
+data <- phys_ |> 
+  map(~ count(.x, Attribute_source, Rank)) |> 
+  bind_rows(.id = 'Attribute_group') |> 
+  drop_na() |> 
+  filter(Attribute_source != '') |> 
+  filter(Attribute_group %in% attr_grps) |> 
   filter(!grepl('BacDive;', Attribute_source)) |> 
-  mutate(new_column = paste0(Rank, '|', Attribute_group)) |>
+  mutate(new_column = paste0(Attribute_group, '|', Rank)) |>
   select(new_column, Attribute_source, n) |> 
   pivot_wider(
     names_from = 'Attribute_source', values_from = 'n', values_fill = 0
@@ -267,22 +275,50 @@ data <- count(bp_source, Attribute_source, Attribute_group, Rank) |>
 
 
 ```{r}
-# lgd2 <- Legend(col_fun = color_fun, title = "# annotations")
+# data <- bp_source |> 
+#   count(Attribute_source, Attribute_group, Rank) |> 
+#   filter(!grepl('BacDive;', Attribute_source)) |> 
+#   mutate(new_column = paste0(Attribute_group, '|', Rank)) |>
+#   select(new_column, Attribute_source, n) |> 
+#   pivot_wider(
+#     names_from = 'Attribute_source', values_from = 'n', values_fill = 0
+#   ) |> 
+#   arrange(new_column) |> 
+#   tibble::column_to_rownames(var = 'new_column') |> 
+#   as.matrix()
+# 
+
+```
+
+
+```{r}
+bar_vct <- sub('^.*\\|', '', rownames(data))
+split_vct <- sub('\\|.*$', '', rownames(data))
+bar_color <- viridis::viridis(n = 3, option = 'C')
+names(bar_color) <- c('genus', 'species', 'strain')
+row_ha <- rowAnnotation(
+  'Rank' = bar_vct, col = list(Rank = bar_color), 
+  show_annotation_name = FALSE
+)
+log2_data <- log2(data + 1)
 ht_sources <- Heatmap(
-  matrix = data,
+  matrix = log2_data,
   cluster_rows = FALSE, cluster_columns = FALSE,
+  show_row_names = FALSE,
   row_names_side = 'left',
-  name = '# annotations',
+  name = 'log2(# annotations + 1)',
   show_heatmap_legend = TRUE,
-  col = color_fun,
+  col = color_fun(c(min(log2_data), max(log2_data))),
+  left_annotation = row_ha, 
+  row_split = split_vct,
+  column_names_rot = 45,
+  row_title_rot = 0, gap = unit(0.1, 'inches'),
   cell_fun = function(j, i, x, y, width, height, fill) {
         grid.rect(x = x, y = y, width = width, height = height, 
             gp = gpar(col = "black", fill = NA))
   }
 )
-## Organize this heatmap by physiology rather than rank.
-## Use gaps betwen physiologies and use bar for annotation of ranks.
-## Use black and one (presence - ausence).
+ht_sources
 ```
 
 
