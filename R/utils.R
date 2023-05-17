@@ -82,22 +82,22 @@ createDT <- function(x){
 #' \code{importTidyTMS} imports prevalence data from the
 #' TypicalMicrobiomeSignatures project.
 #'
-#' @param doi DOI, a string character. Default: "10.5281/zenodo.7544550"
 #' @param prevalence_threshold A numeric value: 0.01.
 #'
 #' @return A data.frame.
 #' @export
 #'
-importTidyTMS <- function(
-        doi = "10.5281/zenodo.7544550", prevalence_threshold = 0.01
-) {
+importTidyTMS <- function(prevalence_threshold = 0.01) {
     temp_dir <- paste0(tempdir(), '/TypicalMicrobiomeSignatures')
     if (dir.exists(temp_dir)) {
         unlink(paste0(temp_dir, '/*'), recursive = TRUE, force = TRUE)
     }
     dir.create(temp_dir, showWarnings = FALSE)
-    doi <- doi
-    zen4R::download_zenodo(doi = doi, path = temp_dir, quiet = TRUE)
+    dest_file <- paste0(temp_dir, '/TypicalMicrobiomeSignaturesExports-v1.0.0.zip')
+    # doi <- doi
+    # zen4R::download_zenodo(doi = doi, path = temp_dir, quiet = TRUE)
+    url <- 'https://zenodo.org/record/7544550/files/waldronlab/TypicalMicrobiomeSignaturesExports-v1.0.0.zip?download=1'
+    download.file(url = url, destfile = dest_file)
     zip_file <- list.files(temp_dir, full.names = TRUE)
     base_dir <- sub('\\.zip', '', zip_file)
     unzip(zip_file, exdir = base_dir)

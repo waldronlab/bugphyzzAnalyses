@@ -4,11 +4,9 @@
 \alias{importTidyTMS}
 \title{Import tidy Typical Microbiome Signatures}
 \usage{
-importTidyTMS(doi = "10.5281/zenodo.7544550", prevalence_threshold = 0.01)
+importTidyTMS(prevalence_threshold = 0.01)
 }
 \arguments{
-\item{doi}{DOI, a string character. Default: "10.5281/zenodo.7544550"}
-
 \item{prevalence_threshold}{A numeric value: 0.01.}
 }
 \value{
