@@ -1,6 +1,8 @@
 template:
-  params:
-    bootswatch: lux
+  bootstrap: 5
+  bootswatch: lux
+  bslib:
+    pkgdown-nav-height: 100px
 
 navbar:
  components:
