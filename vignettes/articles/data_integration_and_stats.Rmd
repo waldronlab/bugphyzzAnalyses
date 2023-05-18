@@ -256,6 +256,7 @@ phys_ <- map(phys, ~ prepareDatForPropagation(.x, resolve = FALSE))
 
 
 ```{r source summaries (s) by rank and physiologie}
+attr_grps <- whichAttrGrp(bp)
 data <- phys_ |> 
   map(~ count(.x, Attribute_source, Rank)) |> 
   bind_rows(.id = 'Attribute_group') |> 
@@ -291,7 +292,7 @@ data <- phys_ |>
 ```
 
 
-```{r}
+```{r, fig.width=6, fig.height=6}
 bar_vct <- sub('^.*\\|', '', rownames(data))
 split_vct <- sub('\\|.*$', '', rownames(data))
 bar_color <- viridis::viridis(n = 3, option = 'C')
