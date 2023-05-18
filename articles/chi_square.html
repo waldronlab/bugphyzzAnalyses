@@ -112,7 +112,7 @@
 <span><span class="co">#&gt;   method           from  </span></span>
 <span><span class="co">#&gt;   print.cache_info hoardr</span></span>
 <span><span class="co">#&gt; Downloading, full_dump_categorical.csv.bz2.</span></span>
-<span><span class="co">#&gt; Using data downloaded on 2023-05-18 02:26:12.</span></span>
+<span><span class="co">#&gt; Using data downloaded on 2023-05-18 19:32:29.</span></span>
 <span><span class="va">bsdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/importBugSigDB.html" class="external-link">importBugSigDB</a></span><span class="op">(</span>version <span class="op">=</span> <span class="st">'devel'</span><span class="op">)</span></span>
 <span><span class="va">tms</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/importTidyTMS.html">importTidyTMS</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <ul>
@@ -216,7 +216,7 @@ microbes.</p>
 <span><span class="co">#&gt;  replicates)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; data:  tbl$Attribute and tbl$Abundance</span></span>
-<span><span class="co">#&gt; X-squared = 6.7429, df = NA, p-value = 0.03598</span></span></code></pre></div>
+<span><span class="co">#&gt; X-squared = 6.7429, df = NA, p-value = 0.03548</span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">Attribute</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'aerobic'</span>, <span class="st">'anaerobic'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">cont2</span> <span class="op">&lt;-</span> <span class="fu">epitools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/epitools/man/epitable.html" class="external-link">epitable</a></span><span class="op">(</span><span class="va">tbl2</span><span class="op">$</span><span class="va">Attribute</span>, <span class="va">tbl2</span><span class="op">$</span><span class="va">Abundance</span><span class="op">)</span></span>
@@ -235,7 +235,7 @@ microbes.</p>
 <span><span class="co">#&gt;  replicates)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; data:  tbl2$Attribute and tbl2$Abundance</span></span>
-<span><span class="co">#&gt; X-squared = 0.29805, df = NA, p-value = 0.6552</span></span></code></pre></div>
+<span><span class="co">#&gt; X-squared = 0.29805, df = NA, p-value = 0.6632</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mouth</span> <span class="op">&lt;-</span> <span class="va">tms</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">body_site</span> <span class="op">==</span> <span class="st">'oralcavity'</span>, <span class="va">rank</span> <span class="op">==</span> <span class="st">'genus'</span><span class="op">)</span></span></code></pre></div>
@@ -576,7 +576,7 @@ microbes.</p>
 <span><span class="co">#&gt;  cli                3.6.1    <span style="color: #555555;">2023-03-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  conditionz         0.1.0    <span style="color: #555555;">2019-04-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  crayon             1.5.2    <span style="color: #555555;">2022-09-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  crul               1.3      <span style="color: #555555;">2022-09-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  crul               1.4.0    <span style="color: #555555;">2023-05-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  curl               5.0.0    <span style="color: #555555;">2023-01-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  data.table         1.14.8   <span style="color: #555555;">2023-02-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  DBI                1.1.3    <span style="color: #555555;">2022-06-18</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
