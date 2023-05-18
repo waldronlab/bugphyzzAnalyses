@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Analysis of the NYCHANES signatures • bugphyzzAnalyses</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/lux/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -50,19 +50,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/chi_square.html">Analysis of the NYCHANES signatures</a>
+      <a href="../articles/data_integration_and_stats.html">Data integration</a>
     </li>
     <li>
-      <a href="../articles/data_integration_and_stats.html">Data integration and bugphyzz stats</a>
-    </li>
-    <li>
-      <a href="../articles/high_throughput_msea_bsdb.html">High-througput MSEA of BugSigDB and bugphyzz sets</a>
-    </li>
-    <li>
-      <a href="../articles/ibd-aerophilicity-enrichment.html">MSEA control vs IBD in cMD for aerophilicity attributes</a>
-    </li>
-    <li>
-      <a href="../articles/subgingival_plaque.html">MSEA gingival plaque - MicrobiomeBenchmarkData - WMS</a>
+      <a href="../articles/subgingival_plaque.html">Subgingival vs supragingival plaque</a>
     </li>
   </ul>
 </li>
@@ -112,7 +103,7 @@
 <span><span class="co">#&gt;   method           from  </span></span>
 <span><span class="co">#&gt;   print.cache_info hoardr</span></span>
 <span><span class="co">#&gt; Downloading, full_dump_categorical.csv.bz2.</span></span>
-<span><span class="co">#&gt; Using data downloaded on 2023-05-18 19:32:29.</span></span>
+<span><span class="co">#&gt; Using data downloaded on 2023-05-18 20:12:30.</span></span>
 <span><span class="va">bsdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/importBugSigDB.html" class="external-link">importBugSigDB</a></span><span class="op">(</span>version <span class="op">=</span> <span class="st">'devel'</span><span class="op">)</span></span>
 <span><span class="va">tms</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/importTidyTMS.html">importTidyTMS</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <ul>
@@ -216,7 +207,7 @@ microbes.</p>
 <span><span class="co">#&gt;  replicates)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; data:  tbl$Attribute and tbl$Abundance</span></span>
-<span><span class="co">#&gt; X-squared = 6.7429, df = NA, p-value = 0.03548</span></span></code></pre></div>
+<span><span class="co">#&gt; X-squared = 6.7429, df = NA, p-value = 0.04198</span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">Attribute</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'aerobic'</span>, <span class="st">'anaerobic'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">cont2</span> <span class="op">&lt;-</span> <span class="fu">epitools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/epitools/man/epitable.html" class="external-link">epitable</a></span><span class="op">(</span><span class="va">tbl2</span><span class="op">$</span><span class="va">Attribute</span>, <span class="va">tbl2</span><span class="op">$</span><span class="va">Abundance</span><span class="op">)</span></span>
@@ -235,7 +226,7 @@ microbes.</p>
 <span><span class="co">#&gt;  replicates)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; data:  tbl2$Attribute and tbl2$Abundance</span></span>
-<span><span class="co">#&gt; X-squared = 0.29805, df = NA, p-value = 0.6632</span></span></code></pre></div>
+<span><span class="co">#&gt; X-squared = 0.29805, df = NA, p-value = 0.6497</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mouth</span> <span class="op">&lt;-</span> <span class="va">tms</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">body_site</span> <span class="op">==</span> <span class="st">'oralcavity'</span>, <span class="va">rank</span> <span class="op">==</span> <span class="st">'genus'</span><span class="op">)</span></span></code></pre></div>
