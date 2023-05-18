@@ -1,0 +1,13 @@
+template:
+  params:
+    bootswatch: lux
+
+navbar:
+ components:
+   articles:
+    text: Articles
+    menu:
+    - text: "Data integration"
+      href: articles/data_integration_and_stats.html
+    - text: "Subgingival vs supragingival plaque"
+      href: articles/subgingival_plaque.html
