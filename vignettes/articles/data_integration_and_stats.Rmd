@@ -1,5 +1,5 @@
 ---
-title: "Data integration and bugphyzz stats"
+title: "Data integration and stats"
 output:
     html_document:
         toc: true
