@@ -172,12 +172,16 @@ attributes</h1>
 <span>    padj.method <span class="op">=</span> <span class="st">'BH'</span>, assay <span class="op">=</span> <span class="st">'relab_plus_1'</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">deseq_ora</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 3 rows and 5 columns</span></span>
+<span><span class="co">#&gt; DataFrame with 7 rows and 5 columns</span></span>
 <span><span class="co">#&gt;                 GENE.SET  NR.GENES NR.SIG.GENES      PVAL  ADJ.PVAL</span></span>
 <span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt;    &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1 aerophilicity:facult..         6            6     0.104     0.312</span></span>
-<span><span class="co">#&gt; 2 aerophilicity:anaero..        68           48     0.430     0.645</span></span>
-<span><span class="co">#&gt; 3 aerophilicity:obliga..        72           48     0.833     0.833</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 aerophilicity:anaero..        74           52     0.453     0.947</span></span>
+<span><span class="co">#&gt; 2 aerophilicity:facult..        29           20     0.611     0.947</span></span>
+<span><span class="co">#&gt; 3  aerophilicity:aerobic        26           17     0.767     0.947</span></span>
+<span><span class="co">#&gt; 4 aerophilicity:microa..        24           15     0.853     0.947</span></span>
+<span><span class="co">#&gt; 5 aerophilicity:aeroto..        23           14     0.888     0.947</span></span>
+<span><span class="co">#&gt; 6 aerophilicity:obliga..        23           14     0.888     0.947</span></span>
+<span><span class="co">#&gt; 7 aerophilicity:obliga..        88           58     0.947     0.947</span></span></code></pre></div>
 <p>GSEA:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">deseq_gsea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
@@ -185,12 +189,16 @@ attributes</h1>
 <span>    padj.method <span class="op">=</span> <span class="st">'BH'</span>, assay <span class="op">=</span> <span class="st">'relab_plus_1'</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">deseq_gsea</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 3 rows and 3 columns</span></span>
-<span><span class="co">#&gt;                 GENE.SET      PVAL  ADJ.PVAL</span></span>
-<span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1 aerophilicity:facult..   0.00103   0.00309</span></span>
-<span><span class="co">#&gt; 2 aerophilicity:obliga..   0.01050   0.01160</span></span>
-<span><span class="co">#&gt; 3 aerophilicity:anaero..   0.01160   0.01160</span></span></code></pre></div>
+<span><span class="co">#&gt; DataFrame with 7 rows and 3 columns</span></span>
+<span><span class="co">#&gt;                 GENE.SET      PVAL   ADJ.PVAL</span></span>
+<span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt;  &lt;numeric&gt;</span></span>
+<span><span class="co">#&gt; 1 aerophilicity:facult..  0.000381 0.00155750</span></span>
+<span><span class="co">#&gt; 2  aerophilicity:aerobic  0.000445 0.00155750</span></span>
+<span><span class="co">#&gt; 3 aerophilicity:microa..  0.003910 0.00547167</span></span>
+<span><span class="co">#&gt; 4 aerophilicity:obliga..  0.003910 0.00547167</span></span>
+<span><span class="co">#&gt; 5 aerophilicity:aeroto..  0.004690 0.00547167</span></span>
+<span><span class="co">#&gt; 6 aerophilicity:obliga..  0.004690 0.00547167</span></span>
+<span><span class="co">#&gt; 7 aerophilicity:anaero..  0.009050 0.00905000</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="edger">edgeR<a class="anchor" aria-label="anchor" href="#edger"></a>
@@ -207,12 +215,16 @@ attributes</h1>
 <span>    padj.method <span class="op">=</span> <span class="st">'BH'</span>, assay <span class="op">=</span> <span class="st">'relab_plus_1'</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span><span class="va">edger_ora</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 3 rows and 5 columns</span></span>
+<span><span class="co">#&gt; DataFrame with 7 rows and 5 columns</span></span>
 <span><span class="co">#&gt;                 GENE.SET  NR.GENES NR.SIG.GENES      PVAL  ADJ.PVAL</span></span>
 <span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt;    &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1 aerophilicity:obliga..        72           50     0.198     0.328</span></span>
-<span><span class="co">#&gt; 2 aerophilicity:anaero..        68           47     0.245     0.328</span></span>
-<span><span class="co">#&gt; 3 aerophilicity:facult..         6            5     0.328     0.328</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 aerophilicity:anaero..        74           50     0.372     0.987</span></span>
+<span><span class="co">#&gt; 2 aerophilicity:obliga..        88           57     0.736     0.987</span></span>
+<span><span class="co">#&gt; 3 aerophilicity:facult..        29           16     0.946     0.987</span></span>
+<span><span class="co">#&gt; 4  aerophilicity:aerobic        26           14     0.953     0.987</span></span>
+<span><span class="co">#&gt; 5 aerophilicity:microa..        24           12     0.979     0.987</span></span>
+<span><span class="co">#&gt; 6 aerophilicity:aeroto..        23           11     0.987     0.987</span></span>
+<span><span class="co">#&gt; 7 aerophilicity:obliga..        23           11     0.987     0.987</span></span></code></pre></div>
 <p>GSEA:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">edger_gsea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
@@ -220,12 +232,16 @@ attributes</h1>
 <span>    padj.method <span class="op">=</span> <span class="st">'BH'</span>, assay <span class="op">=</span> <span class="st">'relab_plus_1'</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span><span class="va">edger_gsea</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 3 rows and 3 columns</span></span>
-<span><span class="co">#&gt;                 GENE.SET      PVAL  ADJ.PVAL</span></span>
-<span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1 aerophilicity:facult..   0.00103   0.00309</span></span>
-<span><span class="co">#&gt; 2 aerophilicity:obliga..   0.01050   0.01160</span></span>
-<span><span class="co">#&gt; 3 aerophilicity:anaero..   0.01160   0.01160</span></span></code></pre></div>
+<span><span class="co">#&gt; DataFrame with 7 rows and 3 columns</span></span>
+<span><span class="co">#&gt;                 GENE.SET      PVAL   ADJ.PVAL</span></span>
+<span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt;  &lt;numeric&gt;</span></span>
+<span><span class="co">#&gt; 1 aerophilicity:facult..  0.000381 0.00155750</span></span>
+<span><span class="co">#&gt; 2  aerophilicity:aerobic  0.000445 0.00155750</span></span>
+<span><span class="co">#&gt; 3 aerophilicity:microa..  0.003910 0.00547167</span></span>
+<span><span class="co">#&gt; 4 aerophilicity:obliga..  0.003910 0.00547167</span></span>
+<span><span class="co">#&gt; 5 aerophilicity:aeroto..  0.004690 0.00547167</span></span>
+<span><span class="co">#&gt; 6 aerophilicity:obliga..  0.004690 0.00547167</span></span>
+<span><span class="co">#&gt; 7 aerophilicity:anaero..  0.009050 0.00905000</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session Information<a class="anchor" aria-label="anchor" href="#session-information"></a>
@@ -289,7 +305,7 @@ attributes</h1>
 <span><span class="co">#&gt;  [33] crul_1.4.0                    vegan_2.6-4                  </span></span>
 <span><span class="co">#&gt;  [35] conditionz_0.1.0              pkgdown_2.0.7                </span></span>
 <span><span class="co">#&gt;  [37] permute_0.9-7                 DelayedMatrixStats_1.22.0    </span></span>
-<span><span class="co">#&gt;  [39] codetools_0.2-19              DelayedArray_0.26.2          </span></span>
+<span><span class="co">#&gt;  [39] codetools_0.2-19              DelayedArray_0.26.3          </span></span>
 <span><span class="co">#&gt;  [41] scuttle_1.10.1                xml2_1.3.4                   </span></span>
 <span><span class="co">#&gt;  [43] tidyselect_1.2.0              httpcode_0.3.0               </span></span>
 <span><span class="co">#&gt;  [45] ScaledMatrix_1.8.1            viridis_0.6.3                </span></span>
@@ -332,7 +348,7 @@ attributes</h1>
 <span><span class="co">#&gt; [119] rlang_1.1.1                   crayon_1.5.2                 </span></span>
 <span><span class="co">#&gt; [121] plyr_1.8.8                    fs_1.6.2                     </span></span>
 <span><span class="co">#&gt; [123] ggbeeswarm_0.7.2              stringi_1.7.12               </span></span>
-<span><span class="co">#&gt; [125] viridisLite_0.4.2             BiocParallel_1.34.1          </span></span>
+<span><span class="co">#&gt; [125] viridisLite_0.4.2             BiocParallel_1.34.2          </span></span>
 <span><span class="co">#&gt; [127] munsell_0.5.0                 lazyeval_0.2.2               </span></span>
 <span><span class="co">#&gt; [129] Matrix_1.5-4                  ExperimentHub_2.8.0          </span></span>
 <span><span class="co">#&gt; [131] hoardr_0.5.3                  sparseMatrixStats_1.12.0     </span></span>

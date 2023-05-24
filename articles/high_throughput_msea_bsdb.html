@@ -305,7 +305,7 @@ a background dataset.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/importBugphyzz.html" class="external-link">importBugphyzz</a></span><span class="op">(</span>version <span class="op">=</span> <span class="st">'devel'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">bp</span>, width <span class="op">=</span> <span class="fl">70</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 376,603</span></span>
+<span><span class="co">#&gt; Rows: 2,121,509</span></span>
 <span><span class="co">#&gt; Columns: 12</span></span>
 <span><span class="co">#&gt; $ NCBI_ID                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "10", "1000999", "100132", "100175", …</span></span>
 <span><span class="co">#&gt; $ Taxon_name             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Cellvibrio", "Acidipila", "Sporobact…</span></span>
@@ -328,6 +328,9 @@ a background dataset.</p>
 <span><span class="co">#&gt; $`aerophilicity:aerobic`</span></span>
 <span><span class="co">#&gt; [1] "10"      "1000999" "1004300" "1007"    "1007082" "1008195"</span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`aerophilicity:aerotolerant`</span></span>
+<span><span class="co">#&gt; [1] "2798934" "2798933" "2798935" "2798931" "2798932" "2792796"</span></span>
+<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`aerophilicity:anaerobic`</span></span>
 <span><span class="co">#&gt; [1] "100132" "100175" "102106" "104175" "109166" "109168"</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -338,10 +341,7 @@ a background dataset.</p>
 <span><span class="co">#&gt; [1] "106146"  "12960"   "13134"   "1410680" "191"     "206375" </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`aerophilicity:obligately_aerobic`</span></span>
-<span><span class="co">#&gt; [1] "110934"  "1123967" "123"     "135575"  "1450140" "146918" </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`aerophilicity:obligately_anaerobic`</span></span>
-<span><span class="co">#&gt; [1] "100883"  "101191"  "1080709" "118747"  "1200657" "1257"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "110934"  "1123967" "123"     "135575"  "1450140" "146918"</span></span></code></pre></div>
 <p>Species signatures</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp_sigs_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getBugphyzzSignatures.html" class="external-link">getBugphyzzSignatures</a></span><span class="op">(</span></span>
@@ -350,6 +350,9 @@ a background dataset.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">bp_sigs_sp</span>, <span class="va">head</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $`aerophilicity:aerobic`</span></span>
 <span><span class="co">#&gt; [1] "1001240" "1002"    "1002227" "100225"  "1002672" "1003091"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`aerophilicity:aerotolerant`</span></span>
+<span><span class="co">#&gt; [1] "1454184" "1506"    "1656"    "1806172" "2798940" "2848170"</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`aerophilicity:anaerobic`</span></span>
 <span><span class="co">#&gt; [1] "100133"  "100174"  "1002795" "1004583" "1005740" "1006155"</span></span>
@@ -361,10 +364,7 @@ a background dataset.</p>
 <span><span class="co">#&gt; [1] "1000562" "100177"  "1017"    "1031542" "104608"  "1050107"</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $`aerophilicity:obligately_aerobic`</span></span>
-<span><span class="co">#&gt; [1] "1002689" "1002691" "1003110" "100379"  "1007087" "1007089"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`aerophilicity:obligately_anaerobic`</span></span>
-<span><span class="co">#&gt; [1] "1000568" "1000569" "1008305" "1008460" "101192"  "102134"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "1002689" "1002691" "1003110" "100379"  "1007087" "1007089"</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -409,26 +409,23 @@ a background dataset.</p>
 <span><span class="op">}</span></span>
 <span><span class="va">enrichment_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/keep.html" class="external-link">discard</a></span><span class="op">(</span><span class="va">enrichment_res</span>, <span class="op">~</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">enrichment_res</span>, <span class="va">nrow</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $skin__genus</span></span>
-<span><span class="co">#&gt; [1] 2</span></span>
-<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $vagina__genus</span></span>
-<span><span class="co">#&gt; [1] 12</span></span>
+<span><span class="co">#&gt; [1] 3</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $vagina__species</span></span>
 <span><span class="co">#&gt; [1] 1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $oral_cavity__genus</span></span>
-<span><span class="co">#&gt; [1] 10</span></span>
+<span><span class="co">#&gt; [1] 3</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $oral_cavity__species</span></span>
-<span><span class="co">#&gt; [1] 27</span></span>
+<span><span class="co">#&gt; [1] 54</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stool__genus</span></span>
-<span><span class="co">#&gt; [1] 39</span></span>
+<span><span class="co">#&gt; [1] 32</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stool__species</span></span>
-<span><span class="co">#&gt; [1] 77</span></span>
+<span><span class="co">#&gt; [1] 133</span></span>
 <span><span class="co">## top hits by odds ratio</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">'list'</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">enrichment_res</span><span class="op">)</span><span class="op">)</span></span>
@@ -487,13 +484,13 @@ a background dataset.</p>
 <span><span class="va">ct</span></span>
 <span><span class="co">#&gt;           sig</span></span>
 <span><span class="co">#&gt; set        inSig notInSig</span></span>
-<span><span class="co">#&gt;   inSet        4        6</span></span>
-<span><span class="co">#&gt;   notInSet    16      173</span></span></code></pre></div>
+<span><span class="co">#&gt;   inSet        5        5</span></span>
+<span><span class="co">#&gt;   notInSet    94       95</span></span></code></pre></div>
 <p>Enrichment</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p_value_</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/fisher.test.html" class="external-link">fisher.test</a></span><span class="op">(</span><span class="va">ct</span>, alternative <span class="op">=</span> <span class="st">'g'</span><span class="op">)</span><span class="op">$</span><span class="va">p.value</span></span>
 <span><span class="va">p_value_</span></span>
-<span><span class="co">#&gt; [1] 0.01066648</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.6199234</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
@@ -510,7 +507,7 @@ a background dataset.</p>
 <span><span class="co">#&gt;  collate  en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  ctype    en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  tz       Etc/UTC</span></span>
-<span><span class="co">#&gt;  date     2023-05-19</span></span>
+<span><span class="co">#&gt;  date     2023-05-24</span></span>
 <span><span class="co">#&gt;  pandoc   2.19.2 @ /usr/local/bin/ (via rmarkdown)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Packages ───────────────────────────────────────────────────────────────────</span></span></span>
@@ -521,9 +518,9 @@ a background dataset.</p>
 <span><span class="co">#&gt;  blob               1.2.4    <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  bold               1.3.0    <span style="color: #555555;">2023-05-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  bslib              0.4.2    <span style="color: #555555;">2022-12-16</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  bugphyzz         * 0.0.1.3  <span style="color: #555555;">2023-05-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@9c7db81)</span></span></span>
-<span><span class="co">#&gt;  bugphyzzAnalyses * 0.1.0    <span style="color: #555555;">2023-05-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
-<span><span class="co">#&gt;  bugsigdbr        * 1.6.1    <span style="color: #555555;">2023-04-27</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
+<span><span class="co">#&gt;  bugphyzz         * 0.0.1.3  <span style="color: #555555;">2023-05-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@1bd74d2)</span></span></span>
+<span><span class="co">#&gt;  bugphyzzAnalyses * 0.1.0    <span style="color: #555555;">2023-05-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
+<span><span class="co">#&gt;  bugsigdbr        * 1.6.2    <span style="color: #555555;">2023-05-21</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  cachem             1.0.8    <span style="color: #555555;">2023-05-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  cli                3.6.1    <span style="color: #555555;">2023-03-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  colorspace         2.1-0    <span style="color: #555555;">2023-01-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
@@ -579,9 +576,9 @@ a background dataset.</p>
 <span><span class="co">#&gt;  stringr            1.5.0    <span style="color: #555555;">2022-12-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  systemfonts        1.0.4    <span style="color: #555555;">2022-02-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  taxa               0.4.2    <span style="color: #555555;">2022-04-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  taxize             1.0      <span style="color: #555555;">2023-05-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
+<span><span class="co">#&gt;  taxize             1.0      <span style="color: #555555;">2023-05-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
 <span><span class="co">#&gt;  taxizedb           0.3.1    <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  taxPPro          * 0.1.0    <span style="color: #555555;">2023-05-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (sdgamboa/taxPPro@1711030)</span></span></span>
+<span><span class="co">#&gt;  taxPPro          * 0.1.0    <span style="color: #555555;">2023-05-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (sdgamboa/taxPPro@77f3e0d)</span></span></span>
 <span><span class="co">#&gt;  textshaping        0.3.6    <span style="color: #555555;">2021-10-13</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  tibble             3.2.1    <span style="color: #555555;">2023-03-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  tidyr            * 1.3.0    <span style="color: #555555;">2023-01-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
