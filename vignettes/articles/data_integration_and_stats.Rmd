@@ -8,7 +8,8 @@ output:
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  message = FALSE
 )
 ```
 
@@ -25,15 +26,6 @@ library(taxPPro)
 library(tidyr)
 library(ComplexHeatmap)
 library(purrr)
-```
-
-Useful variables:
-
-```{r}
-valid_ranks <- c(
-  'strain', 'species', 'genus', 'family', 'order', 'class', 'phylum',
-  'domain'
-)
 ```
 
 # Data
@@ -109,7 +101,7 @@ Import data of taxa used to create the taxonomic tree:
 base_taxa <- get_ncbi_taxids('bti') |> 
   rename(domain =  kingdom) |> 
   mutate(Rank = ifelse(Rank == 'superkingdom', 'domain', Rank)) |> 
-  filter(Rank %in% valid_ranks) |> 
+  filter(Rank %in% taxRanks()) |> 
   select(-Taxon_name, -Parent_NCBI_ID)
 base_taxa_summary <- base_taxa |> 
   count(Rank, name = "n_inbase")
@@ -177,7 +169,7 @@ comp_mat_bef <- completeness |>
     values_fill = 0
   ) |> 
   tibble::column_to_rownames(var = 'Attribute_group') |> 
-  select(all_of(valid_ranks[1:3])) |> 
+  select(all_of(taxRanks()[1:3])) |> 
   as.matrix() |> 
   round(digits = 2) 
 
@@ -188,7 +180,7 @@ comp_mat_aft <- completeness |>
     values_fill = 0
   ) |> 
   tibble::column_to_rownames(var = 'Attribute_group') |> 
-  select(all_of(valid_ranks)) |> 
+  select(all_of(taxRanks())) |> 
   as.matrix() |> 
   round(digits = 2)
 comp_mat_bef <- comp_mat_bef[rownames(comp_mat_aft),]
@@ -275,23 +267,6 @@ data <- phys_ |>
 ```
 
 
-```{r}
-# data <- bp_source |> 
-#   count(Attribute_source, Attribute_group, Rank) |> 
-#   filter(!grepl('BacDive;', Attribute_source)) |> 
-#   mutate(new_column = paste0(Attribute_group, '|', Rank)) |>
-#   select(new_column, Attribute_source, n) |> 
-#   pivot_wider(
-#     names_from = 'Attribute_source', values_from = 'n', values_fill = 0
-#   ) |> 
-#   arrange(new_column) |> 
-#   tibble::column_to_rownames(var = 'new_column') |> 
-#   as.matrix()
-# 
-
-```
-
-
 ```{r, fig.width=6, fig.height=6}
 bar_vct <- sub('^.*\\|', '', rownames(data))
 split_vct <- sub('\\|.*$', '', rownames(data))
@@ -354,21 +329,30 @@ top10_sp_p
 ## Frequency of number of annotations per taxon
 
 ```{r frequency N annotations}
-freq_annot_rank <- bp |> 
+unknowns <- bp |> 
+  filter(Evidence %in% c('asr', 'inh') & Frequency == 'unknown')
+
+normal <- bp |> 
+  filter(!(Evidence %in% c('asr', 'inh') & Frequency == 'unknown'))
+
+freq_annot_rank1 <- unknowns |> 
+  count(Rank, name = 'n_taxa') |> 
+  mutate(n_annot = 0)
+
+freq_annot_rank2 <- bp |> 
   count(Rank, NCBI_ID, name = 'n_annot') |> 
-  count(Rank, n_annot)
+  count(Rank, n_annot, name = 'n_taxa')
+
+freq_annot_rank <- bind_rows(freq_annot_rank1, freq_annot_rank2)
+
 freq_rank_p <- freq_annot_rank |> 
-  mutate(
-    Rank = factor(Rank, levels = c(
-      'strain', 'species', 'genus', 'family', 'order', 'class', 'phylum',
-      'domain'
-      ))
-  ) |> 
-  ggplot(aes(n_annot, n)) +
+  mutate(Rank = factor(Rank, levels = taxRanks())) |> 
+  filter(Rank %in% c('genus', 'species', 'strain')) |>
+  ggplot(aes(n_annot, n_taxa)) +
   geom_col(fill = 'dodgerblue4', alpha = 0.8) +
   scale_y_continuous(breaks = scales::pretty_breaks()) +
   scale_x_continuous(
-    limits = c(0, 11),
+    # limits = c(0, 11),
     breaks = scales::pretty_breaks()
   ) +
   labs(x = 'Number of annotaions per taxon', y = 'Frequency') +
@@ -381,6 +365,46 @@ freq_rank_p <- freq_annot_rank |>
   )
 freq_rank_p
 ```
+
+Let's use log
+
+```{r}
+freq_rank_p2 <- freq_annot_rank |> 
+  mutate(Rank = factor(Rank, levels = taxRanks())) |> 
+  mutate(n_taxa = log2(n_taxa + 1)) |> 
+  filter(Rank %in% c('genus', 'species', 'strain')) |>
+  ggplot(aes(n_annot, n_taxa)) +
+  geom_col(fill = 'dodgerblue4', alpha = 0.8) +
+  scale_y_continuous(breaks = scales::pretty_breaks()) +
+  scale_x_continuous(
+    # limits = c(0, 11),
+    breaks = scales::pretty_breaks()
+  ) +
+  labs(x = 'Number of annotaions per taxon', y = 'Frequency') +
+  facet_wrap(~Rank, scales = 'free_y') +
+  theme_bw() +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_line(color = 'black', linewidth = 0.1)
+  )
+freq_rank_p2
+
+```
+
+Compare both plots (real numbers and log2)
+
+```{r}
+freq_rank_p_combined <- ggarrange(
+  freq_rank_p + ggtitle('Real frequencies'), 
+  freq_rank_p2 + ggtitle('log2 frequencies'), 
+  ncol = 1
+)
+freq_rank_p_combined 
+```
+
+
+
 
 # Numbers per physiology
 
