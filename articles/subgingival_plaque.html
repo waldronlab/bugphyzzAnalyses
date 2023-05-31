@@ -162,7 +162,7 @@ WMS</h1>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/importBugphyzz.html" class="external-link">importBugphyzz</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Using data downloaded on 2023-05-24 15:53:13.</span></span>
+<span><span class="co">#&gt; Using data downloaded on 2023-05-31 21:35:53.</span></span>
 <span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="va">bp</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Attribute_group</span> <span class="op">==</span> <span class="st">'aerophilicity'</span><span class="op">)</span></span>
 <span><span class="va">sp_sigs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getBugphyzzSignatures.html" class="external-link">getBugphyzzSignatures</a></span><span class="op">(</span></span>
@@ -189,16 +189,13 @@ WMS</h1>
 <span>    padj.method <span class="op">=</span> <span class="st">'BH'</span>, assay <span class="op">=</span> <span class="st">'counts_plus_1'</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">deseq_ora</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 7 rows and 5 columns</span></span>
+<span><span class="co">#&gt; DataFrame with 4 rows and 5 columns</span></span>
 <span><span class="co">#&gt;                 GENE.SET  NR.GENES NR.SIG.GENES      PVAL  ADJ.PVAL</span></span>
 <span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt;    &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1  aerophilicity:aerobic        28           16     0.621         1</span></span>
-<span><span class="co">#&gt; 2 aerophilicity:obliga..        44           25     0.644         1</span></span>
-<span><span class="co">#&gt; 3 aerophilicity:facult..        26           13     0.875         1</span></span>
-<span><span class="co">#&gt; 4 aerophilicity:microa..        28           13     0.948         1</span></span>
-<span><span class="co">#&gt; 5 aerophilicity:aeroto..        14            4     0.996         1</span></span>
-<span><span class="co">#&gt; 6 aerophilicity:obliga..        14            4     0.996         1</span></span>
-<span><span class="co">#&gt; 7 aerophilicity:anaero..        55           22     1.000         1</span></span></code></pre></div>
+<span><span class="co">#&gt; 1  aerophilicity:aerobic        41           24     0.532     0.999</span></span>
+<span><span class="co">#&gt; 2 aerophilicity:facult..        26           13     0.875     0.999</span></span>
+<span><span class="co">#&gt; 3 aerophilicity:aeroto..        14            4     0.996     0.999</span></span>
+<span><span class="co">#&gt; 4 aerophilicity:anaero..        76           37     0.999     0.999</span></span></code></pre></div>
 <p>GSEA:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">deseq_gsea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
@@ -217,16 +214,13 @@ WMS</h1>
 <span><span class="co">#&gt;     addNode</span></span>
 <span><span class="co">#&gt; No methods found in package 'BiocGenerics' for request: 'unlist' when loading 'npGSEA'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">deseq_gsea</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 7 rows and 3 columns</span></span>
+<span><span class="co">#&gt; DataFrame with 4 rows and 3 columns</span></span>
 <span><span class="co">#&gt;                 GENE.SET      PVAL  ADJ.PVAL</span></span>
 <span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1  aerophilicity:aerobic   0.00290  0.020300</span></span>
-<span><span class="co">#&gt; 2 aerophilicity:facult..   0.00903  0.031605</span></span>
-<span><span class="co">#&gt; 3 aerophilicity:microa..   0.02790  0.065100</span></span>
-<span><span class="co">#&gt; 4 aerophilicity:anaero..   0.14000  0.245000</span></span>
-<span><span class="co">#&gt; 5 aerophilicity:obliga..   0.19800  0.277200</span></span>
-<span><span class="co">#&gt; 6 aerophilicity:aeroto..   0.30400  0.354667</span></span>
-<span><span class="co">#&gt; 7 aerophilicity:obliga..   0.61500  0.615000</span></span></code></pre></div>
+<span><span class="co">#&gt; 1  aerophilicity:aerobic   0.00267  0.010680</span></span>
+<span><span class="co">#&gt; 2 aerophilicity:facult..   0.00903  0.018060</span></span>
+<span><span class="co">#&gt; 3 aerophilicity:aeroto..   0.30400  0.405333</span></span>
+<span><span class="co">#&gt; 4 aerophilicity:anaero..   0.56800  0.568000</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="edger-ora-and-gsea">edgeR + ORA and GSEA<a class="anchor" aria-label="anchor" href="#edger-ora-and-gsea"></a>
@@ -247,16 +241,13 @@ WMS</h1>
 <span>    padj.method <span class="op">=</span> <span class="st">'BH'</span>, assay <span class="op">=</span> <span class="st">'counts_plus_1'</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger_ora</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 7 rows and 5 columns</span></span>
+<span><span class="co">#&gt; DataFrame with 4 rows and 5 columns</span></span>
 <span><span class="co">#&gt;                 GENE.SET  NR.GENES NR.SIG.GENES      PVAL  ADJ.PVAL</span></span>
 <span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt;    &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1 aerophilicity:anaero..        55            0         1         1</span></span>
-<span><span class="co">#&gt; 2 aerophilicity:obliga..        44            0         1         1</span></span>
-<span><span class="co">#&gt; 3  aerophilicity:aerobic        28            0         1         1</span></span>
-<span><span class="co">#&gt; 4 aerophilicity:microa..        28            0         1         1</span></span>
-<span><span class="co">#&gt; 5 aerophilicity:facult..        26            0         1         1</span></span>
-<span><span class="co">#&gt; 6 aerophilicity:aeroto..        14            0         1         1</span></span>
-<span><span class="co">#&gt; 7 aerophilicity:obliga..        14            0         1         1</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 aerophilicity:anaero..        76            0         1         1</span></span>
+<span><span class="co">#&gt; 2  aerophilicity:aerobic        41            0         1         1</span></span>
+<span><span class="co">#&gt; 3 aerophilicity:facult..        26            0         1         1</span></span>
+<span><span class="co">#&gt; 4 aerophilicity:aeroto..        14            0         1         1</span></span></code></pre></div>
 <p>GSEA:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">edger_gsea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
@@ -264,16 +255,13 @@ WMS</h1>
 <span>    padj.method <span class="op">=</span> <span class="st">'BH'</span>, assay <span class="op">=</span> <span class="st">'counts_plus_1'</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger_gsea</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 7 rows and 3 columns</span></span>
+<span><span class="co">#&gt; DataFrame with 4 rows and 3 columns</span></span>
 <span><span class="co">#&gt;                 GENE.SET      PVAL  ADJ.PVAL</span></span>
 <span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1  aerophilicity:aerobic   0.00290  0.020300</span></span>
-<span><span class="co">#&gt; 2 aerophilicity:facult..   0.00903  0.031605</span></span>
-<span><span class="co">#&gt; 3 aerophilicity:microa..   0.02790  0.065100</span></span>
-<span><span class="co">#&gt; 4 aerophilicity:anaero..   0.14000  0.245000</span></span>
-<span><span class="co">#&gt; 5 aerophilicity:obliga..   0.19800  0.277200</span></span>
-<span><span class="co">#&gt; 6 aerophilicity:aeroto..   0.30400  0.354667</span></span>
-<span><span class="co">#&gt; 7 aerophilicity:obliga..   0.61500  0.615000</span></span></code></pre></div>
+<span><span class="co">#&gt; 1  aerophilicity:aerobic   0.00267  0.010680</span></span>
+<span><span class="co">#&gt; 2 aerophilicity:facult..   0.00903  0.018060</span></span>
+<span><span class="co">#&gt; 3 aerophilicity:aeroto..   0.30400  0.405333</span></span>
+<span><span class="co">#&gt; 4 aerophilicity:anaero..   0.56800  0.568000</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
@@ -290,7 +278,7 @@ WMS</h1>
 <span><span class="co">#&gt;  collate  en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  ctype    en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  tz       Etc/UTC</span></span>
-<span><span class="co">#&gt;  date     2023-05-24</span></span>
+<span><span class="co">#&gt;  date     2023-05-31</span></span>
 <span><span class="co">#&gt;  pandoc   2.19.2 @ /usr/local/bin/ (via rmarkdown)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Packages ───────────────────────────────────────────────────────────────────</span></span></span>
@@ -309,8 +297,8 @@ WMS</h1>
 <span><span class="co">#&gt;  blob                       1.2.4     <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  bold                       1.3.0     <span style="color: #555555;">2023-05-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  bslib                      0.4.2     <span style="color: #555555;">2022-12-16</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  bugphyzz                 * 0.0.1.3   <span style="color: #555555;">2023-05-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@1bd74d2)</span></span></span>
-<span><span class="co">#&gt;  bugphyzzAnalyses         * 0.1.0     <span style="color: #555555;">2023-05-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
+<span><span class="co">#&gt;  bugphyzz                 * 0.0.1.3   <span style="color: #555555;">2023-05-31</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@8a2e228)</span></span></span>
+<span><span class="co">#&gt;  bugphyzzAnalyses         * 0.1.0     <span style="color: #555555;">2023-05-31</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
 <span><span class="co">#&gt;  cachem                     1.0.8     <span style="color: #555555;">2023-05-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  cli                        3.6.1     <span style="color: #555555;">2023-03-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  codetools                  0.2-19    <span style="color: #555555;">2023-02-01</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.3.0)</span></span></span>
@@ -352,7 +340,7 @@ WMS</h1>
 <span><span class="co">#&gt;  jsonlite                   1.8.4     <span style="color: #555555;">2022-12-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  KEGGgraph                  1.60.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  KEGGREST                   1.40.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
-<span><span class="co">#&gt;  knitr                      1.42      <span style="color: #555555;">2023-01-25</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  knitr                      1.43      <span style="color: #555555;">2023-05-25</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  lattice                    0.21-8    <span style="color: #555555;">2023-04-05</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  lazyeval                   0.2.2     <span style="color: #555555;">2019-03-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  lifecycle                  1.0.3     <span style="color: #555555;">2022-10-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
@@ -364,7 +352,7 @@ WMS</h1>
 <span><span class="co">#&gt;  matrixStats              * 0.63.0    <span style="color: #555555;">2022-11-18</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  memoise                    2.0.1     <span style="color: #555555;">2021-11-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  mgsub                      1.7.3     <span style="color: #555555;">2021-07-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  MicrobiomeBenchmarkData  * 1.3.0     <span style="color: #555555;">2023-05-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/MicrobiomeBenchmarkData@a131a61)</span></span></span>
+<span><span class="co">#&gt;  MicrobiomeBenchmarkData  * 1.3.0     <span style="color: #555555;">2023-05-31</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/MicrobiomeBenchmarkData@a131a61)</span></span></span>
 <span><span class="co">#&gt;  munsell                    0.5.0     <span style="color: #555555;">2018-06-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  nlme                       3.1-162   <span style="color: #555555;">2023-01-31</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  npGSEA                   * 1.36.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
@@ -397,7 +385,7 @@ WMS</h1>
 <span><span class="co">#&gt;  SummarizedExperiment     * 1.30.1    <span style="color: #555555;">2023-05-01</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  systemfonts                1.0.4     <span style="color: #555555;">2022-02-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  taxa                       0.4.2     <span style="color: #555555;">2022-04-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  taxize                     1.0       <span style="color: #555555;">2023-05-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
+<span><span class="co">#&gt;  taxize                     1.0       <span style="color: #555555;">2023-05-31</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
 <span><span class="co">#&gt;  taxizedb                   0.3.1     <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  textshaping                0.3.6     <span style="color: #555555;">2021-10-13</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  tibble                     3.2.1     <span style="color: #555555;">2023-03-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
