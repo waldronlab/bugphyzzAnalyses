@@ -21,6 +21,7 @@ library(bugphyzz)
 library(nychanesmicrobiome)
 library(dplyr)
 library(purrr)
+library(EnrichmentBrowser)
 ```
 
 Analysis of a previous study (the nychanes study).
@@ -35,10 +36,11 @@ Analysis of a previous study (the nychanes study).
 
 # Import data
 
-```{r}
+```{r, message=FALSE}
 bp <- importBugphyzz(version = 'devel', force_download = TRUE)
 bsdb <- importBugSigDB(version = 'devel')
 tms <- importTidyTMS()
+nh <- importNYCHANES()
 ```
 
 + Study 727 corresponds to the NYCHANES public study.
@@ -156,6 +158,55 @@ en2 <- runEnrichment(
 )
 data.table::data.table(en2)
 
+```
+
+
+## ORA and GSEA
+
+```{r}
+colData(nh)$GROUP <- ifelse(colData(nh)$smokingstatus == 'Never smoker', 0, 1)
+aer <- filter(bp, Attribute_group == 'aerophilicity')
+aer_sig <- getBugphyzzSignatures(
+  df = aer, tax.id.type = 'NCBI_ID', tax.level = 'genus', 
+  evidence = c('exp', 'inh', 'tas', 'nas')
+)
+
+```
+
+```{r}
+x <- rowData(nh)$GenusID
+names(x) <- rownames(nh)
+x <- x[!is.na(x)]
+new_sig <- map(aer_sig, ~ names(x)[which(x %in% .x)])
+```
+
+DA:
+
+```{r}
+edger <- deAna(
+    expr = nh, de.method = 'edgeR', padj.method = 'BH', 
+    assay = 'counts'
+)
+
+```
+ORA: 
+
+```{r}
+edger_ora <- sbea(
+    method = 'ora', se = edger, gs = new_sig, alpha = 0.1, perm = 0,
+    padj.method = 'BH', assay = 'counts'
+)
+gsRanking(res = edger_ora, signif.only = FALSE)
+```
+
+GSEA:
+
+```{r}
+edger_gsea <- sbea(
+    method = 'gsea', se = edger, gs = new_sig, alpha = 0.1, perm = 0,
+    padj.method = 'BH'
+)
+gsRanking(res = edger_gsea, signif.only = FALSE)
 ```
 
 # Session information

@@ -40,7 +40,8 @@ Suggests:
     tibble,
     data.tree,
     SummarizedExperiment,
-    TreeSummarizedExperiment
+    TreeSummarizedExperiment,
+    nychanesmicrobiome
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
