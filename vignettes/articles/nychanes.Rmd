@@ -18,9 +18,20 @@ knitr::opts_chunk$set(
 library(bugphyzzAnalyses)
 library(bugsigdbr)
 library(bugphyzz)
+library(nychanesmicrobiome)
 library(dplyr)
 library(purrr)
 ```
+
+Analysis of a previous study (the nychanes study).
+
++ Use the signatures reported on BSDB.
+  + Chi-square.
+  + ORA (using TMS for the background).
++ Use the dataset used in the nychanesmicrobiome package.
+  + Chi-square.
+  + ORA.
+  + GSEA
 
 # Import data
 

@@ -128,3 +128,19 @@ importTidyTMS <- function(prevalence_threshold = 0.01) {
     typical <- typical[typical$prevalence >= 0.01,]
     return(typical)
 }
+
+
+#' Import the NYCHANES file
+#'
+#' \code{imporNYCHANES} imports the annotated NYCHANES file from the
+#' original paper and repo. The output is already as a TreeSummarizedExperiment.
+#' The imported TSE only contains data for 'Cigarette'  and 'Never Smokers'.
+#'
+#' @return A TreeSummarizedExperiment
+#' @export
+#'
+importNYCHANES <- function() {
+    fname <- 'inst/extdata/nychanes.RDS'
+    readRDS(file = fname)
+}
+

@@ -38,7 +38,9 @@ Suggests:
     circlize,
     viridis,
     tibble,
-    data.tree
+    data.tree,
+    SummarizedExperiment,
+    TreeSummarizedExperiment
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
