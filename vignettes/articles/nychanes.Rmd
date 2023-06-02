@@ -161,6 +161,20 @@ data.table::data.table(en2)
 ```
 
 
+# Using the same annotations as in the NCYHANES paper
+
+```{r}
+biosis_tsv <- system.file('extdata/biosis.tsv', package = 'nychanesmicrobiome')
+biosis <- read.table(biosis_tsv, sep = '\t', header = TRUE)
+colnames(biosis) <- c('Genus', 'aer')
+
+rowData()
+
+```
+
+
+
+
 ## ORA and GSEA
 
 ```{r}
