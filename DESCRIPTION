@@ -47,7 +47,8 @@ Remotes:
     waldronlab/bugphyzz,
     waldronlab/MicrobiomeBenchmarkData,
     waldronlab/BugSigDBStats,
-    ropensci/taxize@1.0-rc
+    ropensci/taxize@1.0-rc,
+    waldronlab/nychanesmicrobiome
 Imports: 
     BiocFileCache,
     bugsigdbr,
