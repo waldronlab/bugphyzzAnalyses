@@ -41,7 +41,8 @@ Suggests:
     data.tree,
     SummarizedExperiment,
     TreeSummarizedExperiment,
-    nychanesmicrobiome
+    nychanesmicrobiome,
+    bc3net
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
