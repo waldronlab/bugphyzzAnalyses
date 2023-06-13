@@ -1,5 +1,5 @@
 ---
-title: "MSEA gingival plaque - MicrobiomeBenchmarkData - WMS"
+title: "BSEA gingival plaque - MicrobiomeBenchmarkData - 35S"
 output:
   html_document:
     toc: true
@@ -17,118 +17,139 @@ knitr::opts_chunk$set(
 library(bugphyzzAnalyses)
 library(MicrobiomeBenchmarkData)
 library(bugphyzz)
-library(dplyr)
 library(EnrichmentBrowser)
+library(dplyr)
+library(purrr)
+library(tibble)
+library(mia)
+library(bc3net)
 ```
 
+# Import Data
 
-```{r get data, message=FALSE}
+```{r import tse data, message=FALSE}
 dat_name <- 'HMP_2012_16S_gingival_V35'
 tse <- getBenchmarkData(dat_name, dryrun = FALSE)[[1]]
 colData(tse)$GROUP <- ifelse(
   colData(tse)$body_subsite == 'subgingival_plaque', 0, 1
 )
+rowData(tse) <- DataFrame(importTaxids())
 tse
 ```
 
+# Agglomerate taxa by genus
 
-
-
-```{r convert taxa names}
-taxa_names <- gsub('_', ' ', rownames(tse))
-taxa_ids_file <- system.file(
-    'extdata/taxa_info_wms.tsv', package = 'bugphyzzAnalyses'
-)
-taxa_ids_df <- 
-    read.table(taxa_ids_file, header = TRUE, row.names = 1, sep = '\t')
-taxids <- taxa_ids_df[taxa_names,]
-names(taxids) <- taxa_names
-```
-
-
-```{r}
-rowData(tse)$taxon_name <- rownames(tse)
-rowData(tse)$NCBI_ID <- taxids
-rownames(tse) <- taxids
-tse_subset <- filterTaxa(tse)
+```{r filter tse}
+tse_genus <- splitByRanks(tse)$genus
+tse_subset <- filterTaxa(tse_genus) 
 tse_subset
 ```
+
+Number of samples per condition:
+
+```{r}
+table(colData(tse)$body_subsite)
+```
+
 # bugphyzz data
 
-```{r bp signatures species}
+Signatures at the genus level:
+
+```{r bp signatures genus}
 bp <- importBugphyzz()
-bp <- bp |> 
-  filter(Attribute_group == 'aerophilicity')
-sp_sigs <- getBugphyzzSignatures(
-  df = bp, tax.id.type = 'NCBI_ID', tax.level = 'species'
+bp <- filter(bp, Attribute_group == 'aerophilicity')
+gn_sigs <- getBugphyzzSignatures(
+  df = bp, tax.id.type = 'NCBI_ID', tax.level = 'genus'
 )
 ```
 
-# DESEQ2 + ORA and GSEA
+# Differential abundance
 
-DA:
+This step should create a couple of sets:
 
-```{r}
-assay(tse_subset, 'counts_plus_1') <- assay(tse_subset, 'counts') + 1
-deseq <- deAna(
-    expr = tse_subset, de.method = 'DESeq2', padj.method = 'BH', 
-    assay = 'counts_plus_1'
-)
-dim(deseq)
-```
++ increased abundance. More abundance in the supragingival plaque.
++ decreased abundance. More abundance in the subgingival plaque.
 
-ORA:
-
-```{r, message=FALSE, warning=FALSE}
-deseq_ora <- sbea(
-    method = 'ora', se = deseq, gs = sp_sigs, alpha = 0.1, perm = 0,
-    padj.method = 'BH', assay = 'counts_plus_1'
-)
-gsRanking(res = deseq_ora, signif.only = FALSE)
-```
-
-GSEA:
-
-```{r}
-deseq_gsea <- sbea(
-    method = 'gsea', se = deseq, gs = sp_sigs, alpha = 0.1, perm = 0,
-    padj.method = 'BH', assay = 'counts_plus_1'
-)
-gsRanking(res = deseq_gsea, signif.only = FALSE)
-```
-
-# edgeR + ORA and GSEA
-
-DA:
-
-```{r}
+```{r DA - edgeR}
 edger <- deAna(
     expr = tse_subset, de.method = 'edgeR', padj.method = 'BH', 
-    assay = 'counts_plus_1'
+     filter.by.expr = FALSE
 )
-dim(edger)
 ```
 
-ORA:
+# Enrichment with bc3net
+
+Let's separate the sets:
+
+```{r DA sets}
+da_res <- as.data.frame(rowData(edger))
+da_res <- rownames_to_column(da_res, var = 'otu')
+## increased abundance
+supragingival <- filter(da_res, FC > 0, ADJ.PVAL < 0.1)$otu
+## descreased bundance
+subgingival <- filter(da_res, FC < 0, ADJ.PVAL < 0.1)$otu
+ref <- da_res$otu
+```
+
+Run enrichment (supragingival):
+
+```{r supragingival ora}
+supg_ora <- enrichment(
+  genes = supragingival,
+  reference = ref,
+  genesets = gn_sigs,
+  adj = 'BH',
+  verbose = FALSE
+)
+arrange(supg_ora, padj)
+```
+
+Run enrichment (subgingival):
+
+```{r subgingival ora}
+subg_ora <- enrichment(
+  genes = subgingival,
+  reference = ref,
+  genesets = gn_sigs,
+  adj = 'BH',
+  verbose = FALSE
+)
+arrange(subg_ora, padj)
+```
+
+> Above, we got the expected results. Enrichment of anaerobic taxa in the
+subgingival plaque and enrichment of aerobic taxa in the supragingival plaque.
+
+Let's combine both sets into a single one:
 
 ```{r}
-edger_ora <- sbea(
-    method = 'ora', se = edger, gs = sp_sigs, alpha = 0.1, perm = 0,
-    padj.method = 'BH', assay = 'counts_plus_1'
+both_set <- c(subgingival, supragingival)
+both_ora <- enrichment(
+  genes = both_set,
+  reference = ref,
+  genesets = gn_sigs,
+  adj = 'BH',
+  verbose = FALSE
 )
-gsRanking(res = edger_ora, signif.only = FALSE)
+arrange(both_ora, padj)
 ```
 
+> When both sets are combined, no significant enrichment is found.
+The output is the same as EnrichmentBrowser (below).
 
-GSEA:
+# ORA (EnrichmentBrowser)
 
 ```{r}
-edger_gsea <- sbea(
-    method = 'gsea', se = edger, gs = sp_sigs, alpha = 0.1, perm = 0,
-    padj.method = 'BH', assay = 'counts_plus_1'
+res <- sbea(
+  method = 'ora', se = edger, gs = gn_sigs, perm = 0, padj.method = 'BH',
+  alpha = 0.1
+  
 )
-gsRanking(res = edger_gsea, signif.only = FALSE)
+enr <- as.data.frame(gsRanking(res, signif.only = FALSE))
+arrange(enr, ADJ.PVAL)
 ```
+
+> This result is the same as above.
 
 # Session information
 
