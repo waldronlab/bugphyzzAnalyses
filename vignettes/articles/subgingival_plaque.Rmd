@@ -5,7 +5,7 @@ output:
     toc: true
 ---
 
-```{r setup, include = FALSE}
+```{r include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -23,13 +23,17 @@ library(EnrichmentBrowser)
 
 
 ```{r get data, message=FALSE}
-dat_name <- 'HMP_2012_WMS_gingival'
+dat_name <- 'HMP_2012_16S_gingival_V35'
 tse <- getBenchmarkData(dat_name, dryrun = FALSE)[[1]]
 colData(tse)$GROUP <- ifelse(
   colData(tse)$body_subsite == 'subgingival_plaque', 0, 1
 )
 tse
 ```
+
+
+
+
 ```{r convert taxa names}
 taxa_names <- gsub('_', ' ', rownames(tse))
 taxa_ids_file <- system.file(

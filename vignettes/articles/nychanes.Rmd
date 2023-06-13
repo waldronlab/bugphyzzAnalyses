@@ -20,19 +20,22 @@ library(bugphyzzAnalyses)
 library(bugsigdbr)
 library(bugphyzz)
 library(nychanesmicrobiome)
-library(dplyr)
 library(purrr)
 library(EnrichmentBrowser)
 library(tibble)
+library(dplyr)
 ```
 
 Analysis of a previous bsea study: 
 
-# Import data
+# Data
+
+Import data:
 
 ```{r, message=FALSE, results='hide'}
 ## Bugphyzz 
 bp <- importBugphyzz(version = 'devel')
+aer <- dplyr::filter(bp, Attribute_group == 'aerophilicity')
 
 ## BugSigDB
 bsdb <- importBugSigDB(version = 'devel')
@@ -45,234 +48,300 @@ nh <- importNYCHANES()
 
 ## NYC HANES - manually curated signatures
 biosis_tsv <- system.file('extdata/biosis.tsv', package = 'nychanesmicrobiome')
-biosis <- read.table(biosis_tsv, sep = '\t', header = TRUE)
-colnames(biosis) <- c('Genus', 'aer')
+biosis <- biosis_tsv |> 
+  read.table(sep = '\t', header = TRUE) |> 
+  dplyr::rename(Genus = X1, aer = X2) |> 
+  mutate(aer = tolower(aer)) |> 
+  mutate(aer = ifelse(aer == 'f anaerobic', 'facultatively_anaerobic', aer))
 ```
 
-# Analyses using bugphyzz signatures
+Create signature sets: 
 
-## Using BSDB signtaures (Study 727) 
+```{r signature sets}
+## bugphyzz sets
+bp_taxid_sets <- aer |> 
+  getSignatures(tax.id.type = 'NCBI_ID', tax.level = 'genus')
 
-+ Study 727 corresponds to the NYCHANES public study.
-+ Signature 1 is decreased abundance in smokers.
-+ Signature 2 is increased abundance in smokers.
+## nychanes sets (biosis file)
+nyc_taxname_sets <- map(split(biosis, factor(biosis$aer)), ~ .x$Genus)
 
-```{r}
+## bugphyzz signatures with OTUs
+taxids <- rowData(nh)$GenusID
+names(taxids) <- rownames(nh)
+taxids <- taxids[!is.na(taxids)]
+bp_otu_sets <- map(bp_taxid_sets, ~ names(taxids)[which(taxids %in% .x)])
+  
+## nychanes sets with OTUs  
+taxnames <- rowData(nh)$Genus
+names(taxnames) <- rownames(nh)
+taxnames <- taxnames[!is.na(taxnames)]
+nyc_otu_sets <- map(nyc_taxname_sets, ~ names(taxnames)[which(taxnames %in% .x)])
+
+## bugsigdb sets
 study_727 <- filter(bsdb, `BSDB ID` %in% c('bsdb:727/1/1', 'bsdb:727/1/2'))
-sigs727 <- study_727 |> 
-  bugsigdbr::getSignatures(tax.id.type = 'ncbi', tax.level = 'mixed')
-decreased <- sigs727$`bsdb:727/1/1_Tobacco-smoke-exposure-measurement:Current-cigarette-smokers_vs_Never-smokers_DOWN`
-increased <- sigs727$`bsdb:727/1/2_Tobacco-smoke-exposure-measurement:Current-cigarette-smokers_vs_Never-smokers_UP`
-df <- data.frame(
-  NCBI_ID = c(increased, decreased),
-  Abundance = c(rep('increased', length(increased)), rep('decreased', length(decreased)))
+bugsigdb_taxid_sets <- study_727 |> 
+  bugsigdbr::getSignatures(tax.id.type = 'ncbi', tax.level = 'mixed') 
+names(bugsigdb_taxid_sets) <- sub('^.*_', '', names(bugsigdb_taxid_sets))
+bugsigdb_taxname_sets <- study_727 |> 
+  bugsigdbr::getSignatures(tax.id.type = 'taxname', tax.level = 'mixed')
+names(bugsigdb_taxname_sets) <- sub('^.*_', '', names(bugsigdb_taxname_sets))
+
+## Create backgrounds for bugsigdb sets
+oc <- filter(tms, body_site == 'oralcavity', rank == 'genus')
+ocbkg_taxid_sets <- list(
+  UP = unique(c(bugsigdb_taxid_sets$UP, oc$taxid)),
+  DOWN = unique(c(bugsigdb_taxid_sets$DOWN, oc$taxid))
 )
-head(df)
+ocbkg_taxname_sets <- list(
+  UP = unique(c(bugsigdb_taxname_sets$UP, oc$taxon_name)),
+  DOWN = unique(c(bugsigdb_taxname_sets$DOWN, oc$taxon_name))
+)
 ```
 
-```{r}
-aer <- bp |> 
-  filter(Attribute_group == 'aerophilicity') |> 
-  select(NCBI_ID, Attribute) |> 
-  mutate(Attribute = sub('^.*:', '', Attribute)) |> 
-  distinct()
-head(aer)
+# Chi-square (bsdb sets)
+
+Contingency tables (bugphyzz)
+
+```{r cont tbl bugphyzz}
+aer_subset <- unique(aer[,c('NCBI_ID', 'Attribute')])
+df <- data.frame(
+    NCBI_ID = c(bugsigdb_taxid_sets$UP, bugsigdb_taxid_sets$DOWN),
+    Abundance = c(rep('increased', length(bugsigdb_taxid_sets$UP)), rep('decreased', length(bugsigdb_taxid_sets$DOWN)))
+) |> 
+  left_join(aer_subset, by = 'NCBI_ID') |> 
+  unique()
+dups1 <- df$NCBI_ID[which(duplicated(df$NCBI_ID))]
+df_1 <- df[!df$NCBI_ID %in% dups1, ]
+ct1 <- epitools::epitable(df_1$Attribute, df_1$Abundance)
+
+df_2 <- df |> 
+  filter(
+    Attribute %in% c('aerophilicity:aerobic', 'aerophilicity:anaerobic')
+  )
+dups2 <- df_2$NCBI_ID[which(duplicated(df_2$NCBI_ID))]
+df_2 <- df_2[!df_2$NCBI_ID %in% dups2, ]
+ct2 <- epitools::epitable(df_2$Attribute, df_2$Abundance)
 ```
 
-### Chi-square 
+Contingency tables (biosis)
 
-Remove taxa marked in both groups
+```{r cont tbl biosis}
+df2 <- data.frame(
+    Genus = c(bugsigdb_taxname_sets$UP, bugsigdb_taxname_sets$DOWN),
+    Abundance = c(rep('increased', length(bugsigdb_taxname_sets$UP)), rep('decreased', length(bugsigdb_taxname_sets$DOWN)))
+) |> 
+  left_join(biosis, by = 'Genus') |> 
+  unique()
 
-```{r}
-tbl <- left_join(df, aer, by = 'NCBI_ID')
-dups <- tbl$NCBI_ID[which(duplicated(tbl$NCBI_ID))]
-# taxizedb::taxid2name(dups)
-# tbl[tbl$NCBI_ID %in% dups,]
-tbl <- tbl[!tbl$NCBI_ID %in% dups, ]
-any(duplicated(tbl$NCBI_ID))
+dups3 <- df2$Genus[which(duplicated(df2$Genus))]
+df2_1 <- df2[!df2$Genus %in% dups3, ]
+ct3 <- epitools::epitable(df2_1$aer, df2_1$Abundance)
+
+df2_2 <- df2 |> 
+  filter(
+    aer %in% c('aerobic', 'anaerobic')
+  )
+dups4 <- df2_2$Genus[which(duplicated(df2_2$Genus))]
+df2_2 <- df2_2[!df2_2$Genus %in% dups4, ]
+ct4 <- epitools::epitable(df2_2$aer, df2_2$Abundance)
 ```
 
-Contingency table
+All attributes (bugphyzz)
 
 ```{r}
-cont <- epitools::epitable(tbl$Attribute, tbl$Abundance)
-cont
+chi_res1 <- chisq.test(ct1, simulate.p.value = TRUE)
+chi_res1
 ```
 
-Chi-square. Test of independence. Using three atribute values: aerobic, 
-anaerobic, and facultatively_anaerobic
-
-> H0: There is no relationship between smoking and aerophilicity in DA microbes.  
-H1: There is a relationship between smoking and aerophilicity in DA microbes.
+Aerobic and anaerobic (bugphyzz)
 
 ```{r}
-chi_res <- chisq.test(tbl$Attribute, tbl$Abundance, simulate.p.value = TRUE)
-chi_res
-```
-
-Chi-square. Test of independence. Using two atribute values: aerobic and
-anaerobic
-
-```{r}
-tbl2 <- filter(tbl, Attribute %in% c('aerobic', 'anaerobic'))
-cont2 <- epitools::epitable(tbl2$Attribute, tbl2$Abundance)
-cont2
-```
-
-```{r}
-chi_res2 <- chisq.test(tbl2$Attribute, tbl2$Abundance, simulate.p.value = TRUE)
+chi_res2 <- chisq.test(ct2, simulate.p.value = TRUE)
 chi_res2
 ```
 
->It looks like the facultatively anaerobic microbes make the difference between
-smokers (cigarette) and never smokers. 
 
-### ORA
-
-For ORA, we need a background. Let's use the TypicalMicrobiomeSignatures.
-The body site of choice will be oral cavity.
+All attributes (biosis)
 
 ```{r}
-oc <- filter(tms, body_site == 'oralcavity', rank == 'genus')
-increased_bkg <- unique(c(increased, oc$taxid))
-decreased_bkg <- unique(c(decreased, oc$taxid))
-bp_sigs <- bp |> 
-  filter(Attribute_group == 'aerophilicity') |> 
-  getBugphyzzSignatures(tax.id.type = 'NCBI_ID', tax.level = 'genus')
+chi_res3 <- chisq.test(ct3, simulate.p.value = TRUE)
+chi_res3
 ```
 
+aerobic vs anaerobic (biosis)
+
 ```{r}
-en_res <- runEnrichment(
+chi_res4 <- chisq.test(ct4, simulate.p.value = TRUE)
+chi_res4
+```
+
+> Need to check annotations betwwen ct2 and ct4
+
+
+# Enrihcment of bsdb sets (ORA)
+
+
+Using bugphyzz signatures:
+
+```{r}
+ora_res1 <- runEnrichment(
   bsdb = bsdb,
-  bsdb_sets = list(`bsdb:727/1/1` = decreased, `bsdb:727/1/2` = increased),
-  background_sets = list(`bsdb:727/1/1` = decreased_bkg, `bsdb:727/1/2` = increased_bkg),
-  bp_sigs = bp_sigs
+  bsdb_sets = list(
+    `bsdb:727/1/1` = bugsigdb_taxid_sets$DOWN, 
+    `bsdb:727/1/2` = bugsigdb_taxid_sets$UP
+  ),
+  background_sets = list(
+    `bsdb:727/1/1` = ocbkg_taxid_sets$DOWN, 
+    `bsdb:727/1/2` = ocbkg_taxid_sets$UP
+  ),
+  bp_sigs = bp_taxid_sets
 )
-
-en_res
+ora_res1
 ```
 
-No signatures were significantly enriched.
+Using biosis signatures
 
-## Using NYCHANES original data
+Signature 1, Control, aerobic (as expected)
+Signature 2, Smokers, anaerobic (as expected)
+Sig 1 and 2, fac ana (as expected)
 
-### Chi-square
+```{r}
+ora_res2 <- runEnrichment(
+  bsdb = bsdb,
+  bsdb_sets = list(
+    `bsdb:727/1/1` = bugsigdb_taxname_sets$DOWN, 
+    `bsdb:727/1/2` = bugsigdb_taxname_sets$UP
+  ),
+  background_sets = list(
+    `bsdb:727/1/1` = ocbkg_taxname_sets$DOWN, 
+    `bsdb:727/1/2` = ocbkg_taxname_sets$UP
+  ),
+  bp_sigs = nyc_taxname_sets
+)
+ora_res2
+```
 
-### ORA
+# Using NYCHANES original data
 
-Prepare dataset (NYCHANES) and signatures:
+## DA
+
+Control 0, smoker 1
 
 ```{r}
 colData(nh)$GROUP <- ifelse(colData(nh)$smokingstatus == 'Never smoker', 0, 1)
 table(nh$GROUP)
 ```
 
-Convert signatures of taxids to signatures of OTUs (mapping at the genus level):
+Control 1, smoker 0
 
 ```{r}
-aer <- filter(bp, Attribute_group == 'aerophilicity')
-aer_sig <- getBugphyzzSignatures(
-  df = aer, tax.id.type = 'NCBI_ID', tax.level = 'genus'
-)
-x <- rowData(nh)$GenusID
-names(x) <- rownames(nh)
-x <- x[!is.na(x)]
-new_sig <- map(aer_sig, ~ names(x)[which(x %in% .x)])
+nh2 <- nh
+colData(nh2)$GROUP <- ifelse(colData(nh2)$smokingstatus == 'Never smoker', 1, 0)
+table(nh2$GROUP)
 ```
 
 DA:
 
 ```{r, message=FALSE}
 edger <- deAna(
-    expr = nh, de.method = 'edgeR', padj.method = 'BH', assay = 'counts'
+    expr = nh, de.method = 'edgeR', padj.method = 'BH', filter.by.expr = FALSE
+)
+edger2 <- deAna(
+    expr = nh2, de.method = 'edgeR', padj.method = 'BH', filter.by.expr = FALSE
 )
 ```
 
-ORA:
+## ORA
 
-```{r}
-edger_ora <- sbea(
-    method = 'ora', se = edger, gs = new_sig, alpha = 0.1, perm = 0,
-    padj.method = 'BH', assay = 'counts'
-)
-gsRanking(res = edger_ora, signif.only = FALSE)
-```
-
-### GSEA
-
-```{r}
-edger_gsea <- sbea(
-    method = 'gsea', se = edger, gs = new_sig, alpha = 0.1, perm = 0,
-    padj.method = 'BH'
-)
-gsRanking(res = edger_gsea, signif.only = FALSE)
-```
-
-### ORA 2
-```{r}
-colData(nh)$GROUP <- ifelse(colData(nh)$smokingstatus == 'Never smoker', 1, 0)
-table(nh$GROUP)
-```
-
-DA:
+ORA (bugphyzz) control 0, smoker 1:
 
 ```{r, message=FALSE}
-edger2 <- deAna(
-    expr = nh, de.method = 'edgeR', padj.method = 'BH', assay = 'counts'
+edger_ora <- sbea(
+    method = 'ora', se = edger, gs = bp_otu_sets, alpha = 0.1, perm = 0,
+    padj.method = 'BH'
 )
+r <- as.data.frame(gsRanking(res = edger_ora, signif.only = FALSE))
+r
 ```
-
-ORA:
+ORA (biosis) control 0, smoker 1:
 
 ```{r, message=FALSE}
 edger_ora2 <- sbea(
-    method = 'ora', se = edger, gs = new_sig, alpha = 0.1, perm = 0,
-    padj.method = 'BH', assay = 'counts'
+    method = 'ora', se = edger, gs = nyc_otu_sets, alpha = 0.1, perm = 0,
+    padj.method = 'BH'
 )
-gsRanking(res = edger_ora2, signif.only = FALSE)
+r2 <- as.data.frame(gsRanking(res = edger_ora2, signif.only = FALSE))
+r2
 ```
 
-### GSEA 2
+ORA (bugphyzz) control 1l, smoker 0
+
+```{r, message=FALSE}
+edger2_ora <- sbea(
+    method = 'ora', se = edger2, gs = bp_otu_sets, alpha = 0.1, perm = 0,
+    padj.method = 'BH'
+)
+r3 <- as.data.frame(gsRanking(res = edger2_ora, signif.only = FALSE))
+r3
+```
+
+ORA (biosis) control 1, smoker 0
+
+```{r, message=FALSE}
+edger2_ora2 <- sbea(
+    method = 'ora', se = edger2, gs = nyc_otu_sets, alpha = 0.1, perm = 0,
+    padj.method = 'BH'
+)
+r4 <- as.data.frame(gsRanking(res = edger2_ora2, signif.only = FALSE))
+r4
+```
+
+## GSEA
+
+GSEA (bugphyzz) control 0, smoker 1:
+
+```{r, message=FALSE}
+edger_gsea <- sbea(
+    method = 'gsea', se = edger, gs = bp_otu_sets, alpha = 0.1, perm = 0,
+    padj.method = 'BH'
+)
+r5 <- as.data.frame(gsRanking(res = edger_gsea, signif.only = FALSE))
+r5
+```
+
+GSEA (biosis) control 0, smoker 1:
 
 ```{r, message=FALSE}
 edger_gsea2 <- sbea(
-    method = 'gsea', se = edger2, gs = new_sig, alpha = 0.1, perm = 0,
+    method = 'gsea', se = edger, gs = nyc_otu_sets, alpha = 0.1, perm = 0,
     padj.method = 'BH'
 )
-gsRanking(res = edger_gsea2, signif.only = FALSE)
+r6 <- as.data.frame(gsRanking(res = edger_gsea2, signif.only = FALSE))
+r6
 ```
 
+GSEA (bugphyzz) control 1l, smoker 0
 
-## Comparison of FC
-
-```{r}
-a <- rownames_to_column(head(arrange(as.data.frame(rowData(edger)), FC)))
-b <- rownames_to_column(head(arrange(as.data.frame(rowData(edger2)), -FC)))
-a2 <- a[, c('rowname', 'FC')]
-b2 <- b[, c('rowname', 'FC')]
-colnames(a2) <- paste0('res1_', colnames(a2))
-colnames(b2) <- paste0('res2_', colnames(b2))
-c <- cbind(a2, b2)
-c
+```{r, message=FALSE}
+edger2_gsea <- sbea(
+    method = 'gsea', se = edger2, gs = bp_otu_sets, alpha = 0.1, perm = 0,
+    padj.method = 'BH'
+)
+r8 <- as.data.frame(gsRanking(res = edger2_gsea, signif.only = FALSE))
+r8
 ```
 
-# Analysis using original manually-curated signatures in NYCHANES
+GSEA (biosis) control 1, smoker 0
 
-## Using BSDB signatures (Study 727)
+```{r, message=FALSE}
+edger2_gsea2 <- sbea(
+    method = 'gsea', se = edger2, gs = nyc_otu_sets, alpha = 0.1, perm = 0,
+    padj.method = 'BH'
+)
+r8 <- as.data.frame(gsRanking(res = edger2_gsea2, signif.only = FALSE))
+r8
+```
 
-### Chi-square
-
-### ORA
-
-## Using NYCHANES original data
-
-### Chi-square
-
-### ORA
-
-### GSEA
-
-### PADOG
 
 # Session information
 
