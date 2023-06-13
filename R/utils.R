@@ -146,3 +146,36 @@ importNYCHANES <- function() {
     readRDS(file = fname)
 }
 
+#' Import biosis data
+#'
+#' \code{importBiosis} imports manually curated annotations used in the
+#' paper of Calgaro and NYCHANES. It could be useful for comparison of
+#' annotations
+#'
+#' @return A data.frame
+#' @export
+#'
+importBiosis <- function() {
+    fname <- system.file(
+        'extdata/biosis.tsv', package = 'bugphyzzAnalyses'
+    )
+    read.table(fname, header = TRUE, sep = '\t')
+}
+
+#' Import taxids for MicrobiomeBenchmarkData
+#'
+#' \code{importTaxids} imports a data.frame for MicrobiomeBenchmarkData
+#'
+#' @param x Character string
+#'
+#' @return A data.frame.
+#' @export
+#'
+importTaxids <- function(x = 'HMP_2012_16S_gingival_V35_taxids') {
+    x <- paste0('extdata/', x, '.tsv')
+    fname <- system.file(x , package = 'bugphyzzAnalyses')
+    df <- read.table(fname, header = TRUE, row.names = 1, sep = '\t')
+    dplyr::select(df, -.data$full_taxon_name, -.data$taxon_annotation)
+}
+
+

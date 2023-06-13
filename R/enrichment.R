@@ -42,6 +42,8 @@ microbeSetEnrichment <- function(set, reference, sigs) {
         n_background <- ct[1] + ct[2]
         p_value <- stats::fisher.test(ct, alternative = 'g')$p.value
 
+        ## Calculate by hand and compare.
+
         odds_ratio <- suppressWarnings(
             epitools::oddsratio.wald(ct + 0.5)$measure[2,1]
         )
