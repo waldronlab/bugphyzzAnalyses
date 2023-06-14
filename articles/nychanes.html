@@ -102,17 +102,19 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/waldronlab/bugsigdbr" class="external-link">bugsigdbr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/waldronlab/bugphyzz" class="external-link">bugphyzz</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://waldronlab.io/nychanesmicrobiome/" class="external-link">nychanesmicrobiome</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/" class="external-link">purrr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">EnrichmentBrowser</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
 <p>Analysis of a previous bsea study:</p>
 <div class="section level2">
-<h2 id="import-data">Import data<a class="anchor" aria-label="anchor" href="#import-data"></a>
+<h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
 </h2>
+<p>Import data:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Bugphyzz </span></span>
 <span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/importBugphyzz.html" class="external-link">importBugphyzz</a></span><span class="op">(</span>version <span class="op">=</span> <span class="st">'devel'</span><span class="op">)</span></span>
+<span><span class="va">aer</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">bp</span>, <span class="va">Attribute_group</span> <span class="op">==</span> <span class="st">'aerophilicity'</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## BugSigDB</span></span>
 <span><span class="va">bsdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/importBugSigDB.html" class="external-link">importBugSigDB</a></span><span class="op">(</span>version <span class="op">=</span> <span class="st">'devel'</span><span class="op">)</span></span>
@@ -125,138 +127,157 @@
 <span></span>
 <span><span class="co">## NYC HANES - manually curated signatures</span></span>
 <span><span class="va">biosis_tsv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">'extdata/biosis.tsv'</span>, package <span class="op">=</span> <span class="st">'nychanesmicrobiome'</span><span class="op">)</span></span>
-<span><span class="va">biosis</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="va">biosis_tsv</span>, sep <span class="op">=</span> <span class="st">'\t'</span>, header <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">biosis</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Genus'</span>, <span class="st">'aer'</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">biosis</span> <span class="op">&lt;-</span> <span class="va">biosis_tsv</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span>sep <span class="op">=</span> <span class="st">'\t'</span>, header <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>Genus <span class="op">=</span> <span class="va">X1</span>, aer <span class="op">=</span> <span class="va">X2</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>aer <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/chartr.html" class="external-link">tolower</a></span><span class="op">(</span><span class="va">aer</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>aer <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">aer</span> <span class="op">==</span> <span class="st">'f anaerobic'</span>, <span class="st">'facultatively_anaerobic'</span>, <span class="va">aer</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Create signature sets:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## bugphyzz sets</span></span>
+<span><span class="va">bp_taxid_sets</span> <span class="op">&lt;-</span> <span class="va">aer</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getBugphyzzSignatures.html" class="external-link">getBugphyzzSignatures</a></span><span class="op">(</span>tax.id.type <span class="op">=</span> <span class="st">'NCBI_ID'</span>, tax.level <span class="op">=</span> <span class="st">'genus'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## nychanes sets (biosis file)</span></span>
+<span><span class="va">nyc_taxname_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/split.html" class="external-link">split</a></span><span class="op">(</span><span class="va">biosis</span>, <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">biosis</span><span class="op">$</span><span class="va">aer</span><span class="op">)</span><span class="op">)</span>, <span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="va">Genus</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## bugphyzz signatures with OTUs</span></span>
+<span><span class="va">taxids</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">nh</span><span class="op">)</span><span class="op">$</span><span class="va">GenusID</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">taxids</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">nh</span><span class="op">)</span></span>
+<span><span class="va">taxids</span> <span class="op">&lt;-</span> <span class="va">taxids</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">taxids</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">bp_otu_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">bp_taxid_sets</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">taxids</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">taxids</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">.x</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span>  </span>
+<span><span class="co">## nychanes sets with OTUs  </span></span>
+<span><span class="va">taxnames</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">nh</span><span class="op">)</span><span class="op">$</span><span class="va">Genus</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">taxnames</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">nh</span><span class="op">)</span></span>
+<span><span class="va">taxnames</span> <span class="op">&lt;-</span> <span class="va">taxnames</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">taxnames</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">nyc_otu_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">nyc_taxname_sets</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">taxnames</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">taxnames</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">.x</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## bugsigdb sets</span></span>
+<span><span class="va">study_727</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">bsdb</span>, <span class="va">`BSDB ID`</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'bsdb:727/1/1'</span>, <span class="st">'bsdb:727/1/2'</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">bugsigdb_taxid_sets</span> <span class="op">&lt;-</span> <span class="va">study_727</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">bugsigdbr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/getSignatures.html" class="external-link">getSignatures</a></span><span class="op">(</span>tax.id.type <span class="op">=</span> <span class="st">'ncbi'</span>, tax.level <span class="op">=</span> <span class="st">'mixed'</span><span class="op">)</span> </span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bugsigdb_taxid_sets</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'^.*_'</span>, <span class="st">''</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bugsigdb_taxid_sets</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">bugsigdb_taxname_sets</span> <span class="op">&lt;-</span> <span class="va">study_727</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">bugsigdbr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/getSignatures.html" class="external-link">getSignatures</a></span><span class="op">(</span>tax.id.type <span class="op">=</span> <span class="st">'taxname'</span>, tax.level <span class="op">=</span> <span class="st">'mixed'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bugsigdb_taxname_sets</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'^.*_'</span>, <span class="st">''</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bugsigdb_taxname_sets</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Create backgrounds for bugsigdb sets</span></span>
+<span><span class="va">oc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">tms</span>, <span class="va">body_site</span> <span class="op">==</span> <span class="st">'oralcavity'</span>, <span class="va">rank</span> <span class="op">==</span> <span class="st">'genus'</span><span class="op">)</span></span>
+<span><span class="va">ocbkg_taxid_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  UP <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bugsigdb_taxid_sets</span><span class="op">$</span><span class="va">UP</span>, <span class="va">oc</span><span class="op">$</span><span class="va">taxid</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  DOWN <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bugsigdb_taxid_sets</span><span class="op">$</span><span class="va">DOWN</span>, <span class="va">oc</span><span class="op">$</span><span class="va">taxid</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">ocbkg_taxname_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  UP <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bugsigdb_taxname_sets</span><span class="op">$</span><span class="va">UP</span>, <span class="va">oc</span><span class="op">$</span><span class="va">taxon_name</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  DOWN <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bugsigdb_taxname_sets</span><span class="op">$</span><span class="va">DOWN</span>, <span class="va">oc</span><span class="op">$</span><span class="va">taxon_name</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="analyses-using-bugphyzz-signatures">Analyses using bugphyzz signatures<a class="anchor" aria-label="anchor" href="#analyses-using-bugphyzz-signatures"></a>
+<h2 id="chi-square-bsdb-sets">Chi-square (bsdb sets)<a class="anchor" aria-label="anchor" href="#chi-square-bsdb-sets"></a>
 </h2>
-<div class="section level3">
-<h3 id="using-bsdb-signtaures-study-727">Using BSDB signtaures (Study 727)<a class="anchor" aria-label="anchor" href="#using-bsdb-signtaures-study-727"></a>
-</h3>
-<ul>
-<li>Study 727 corresponds to the NYCHANES public study.</li>
-<li>Signature 1 is decreased abundance in smokers.</li>
-<li>Signature 2 is increased abundance in smokers.</li>
-</ul>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">study_727</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">bsdb</span>, <span class="va">`BSDB ID`</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'bsdb:727/1/1'</span>, <span class="st">'bsdb:727/1/2'</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">sigs727</span> <span class="op">&lt;-</span> <span class="va">study_727</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">bugsigdbr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/getSignatures.html" class="external-link">getSignatures</a></span><span class="op">(</span>tax.id.type <span class="op">=</span> <span class="st">'ncbi'</span>, tax.level <span class="op">=</span> <span class="st">'mixed'</span><span class="op">)</span></span>
-<span><span class="va">decreased</span> <span class="op">&lt;-</span> <span class="va">sigs727</span><span class="op">$</span><span class="va">`bsdb:727/1/1_Tobacco-smoke-exposure-measurement:Current-cigarette-smokers_vs_Never-smokers_DOWN`</span></span>
-<span><span class="va">increased</span> <span class="op">&lt;-</span> <span class="va">sigs727</span><span class="op">$</span><span class="va">`bsdb:727/1/2_Tobacco-smoke-exposure-measurement:Current-cigarette-smokers_vs_Never-smokers_UP`</span></span>
-<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  NCBI_ID <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">increased</span>, <span class="va">decreased</span><span class="op">)</span>,</span>
-<span>  Abundance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">'increased'</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">increased</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">'decreased'</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">decreased</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   NCBI_ID Abundance</span></span>
-<span><span class="co">#&gt; 1   32207 increased</span></span>
-<span><span class="co">#&gt; 2     838 increased</span></span>
-<span><span class="co">#&gt; 3 1283313 increased</span></span>
-<span><span class="co">#&gt; 4     906 increased</span></span>
-<span><span class="co">#&gt; 5    1578 increased</span></span>
-<span><span class="co">#&gt; 6   29465 increased</span></span></code></pre></div>
+<p>Contingency tables (bugphyzz)</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">aer</span> <span class="op">&lt;-</span> <span class="va">bp</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Attribute_group</span> <span class="op">==</span> <span class="st">'aerophilicity'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">NCBI_ID</span>, <span class="va">Attribute</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Attribute <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'^.*:'</span>, <span class="st">''</span>, <span class="va">Attribute</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">aer</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 2</span></span></span>
-<span><span class="co">#&gt;   NCBI_ID Attribute</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 10      aerobic  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1000999 aerobic  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 100132  anaerobic</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 100175  anaerobic</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 1004300 aerobic  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 1007    aerobic</span></span></code></pre></div>
-<div class="section level4">
-<h4 id="chi-square">Chi-square<a class="anchor" aria-label="anchor" href="#chi-square"></a>
-</h4>
-<p>Remove taxa marked in both groups</p>
+<code class="sourceCode R"><span><span class="va">aer_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">aer</span><span class="op">[</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'NCBI_ID'</span>, <span class="st">'Attribute'</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    NCBI_ID <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bugsigdb_taxid_sets</span><span class="op">$</span><span class="va">UP</span>, <span class="va">bugsigdb_taxid_sets</span><span class="op">$</span><span class="va">DOWN</span><span class="op">)</span>,</span>
+<span>    Abundance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">'increased'</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">bugsigdb_taxid_sets</span><span class="op">$</span><span class="va">UP</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">'decreased'</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">bugsigdb_taxid_sets</span><span class="op">$</span><span class="va">DOWN</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">aer_subset</span>, by <span class="op">=</span> <span class="st">'NCBI_ID'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">dups1</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">df</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">df_1</span> <span class="op">&lt;-</span> <span class="va">df</span><span class="op">[</span><span class="op">!</span><span class="va">df</span><span class="op">$</span><span class="va">NCBI_ID</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">dups1</span>, <span class="op">]</span></span>
+<span><span class="va">ct1</span> <span class="op">&lt;-</span> <span class="fu">epitools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/epitools/man/epitable.html" class="external-link">epitable</a></span><span class="op">(</span><span class="va">df_1</span><span class="op">$</span><span class="va">Attribute</span>, <span class="va">df_1</span><span class="op">$</span><span class="va">Abundance</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">df_2</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">Attribute</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'aerophilicity:aerobic'</span>, <span class="st">'aerophilicity:anaerobic'</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">dups2</span> <span class="op">&lt;-</span> <span class="va">df_2</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">df_2</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">df_2</span> <span class="op">&lt;-</span> <span class="va">df_2</span><span class="op">[</span><span class="op">!</span><span class="va">df_2</span><span class="op">$</span><span class="va">NCBI_ID</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">dups2</span>, <span class="op">]</span></span>
+<span><span class="va">ct2</span> <span class="op">&lt;-</span> <span class="fu">epitools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/epitools/man/epitable.html" class="external-link">epitable</a></span><span class="op">(</span><span class="va">df_2</span><span class="op">$</span><span class="va">Attribute</span>, <span class="va">df_2</span><span class="op">$</span><span class="va">Abundance</span><span class="op">)</span></span></code></pre></div>
+<p>Contingency tables (biosis)</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">aer</span>, by <span class="op">=</span> <span class="st">'NCBI_ID'</span><span class="op">)</span></span>
-<span><span class="va">dups</span> <span class="op">&lt;-</span> <span class="va">tbl</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co"># taxizedb::taxid2name(dups)</span></span>
-<span><span class="co"># tbl[tbl$NCBI_ID %in% dups,]</span></span>
-<span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="va">tbl</span><span class="op">[</span><span class="op">!</span><span class="va">tbl</span><span class="op">$</span><span class="va">NCBI_ID</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">dups</span>, <span class="op">]</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
-<p>Contingency table</p>
+<code class="sourceCode R"><span><span class="va">df2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    Genus <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">bugsigdb_taxname_sets</span><span class="op">$</span><span class="va">UP</span>, <span class="va">bugsigdb_taxname_sets</span><span class="op">$</span><span class="va">DOWN</span><span class="op">)</span>,</span>
+<span>    Abundance <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">'increased'</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">bugsigdb_taxname_sets</span><span class="op">$</span><span class="va">UP</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">'decreased'</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">bugsigdb_taxname_sets</span><span class="op">$</span><span class="va">DOWN</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">left_join</a></span><span class="op">(</span><span class="va">biosis</span>, by <span class="op">=</span> <span class="st">'Genus'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">dups3</span> <span class="op">&lt;-</span> <span class="va">df2</span><span class="op">$</span><span class="va">Genus</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">df2</span><span class="op">$</span><span class="va">Genus</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">df2_1</span> <span class="op">&lt;-</span> <span class="va">df2</span><span class="op">[</span><span class="op">!</span><span class="va">df2</span><span class="op">$</span><span class="va">Genus</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">dups3</span>, <span class="op">]</span></span>
+<span><span class="va">ct3</span> <span class="op">&lt;-</span> <span class="fu">epitools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/epitools/man/epitable.html" class="external-link">epitable</a></span><span class="op">(</span><span class="va">df2_1</span><span class="op">$</span><span class="va">aer</span>, <span class="va">df2_1</span><span class="op">$</span><span class="va">Abundance</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">df2_2</span> <span class="op">&lt;-</span> <span class="va">df2</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">aer</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'aerobic'</span>, <span class="st">'anaerobic'</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="va">dups4</span> <span class="op">&lt;-</span> <span class="va">df2_2</span><span class="op">$</span><span class="va">Genus</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="va">df2_2</span><span class="op">$</span><span class="va">Genus</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">df2_2</span> <span class="op">&lt;-</span> <span class="va">df2_2</span><span class="op">[</span><span class="op">!</span><span class="va">df2_2</span><span class="op">$</span><span class="va">Genus</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">dups4</span>, <span class="op">]</span></span>
+<span><span class="va">ct4</span> <span class="op">&lt;-</span> <span class="fu">epitools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/epitools/man/epitable.html" class="external-link">epitable</a></span><span class="op">(</span><span class="va">df2_2</span><span class="op">$</span><span class="va">aer</span>, <span class="va">df2_2</span><span class="op">$</span><span class="va">Abundance</span><span class="op">)</span></span></code></pre></div>
+<p>All attributes (bugphyzz)</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cont</span> <span class="op">&lt;-</span> <span class="fu">epitools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/epitools/man/epitable.html" class="external-link">epitable</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">$</span><span class="va">Attribute</span>, <span class="va">tbl</span><span class="op">$</span><span class="va">Abundance</span><span class="op">)</span></span>
-<span><span class="va">cont</span></span>
-<span><span class="co">#&gt;                          Outcome</span></span>
-<span><span class="co">#&gt; Predictor                 decreased increased</span></span>
-<span><span class="co">#&gt;   aerobic                         3         2</span></span>
-<span><span class="co">#&gt;   anaerobic                       2         5</span></span>
-<span><span class="co">#&gt;   facultatively_anaerobic         5         0</span></span></code></pre></div>
-<p>Chi-square. Test of independence. Using three atribute values:
-aerobic, anaerobic, and facultatively_anaerobic</p>
-<blockquote>
-<p>H0: There is no relationship between smoking and aerophilicity in DA
-microbes.<br>
-H1: There is a relationship between smoking and aerophilicity in DA
-microbes.</p>
-</blockquote>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">chi_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/chisq.test.html" class="external-link">chisq.test</a></span><span class="op">(</span><span class="va">tbl</span><span class="op">$</span><span class="va">Attribute</span>, <span class="va">tbl</span><span class="op">$</span><span class="va">Abundance</span>, simulate.p.value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">chi_res</span></span>
+<code class="sourceCode R"><span><span class="va">chi_res1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/chisq.test.html" class="external-link">chisq.test</a></span><span class="op">(</span><span class="va">ct1</span>, simulate.p.value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">chi_res1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Pearson's Chi-squared test with simulated p-value (based on 2000</span></span>
 <span><span class="co">#&gt;  replicates)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; data:  tbl$Attribute and tbl$Abundance</span></span>
-<span><span class="co">#&gt; X-squared = 6.1478, df = NA, p-value = 0.05697</span></span></code></pre></div>
-<p>Chi-square. Test of independence. Using two atribute values: aerobic
-and anaerobic</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tbl2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">tbl</span>, <span class="va">Attribute</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'aerobic'</span>, <span class="st">'anaerobic'</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">cont2</span> <span class="op">&lt;-</span> <span class="fu">epitools</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/epitools/man/epitable.html" class="external-link">epitable</a></span><span class="op">(</span><span class="va">tbl2</span><span class="op">$</span><span class="va">Attribute</span>, <span class="va">tbl2</span><span class="op">$</span><span class="va">Abundance</span><span class="op">)</span></span>
-<span><span class="va">cont2</span></span>
-<span><span class="co">#&gt;            Outcome</span></span>
-<span><span class="co">#&gt; Predictor   decreased increased</span></span>
-<span><span class="co">#&gt;   aerobic           3         2</span></span>
-<span><span class="co">#&gt;   anaerobic         2         5</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">chi_res2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/chisq.test.html" class="external-link">chisq.test</a></span><span class="op">(</span><span class="va">tbl2</span><span class="op">$</span><span class="va">Attribute</span>, <span class="va">tbl2</span><span class="op">$</span><span class="va">Abundance</span>, simulate.p.value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; data:  ct1</span></span>
+<span><span class="co">#&gt; X-squared = 6.1478, df = NA, p-value = 0.05397</span></span></code></pre></div>
+<p>Aerobic and anaerobic (bugphyzz)</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">chi_res2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/chisq.test.html" class="external-link">chisq.test</a></span><span class="op">(</span><span class="va">ct2</span>, simulate.p.value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">chi_res2</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Pearson's Chi-squared test with simulated p-value (based on 2000</span></span>
 <span><span class="co">#&gt;  replicates)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; data:  tbl2$Attribute and tbl2$Abundance</span></span>
-<span><span class="co">#&gt; X-squared = 1.1853, df = NA, p-value = 0.5642</span></span></code></pre></div>
+<span><span class="co">#&gt; data:  ct2</span></span>
+<span><span class="co">#&gt; X-squared = 1.1667, df = NA, p-value = 0.5767</span></span></code></pre></div>
+<p>All attributes (biosis)</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">chi_res3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/chisq.test.html" class="external-link">chisq.test</a></span><span class="op">(</span><span class="va">ct3</span>, simulate.p.value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">chi_res3</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Pearson's Chi-squared test with simulated p-value (based on 2000</span></span>
+<span><span class="co">#&gt;  replicates)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; data:  ct3</span></span>
+<span><span class="co">#&gt; X-squared = 8.7111, df = NA, p-value = 0.01649</span></span></code></pre></div>
+<p>aerobic vs anaerobic (biosis)</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">chi_res4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/chisq.test.html" class="external-link">chisq.test</a></span><span class="op">(</span><span class="va">ct4</span>, simulate.p.value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">chi_res4</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;  Pearson's Chi-squared test with simulated p-value (based on 2000</span></span>
+<span><span class="co">#&gt;  replicates)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; data:  ct4</span></span>
+<span><span class="co">#&gt; X-squared = 8.5714, df = NA, p-value = 0.007996</span></span></code></pre></div>
 <blockquote>
-<p>It looks like the facultatively anaerobic microbes make the
-difference between smokers (cigarette) and never smokers.</p>
+<p>Need to check annotations betwwen ct2 and ct4</p>
 </blockquote>
 </div>
-<div class="section level4">
-<h4 id="ora">ORA<a class="anchor" aria-label="anchor" href="#ora"></a>
-</h4>
-<p>For ORA, we need a background. Let’s use the
-TypicalMicrobiomeSignatures. The body site of choice will be oral
-cavity.</p>
+<div class="section level2">
+<h2 id="enrihcment-of-bsdb-sets-ora">Enrihcment of bsdb sets (ORA)<a class="anchor" aria-label="anchor" href="#enrihcment-of-bsdb-sets-ora"></a>
+</h2>
+<p>Using bugphyzz signatures:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">oc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">tms</span>, <span class="va">body_site</span> <span class="op">==</span> <span class="st">'oralcavity'</span>, <span class="va">rank</span> <span class="op">==</span> <span class="st">'genus'</span><span class="op">)</span></span>
-<span><span class="va">increased_bkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">increased</span>, <span class="va">oc</span><span class="op">$</span><span class="va">taxid</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">decreased_bkg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">decreased</span>, <span class="va">oc</span><span class="op">$</span><span class="va">taxid</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">bp_sigs</span> <span class="op">&lt;-</span> <span class="va">bp</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Attribute_group</span> <span class="op">==</span> <span class="st">'aerophilicity'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getBugphyzzSignatures.html" class="external-link">getBugphyzzSignatures</a></span><span class="op">(</span>tax.id.type <span class="op">=</span> <span class="st">'NCBI_ID'</span>, tax.level <span class="op">=</span> <span class="st">'genus'</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">en_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runEnrichment.html">runEnrichment</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">ora_res1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runEnrichment.html">runEnrichment</a></span><span class="op">(</span></span>
 <span>  bsdb <span class="op">=</span> <span class="va">bsdb</span>,</span>
-<span>  bsdb_sets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>`bsdb:727/1/1` <span class="op">=</span> <span class="va">decreased</span>, `bsdb:727/1/2` <span class="op">=</span> <span class="va">increased</span><span class="op">)</span>,</span>
-<span>  background_sets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>`bsdb:727/1/1` <span class="op">=</span> <span class="va">decreased_bkg</span>, `bsdb:727/1/2` <span class="op">=</span> <span class="va">increased_bkg</span><span class="op">)</span>,</span>
-<span>  bp_sigs <span class="op">=</span> <span class="va">bp_sigs</span></span>
+<span>  bsdb_sets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    `bsdb:727/1/1` <span class="op">=</span> <span class="va">bugsigdb_taxid_sets</span><span class="op">$</span><span class="va">DOWN</span>, </span>
+<span>    `bsdb:727/1/2` <span class="op">=</span> <span class="va">bugsigdb_taxid_sets</span><span class="op">$</span><span class="va">UP</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  background_sets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    `bsdb:727/1/1` <span class="op">=</span> <span class="va">ocbkg_taxid_sets</span><span class="op">$</span><span class="va">DOWN</span>, </span>
+<span>    `bsdb:727/1/2` <span class="op">=</span> <span class="va">ocbkg_taxid_sets</span><span class="op">$</span><span class="va">UP</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  bp_sigs <span class="op">=</span> <span class="va">bp_taxid_sets</span></span>
 <span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">en_res</span></span>
+<span><span class="va">ora_res1</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 58</span></span></span>
 <span><span class="co">#&gt;   `BSDB ID`    bugsigdb_sig bp_sig   n_sig n_background p_value   fdr odds_ratio</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
@@ -275,182 +296,175 @@ cavity.</p>
 <span><span class="co">#&gt; <span style="color: #949494;">#   `Body site` &lt;chr&gt;, `UBERON ID` &lt;chr&gt;, Condition &lt;chr&gt;, `EFO ID` &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   `Group 0 name` &lt;chr&gt;, `Group 1 name` &lt;chr&gt;, `Group 1 definition` &lt;chr&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   `Group 0 sample size` &lt;dbl&gt;, `Group 1 sample size` &lt;dbl&gt;, …</span></span></span></code></pre></div>
-<p>No signatures were significantly enriched.</p>
+<p>Using biosis signatures</p>
+<p>Signature 1, Control, aerobic (as expected) Signature 2, Smokers,
+anaerobic (as expected) Sig 1 and 2, fac ana (as expected)</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ora_res2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runEnrichment.html">runEnrichment</a></span><span class="op">(</span></span>
+<span>  bsdb <span class="op">=</span> <span class="va">bsdb</span>,</span>
+<span>  bsdb_sets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    `bsdb:727/1/1` <span class="op">=</span> <span class="va">bugsigdb_taxname_sets</span><span class="op">$</span><span class="va">DOWN</span>, </span>
+<span>    `bsdb:727/1/2` <span class="op">=</span> <span class="va">bugsigdb_taxname_sets</span><span class="op">$</span><span class="va">UP</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  background_sets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    `bsdb:727/1/1` <span class="op">=</span> <span class="va">ocbkg_taxname_sets</span><span class="op">$</span><span class="va">DOWN</span>, </span>
+<span>    `bsdb:727/1/2` <span class="op">=</span> <span class="va">ocbkg_taxname_sets</span><span class="op">$</span><span class="va">UP</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  bp_sigs <span class="op">=</span> <span class="va">nyc_taxname_sets</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">ora_res2</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 58</span></span></span>
+<span><span class="co">#&gt;   `BSDB ID`    bugsigdb_sig bp_sig n_sig n_background p_value     fdr odds_ratio</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> bsdb:727/1/1 bsdb:727/1/1 aerob…     5           13 0.001<span style="text-decoration: underline;">76</span> 0.002<span style="text-decoration: underline;">65</span>     10.3  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> bsdb:727/1/1 bsdb:727/1/1 anaer…     2           45 0.946   0.946        0.463</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> bsdb:727/1/1 bsdb:727/1/1 facul…     5           13 0.001<span style="text-decoration: underline;">76</span> 0.002<span style="text-decoration: underline;">65</span>     10.3  </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> bsdb:727/1/2 bsdb:727/1/2 aerob…     0           11 1       1            0.402</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> bsdb:727/1/2 bsdb:727/1/2 anaer…     8           45 0.012<span style="text-decoration: underline;">5</span>  0.031<span style="text-decoration: underline;">2</span>       4.51 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> bsdb:727/1/2 bsdb:727/1/2 facul…     4           14 0.020<span style="text-decoration: underline;">8</span>  0.031<span style="text-decoration: underline;">2</span>       5.87 </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 50 more variables: upper_ci &lt;dbl&gt;, lower_ci &lt;dbl&gt;, Study &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `Study design` &lt;chr&gt;, PMID &lt;dbl&gt;, DOI &lt;chr&gt;, URL &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `Authors list` &lt;chr&gt;, Title &lt;chr&gt;, Journal &lt;chr&gt;, Year &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   Experiment &lt;chr&gt;, `Location of subjects` &lt;chr&gt;, `Host species` &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `Body site` &lt;chr&gt;, `UBERON ID` &lt;chr&gt;, Condition &lt;chr&gt;, `EFO ID` &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `Group 0 name` &lt;chr&gt;, `Group 1 name` &lt;chr&gt;, `Group 1 definition` &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `Group 0 sample size` &lt;dbl&gt;, `Group 1 sample size` &lt;dbl&gt;, …</span></span></span></code></pre></div>
 </div>
-</div>
+<div class="section level2">
+<h2 id="using-nychanes-original-data">Using NYCHANES original data<a class="anchor" aria-label="anchor" href="#using-nychanes-original-data"></a>
+</h2>
 <div class="section level3">
-<h3 id="using-nychanes-original-data">Using NYCHANES original data<a class="anchor" aria-label="anchor" href="#using-nychanes-original-data"></a>
+<h3 id="da">DA<a class="anchor" aria-label="anchor" href="#da"></a>
 </h3>
-<div class="section level4">
-<h4 id="chi-square-1">Chi-square<a class="anchor" aria-label="anchor" href="#chi-square-1"></a>
-</h4>
-</div>
-<div class="section level4">
-<h4 id="ora-1">ORA<a class="anchor" aria-label="anchor" href="#ora-1"></a>
-</h4>
-<p>Prepare dataset (NYCHANES) and signatures:</p>
+<p>Control 0, smoker 1</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">nh</span><span class="op">)</span><span class="op">$</span><span class="va">GROUP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">nh</span><span class="op">)</span><span class="op">$</span><span class="va">smokingstatus</span> <span class="op">==</span> <span class="st">'Never smoker'</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">nh</span><span class="op">$</span><span class="va">GROUP</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  0  1 </span></span>
 <span><span class="co">#&gt; 43 86</span></span></code></pre></div>
-<p>Convert signatures of taxids to signatures of OTUs (mapping at the
-genus level):</p>
+<p>Control 1, smoker 0</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">aer</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">bp</span>, <span class="va">Attribute_group</span> <span class="op">==</span> <span class="st">'aerophilicity'</span><span class="op">)</span></span>
-<span><span class="va">aer_sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getBugphyzzSignatures.html" class="external-link">getBugphyzzSignatures</a></span><span class="op">(</span></span>
-<span>  df <span class="op">=</span> <span class="va">aer</span>, tax.id.type <span class="op">=</span> <span class="st">'NCBI_ID'</span>, tax.level <span class="op">=</span> <span class="st">'genus'</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">nh</span><span class="op">)</span><span class="op">$</span><span class="va">GenusID</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">nh</span><span class="op">)</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="va">new_sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">aer_sig</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">x</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">.x</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<p>DA:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">edger</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/deAna.html" class="external-link">deAna</a></span><span class="op">(</span></span>
-<span>    expr <span class="op">=</span> <span class="va">nh</span>, de.method <span class="op">=</span> <span class="st">'edgeR'</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>, assay <span class="op">=</span> <span class="st">'counts'</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>ORA:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">edger_ora</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
-<span>    method <span class="op">=</span> <span class="st">'ora'</span>, se <span class="op">=</span> <span class="va">edger</span>, gs <span class="op">=</span> <span class="va">new_sig</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>    padj.method <span class="op">=</span> <span class="st">'BH'</span>, assay <span class="op">=</span> <span class="st">'counts'</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger_ora</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 4 rows and 5 columns</span></span>
-<span><span class="co">#&gt;                 GENE.SET  NR.GENES NR.SIG.GENES      PVAL  ADJ.PVAL</span></span>
-<span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt;    &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1 aerophilicity:facult..        16            8     0.223     0.792</span></span>
-<span><span class="co">#&gt; 2  aerophilicity:aerobic        11            5     0.467     0.792</span></span>
-<span><span class="co">#&gt; 3 aerophilicity:aeroto..         7            3     0.594     0.792</span></span>
-<span><span class="co">#&gt; 4 aerophilicity:anaero..        24            8     0.940     0.940</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="gsea">GSEA<a class="anchor" aria-label="anchor" href="#gsea"></a>
-</h4>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">edger_gsea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
-<span>    method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">edger</span>, gs <span class="op">=</span> <span class="va">new_sig</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>    padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger_gsea</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 4 rows and 3 columns</span></span>
-<span><span class="co">#&gt;                 GENE.SET      PVAL  ADJ.PVAL</span></span>
-<span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1  aerophilicity:aerobic   0.00404   0.01616</span></span>
-<span><span class="co">#&gt; 2 aerophilicity:aeroto..   0.44500   0.60600</span></span>
-<span><span class="co">#&gt; 3 aerophilicity:anaero..   0.46800   0.60600</span></span>
-<span><span class="co">#&gt; 4 aerophilicity:facult..   0.60600   0.60600</span></span></code></pre></div>
-</div>
-<div class="section level4">
-<h4 id="ora-2">ORA 2<a class="anchor" aria-label="anchor" href="#ora-2"></a>
-</h4>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">nh</span><span class="op">)</span><span class="op">$</span><span class="va">GROUP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">nh</span><span class="op">)</span><span class="op">$</span><span class="va">smokingstatus</span> <span class="op">==</span> <span class="st">'Never smoker'</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">nh</span><span class="op">$</span><span class="va">GROUP</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">nh2</span> <span class="op">&lt;-</span> <span class="va">nh</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">nh2</span><span class="op">)</span><span class="op">$</span><span class="va">GROUP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">nh2</span><span class="op">)</span><span class="op">$</span><span class="va">smokingstatus</span> <span class="op">==</span> <span class="st">'Never smoker'</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">nh2</span><span class="op">$</span><span class="va">GROUP</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  0  1 </span></span>
 <span><span class="co">#&gt; 86 43</span></span></code></pre></div>
 <p>DA:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">edger2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/deAna.html" class="external-link">deAna</a></span><span class="op">(</span></span>
-<span>    expr <span class="op">=</span> <span class="va">nh</span>, de.method <span class="op">=</span> <span class="st">'edgeR'</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>, assay <span class="op">=</span> <span class="st">'counts'</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>ORA:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">edger_ora2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
-<span>    method <span class="op">=</span> <span class="st">'ora'</span>, se <span class="op">=</span> <span class="va">edger</span>, gs <span class="op">=</span> <span class="va">new_sig</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>    padj.method <span class="op">=</span> <span class="st">'BH'</span>, assay <span class="op">=</span> <span class="st">'counts'</span></span>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">edger</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/deAna.html" class="external-link">deAna</a></span><span class="op">(</span></span>
+<span>    expr <span class="op">=</span> <span class="va">nh</span>, de.method <span class="op">=</span> <span class="st">'edgeR'</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>, filter.by.expr <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger_ora2</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 4 rows and 5 columns</span></span>
-<span><span class="co">#&gt;                 GENE.SET  NR.GENES NR.SIG.GENES      PVAL  ADJ.PVAL</span></span>
-<span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt;    &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1 aerophilicity:facult..        16            8     0.223     0.792</span></span>
-<span><span class="co">#&gt; 2  aerophilicity:aerobic        11            5     0.467     0.792</span></span>
-<span><span class="co">#&gt; 3 aerophilicity:aeroto..         7            3     0.594     0.792</span></span>
-<span><span class="co">#&gt; 4 aerophilicity:anaero..        24            8     0.940     0.940</span></span></code></pre></div>
+<span><span class="va">edger2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/deAna.html" class="external-link">deAna</a></span><span class="op">(</span></span>
+<span>    expr <span class="op">=</span> <span class="va">nh2</span>, de.method <span class="op">=</span> <span class="st">'edgeR'</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>, filter.by.expr <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level4">
-<h4 id="gsea-2">GSEA 2<a class="anchor" aria-label="anchor" href="#gsea-2"></a>
-</h4>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">edger_gsea2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
-<span>    method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">edger2</span>, gs <span class="op">=</span> <span class="va">new_sig</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
+<div class="section level3">
+<h3 id="ora">ORA<a class="anchor" aria-label="anchor" href="#ora"></a>
+</h3>
+<p>ORA (bugphyzz) control 0, smoker 1:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">edger_ora</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>    method <span class="op">=</span> <span class="st">'ora'</span>, se <span class="op">=</span> <span class="va">edger</span>, gs <span class="op">=</span> <span class="va">bp_otu_sets</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>    padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger_gsea2</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; DataFrame with 4 rows and 3 columns</span></span>
-<span><span class="co">#&gt;                 GENE.SET      PVAL  ADJ.PVAL</span></span>
-<span><span class="co">#&gt;              &lt;character&gt; &lt;numeric&gt; &lt;numeric&gt;</span></span>
-<span><span class="co">#&gt; 1  aerophilicity:aerobic   0.00404   0.01616</span></span>
-<span><span class="co">#&gt; 2 aerophilicity:aeroto..   0.44500   0.60600</span></span>
-<span><span class="co">#&gt; 3 aerophilicity:anaero..   0.46800   0.60600</span></span>
-<span><span class="co">#&gt; 4 aerophilicity:facult..   0.60600   0.60600</span></span></code></pre></div>
-</div>
+<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger_ora</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">r</span></span>
+<span><span class="co">#&gt;                     GENE.SET NR.GENES NR.SIG.GENES PVAL ADJ.PVAL</span></span>
+<span><span class="co">#&gt; 1      aerophilicity:aerobic      408           37    1        1</span></span>
+<span><span class="co">#&gt; 2 aerophilicity:aerotolerant      227           11    1        1</span></span></code></pre></div>
+<p>ORA (biosis) control 0, smoker 1:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">edger_ora2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>    method <span class="op">=</span> <span class="st">'ora'</span>, se <span class="op">=</span> <span class="va">edger</span>, gs <span class="op">=</span> <span class="va">nyc_otu_sets</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger_ora2</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">r2</span></span>
+<span><span class="co">#&gt;                  GENE.SET NR.GENES NR.SIG.GENES    PVAL ADJ.PVAL</span></span>
+<span><span class="co">#&gt; 1                 aerobic       78           13 0.00318  0.00636</span></span>
+<span><span class="co">#&gt; 2 facultatively_anaerobic      395           24 0.99900  0.99900</span></span></code></pre></div>
+<p>ORA (bugphyzz) control 1l, smoker 0</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">edger2_ora</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>    method <span class="op">=</span> <span class="st">'ora'</span>, se <span class="op">=</span> <span class="va">edger2</span>, gs <span class="op">=</span> <span class="va">bp_otu_sets</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">r3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger2_ora</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">r3</span></span>
+<span><span class="co">#&gt;                     GENE.SET NR.GENES NR.SIG.GENES PVAL ADJ.PVAL</span></span>
+<span><span class="co">#&gt; 1      aerophilicity:aerobic      408           37    1        1</span></span>
+<span><span class="co">#&gt; 2 aerophilicity:aerotolerant      227           11    1        1</span></span></code></pre></div>
+<p>ORA (biosis) control 1, smoker 0</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">edger2_ora2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>    method <span class="op">=</span> <span class="st">'ora'</span>, se <span class="op">=</span> <span class="va">edger2</span>, gs <span class="op">=</span> <span class="va">nyc_otu_sets</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">r4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger2_ora2</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">r4</span></span>
+<span><span class="co">#&gt;                  GENE.SET NR.GENES NR.SIG.GENES    PVAL ADJ.PVAL</span></span>
+<span><span class="co">#&gt; 1                 aerobic       78           13 0.00318  0.00636</span></span>
+<span><span class="co">#&gt; 2 facultatively_anaerobic      395           24 0.99900  0.99900</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="comparison-of-fc">Comparison of FC<a class="anchor" aria-label="anchor" href="#comparison-of-fc"></a>
+<h3 id="gsea">GSEA<a class="anchor" aria-label="anchor" href="#gsea"></a>
 </h3>
+<p>GSEA (bugphyzz) control 0, smoker 1:</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">edger_gsea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>    method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">edger</span>, gs <span class="op">=</span> <span class="va">bp_otu_sets</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">r5</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger_gsea</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">r5</span></span>
+<span><span class="co">#&gt;                                GENE.SET    PVAL ADJ.PVAL</span></span>
+<span><span class="co">#&gt; 1                 aerophilicity:aerobic 0.00404  0.01616</span></span>
+<span><span class="co">#&gt; 2            aerophilicity:aerotolerant 0.44500  0.60600</span></span>
+<span><span class="co">#&gt; 3               aerophilicity:anaerobic 0.46800  0.60600</span></span>
+<span><span class="co">#&gt; 4 aerophilicity:facultatively_anaerobic 0.60600  0.60600</span></span></code></pre></div>
+<p>GSEA (biosis) control 0, smoker 1:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">edger_gsea2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>    method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">edger</span>, gs <span class="op">=</span> <span class="va">nyc_otu_sets</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">r6</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger_gsea2</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">r6</span></span>
+<span><span class="co">#&gt;                  GENE.SET  PVAL ADJ.PVAL</span></span>
+<span><span class="co">#&gt; 1               anaerobic 0.734    0.745</span></span>
+<span><span class="co">#&gt; 2 facultatively_anaerobic 0.745    0.745</span></span></code></pre></div>
+<p>GSEA (bugphyzz) control 1l, smoker 0</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger</span><span class="op">)</span><span class="op">)</span>, <span class="va">FC</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger2</span><span class="op">)</span><span class="op">)</span>, <span class="op">-</span><span class="va">FC</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">a2</span> <span class="op">&lt;-</span> <span class="va">a</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'rowname'</span>, <span class="st">'FC'</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="va">b2</span> <span class="op">&lt;-</span> <span class="va">b</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'rowname'</span>, <span class="st">'FC'</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">a2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'res1_'</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">a2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">b2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'res2_'</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">b2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">c</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">a2</span>, <span class="va">b2</span><span class="op">)</span></span>
-<span><span class="va">c</span></span>
-<span><span class="co">#&gt;          res1_rowname    res1_FC        res2_rowname   res2_FC</span></span>
-<span><span class="co">#&gt; 1 New.ReferenceOTU113 -1.5087340 New.ReferenceOTU113 1.5087340</span></span>
-<span><span class="co">#&gt; 2 New.ReferenceOTU160 -1.2663151 New.ReferenceOTU160 1.2663151</span></span>
-<span><span class="co">#&gt; 3  New.ReferenceOTU52 -1.1270974  New.ReferenceOTU52 1.1270974</span></span>
-<span><span class="co">#&gt; 4 New.ReferenceOTU194 -0.8006703 New.ReferenceOTU194 0.8006703</span></span>
-<span><span class="co">#&gt; 5  New.ReferenceOTU13 -0.7678275  New.ReferenceOTU13 0.7678275</span></span>
-<span><span class="co">#&gt; 6 New.ReferenceOTU192 -0.7572040 New.ReferenceOTU192 0.7572040</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="analysis-using-original-manually-curated-signatures-in-nychanes">Analysis using original manually-curated signatures in NYCHANES<a class="anchor" aria-label="anchor" href="#analysis-using-original-manually-curated-signatures-in-nychanes"></a>
-</h2>
-<div class="section level3">
-<h3 id="using-bsdb-signatures-study-727">Using BSDB signatures (Study 727)<a class="anchor" aria-label="anchor" href="#using-bsdb-signatures-study-727"></a>
-</h3>
-<div class="section level4">
-<h4 id="chi-square-2">Chi-square<a class="anchor" aria-label="anchor" href="#chi-square-2"></a>
-</h4>
-</div>
-<div class="section level4">
-<h4 id="ora-3">ORA<a class="anchor" aria-label="anchor" href="#ora-3"></a>
-</h4>
-</div>
-</div>
-<div class="section level3">
-<h3 id="using-nychanes-original-data-1">Using NYCHANES original data<a class="anchor" aria-label="anchor" href="#using-nychanes-original-data-1"></a>
-</h3>
-<div class="section level4">
-<h4 id="chi-square-3">Chi-square<a class="anchor" aria-label="anchor" href="#chi-square-3"></a>
-</h4>
-</div>
-<div class="section level4">
-<h4 id="ora-4">ORA<a class="anchor" aria-label="anchor" href="#ora-4"></a>
-</h4>
-</div>
-<div class="section level4">
-<h4 id="gsea-1">GSEA<a class="anchor" aria-label="anchor" href="#gsea-1"></a>
-</h4>
-</div>
-<div class="section level4">
-<h4 id="padog">PADOG<a class="anchor" aria-label="anchor" href="#padog"></a>
-</h4>
-</div>
+<code class="sourceCode R"><span><span class="va">edger2_gsea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>    method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">edger2</span>, gs <span class="op">=</span> <span class="va">bp_otu_sets</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">r8</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger2_gsea</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">r8</span></span>
+<span><span class="co">#&gt;                                GENE.SET    PVAL ADJ.PVAL</span></span>
+<span><span class="co">#&gt; 1                 aerophilicity:aerobic 0.00404  0.01616</span></span>
+<span><span class="co">#&gt; 2            aerophilicity:aerotolerant 0.44500  0.60600</span></span>
+<span><span class="co">#&gt; 3               aerophilicity:anaerobic 0.46800  0.60600</span></span>
+<span><span class="co">#&gt; 4 aerophilicity:facultatively_anaerobic 0.60600  0.60600</span></span></code></pre></div>
+<p>GSEA (biosis) control 1, smoker 0</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">edger2_gsea2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>    method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">edger2</span>, gs <span class="op">=</span> <span class="va">nyc_otu_sets</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">r8</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span>res <span class="op">=</span> <span class="va">edger2_gsea2</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">r8</span></span>
+<span><span class="co">#&gt;                  GENE.SET  PVAL ADJ.PVAL</span></span>
+<span><span class="co">#&gt; 1               anaerobic 0.734    0.745</span></span>
+<span><span class="co">#&gt; 2 facultatively_anaerobic 0.745    0.745</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/sessioninfo/reference/session_info.html" class="external-link">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Session info ───────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">setting </span> <span style="color: #555555; font-style: italic;">value</span></span></span>
@@ -462,7 +476,7 @@ genus level):</p>
 <span><span class="co">#&gt;  collate  en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  ctype    en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  tz       Etc/UTC</span></span>
-<span><span class="co">#&gt;  date     2023-06-06</span></span>
+<span><span class="co">#&gt;  date     2023-06-14</span></span>
 <span><span class="co">#&gt;  pandoc   2.19.2 @ /usr/local/bin/ (via rmarkdown)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Packages ───────────────────────────────────────────────────────────────────</span></span></span>
@@ -482,9 +496,9 @@ genus level):</p>
 <span><span class="co">#&gt;  bitops                     1.0-7     <span style="color: #555555;">2021-04-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  blob                       1.2.4     <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  bold                       1.3.0     <span style="color: #555555;">2023-05-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  bslib                      0.4.2     <span style="color: #555555;">2022-12-16</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  bugphyzz                 * 0.0.1.3   <span style="color: #555555;">2023-06-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@7abbf41)</span></span></span>
-<span><span class="co">#&gt;  bugphyzzAnalyses         * 0.1.0     <span style="color: #555555;">2023-06-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
+<span><span class="co">#&gt;  bslib                      0.5.0     <span style="color: #555555;">2023-06-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  bugphyzz                 * 0.0.1.3   <span style="color: #555555;">2023-06-14</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@7abbf41)</span></span></span>
+<span><span class="co">#&gt;  bugphyzzAnalyses         * 0.1.0     <span style="color: #555555;">2023-06-14</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
 <span><span class="co">#&gt;  bugsigdbr                * 1.6.2     <span style="color: #555555;">2023-05-21</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  cachem                     1.0.8     <span style="color: #555555;">2023-05-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  cli                        3.6.1     <span style="color: #555555;">2023-03-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
@@ -494,7 +508,7 @@ genus level):</p>
 <span><span class="co">#&gt;  conditionz                 0.1.0     <span style="color: #555555;">2019-04-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  crayon                     1.5.2     <span style="color: #555555;">2022-09-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  crul                       1.4.0     <span style="color: #555555;">2023-05-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  curl                       5.0.0     <span style="color: #555555;">2023-01-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  curl                       5.0.1     <span style="color: #555555;">2023-06-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  data.table                 1.14.8    <span style="color: #555555;">2023-02-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  DBI                        1.1.3     <span style="color: #555555;">2022-06-18</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  dbplyr                     2.3.2     <span style="color: #555555;">2023-03-21</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
@@ -528,7 +542,7 @@ genus level):</p>
 <span><span class="co">#&gt;  IRanges                  * 2.34.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  iterators                  1.0.14    <span style="color: #555555;">2022-02-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  jquerylib                  0.1.4     <span style="color: #555555;">2021-04-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  jsonlite                   1.8.4     <span style="color: #555555;">2022-12-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  jsonlite                   1.8.5     <span style="color: #555555;">2023-06-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  KEGGgraph                  1.60.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  KEGGREST                   1.40.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  knitr                      1.43      <span style="color: #555555;">2023-05-25</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
@@ -536,12 +550,12 @@ genus level):</p>
 <span><span class="co">#&gt;  lazyeval                   0.2.2     <span style="color: #555555;">2019-03-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  lifecycle                  1.0.3     <span style="color: #555555;">2022-10-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  limma                      3.56.2    <span style="color: #555555;">2023-06-04</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
-<span><span class="co">#&gt;  locfit                     1.5-9.7   <span style="color: #555555;">2023-01-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  locfit                     1.5-9.8   <span style="color: #555555;">2023-06-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  lsr                      * 0.5.2     <span style="color: #555555;">2021-12-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  magrittr                   2.0.3     <span style="color: #555555;">2022-03-30</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  MASS                       7.3-59    <span style="color: #555555;">2023-04-21</span> <span style="color: #555555;">[2]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  Matrix                     1.5-4     <span style="color: #555555;">2023-04-04</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  MatrixGenerics           * 1.12.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
+<span><span class="co">#&gt;  MatrixGenerics           * 1.12.2    <span style="color: #555555;">2023-06-09</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  matrixStats              * 1.0.0     <span style="color: #555555;">2023-06-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  memoise                    2.0.1     <span style="color: #555555;">2021-11-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  mgcv                       1.8-42    <span style="color: #555555;">2023-03-02</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.3.0)</span></span></span>
@@ -550,7 +564,7 @@ genus level):</p>
 <span><span class="co">#&gt;  munsell                    0.5.0     <span style="color: #555555;">2018-06-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  nlme                       3.1-162   <span style="color: #555555;">2023-01-31</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  npGSEA                   * 1.36.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
-<span><span class="co">#&gt;  nychanesmicrobiome       * 0.1.2     <span style="color: #555555;">2023-06-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/nychanesmicrobiome@a2607f3)</span></span></span>
+<span><span class="co">#&gt;  nychanesmicrobiome       * 0.1.2     <span style="color: #555555;">2023-06-14</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/nychanesmicrobiome@310113c)</span></span></span>
 <span><span class="co">#&gt;  permute                    0.9-7     <span style="color: #555555;">2022-01-27</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  phyloseq                 * 1.44.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  pillar                     1.9.0     <span style="color: #555555;">2023-03-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
@@ -584,11 +598,11 @@ genus level):</p>
 <span><span class="co">#&gt;  statmod                    1.5.0     <span style="color: #555555;">2023-01-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  stringi                    1.7.12    <span style="color: #555555;">2023-01-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  stringr                    1.5.0     <span style="color: #555555;">2022-12-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  SummarizedExperiment     * 1.30.1    <span style="color: #555555;">2023-05-01</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
+<span><span class="co">#&gt;  SummarizedExperiment     * 1.30.2    <span style="color: #555555;">2023-06-06</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  survival                   3.5-5     <span style="color: #555555;">2023-03-12</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  systemfonts                1.0.4     <span style="color: #555555;">2022-02-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  taxa                       0.4.2     <span style="color: #555555;">2022-04-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  taxize                     1.0       <span style="color: #555555;">2023-06-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
+<span><span class="co">#&gt;  taxize                     1.0       <span style="color: #555555;">2023-06-14</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
 <span><span class="co">#&gt;  taxizedb                   0.3.1     <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  textshaping                0.3.6     <span style="color: #555555;">2021-10-13</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  tibble                   * 3.2.1     <span style="color: #555555;">2023-03-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
