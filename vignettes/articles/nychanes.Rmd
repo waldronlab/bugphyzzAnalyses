@@ -60,7 +60,7 @@ Create signature sets:
 ```{r signature sets}
 ## bugphyzz sets
 bp_taxid_sets <- aer |> 
-  getSignatures(tax.id.type = 'NCBI_ID', tax.level = 'genus')
+  getBugphyzzSignatures(tax.id.type = 'NCBI_ID', tax.level = 'genus')
 
 ## nychanes sets (biosis file)
 nyc_taxname_sets <- map(split(biosis, factor(biosis$aer)), ~ .x$Genus)
