@@ -25,6 +25,20 @@ library(mia)
 library(bc3net)
 ```
 
+Main goals of this vignette:
+
++ Find bugphyzz signatures (aerophilicity) enriched in the taxa that
+are differentially abundant in the *subgingival* plaque. Expected result:
+anaerobic.
++ Find bugphyzz signatures (aerophilicity) enriched in the taxa that
+are differentially abundant in the *supragingival* plaque. Expected result:
+aerobic.
++ Contrast for DA: subgingival vs supragingival plaque. Subgingival will be
+the 'control' or 0, so a negative fold change means more abundant in the 
+subgingival plaque and a positive fold change means more abundant in the 
+supragingival plaque.
++ Enrihcment using ORA inlcuded in the bc3net and EnrichmentBrowser packages.
+
 # Import Data
 
 ```{r import tse data, message=FALSE}
@@ -101,7 +115,7 @@ supg_ora <- enrichment(
   adj = 'BH',
   verbose = FALSE
 )
-arrange(supg_ora, padj)
+arrange(supg_ora, pval)
 ```
 
 Run enrichment (subgingival):
@@ -114,7 +128,7 @@ subg_ora <- enrichment(
   adj = 'BH',
   verbose = FALSE
 )
-arrange(subg_ora, padj)
+arrange(subg_ora, pval)
 ```
 
 > Above, we got the expected results. Enrichment of anaerobic taxa in the
@@ -131,22 +145,22 @@ both_ora <- enrichment(
   adj = 'BH',
   verbose = FALSE
 )
-arrange(both_ora, padj)
+arrange(both_ora, pval)
 ```
 
 > When both sets are combined, no significant enrichment is found.
-The output is the same as EnrichmentBrowser (below).
+The output is the same as the output of EnrichmentBrowser (below).
 
 # ORA (EnrichmentBrowser)
 
 ```{r}
 res <- sbea(
   method = 'ora', se = edger, gs = gn_sigs, perm = 0, padj.method = 'BH',
-  alpha = 0.1
+  alpha = 0.1 # FDR cutoff for DA taxa
   
 )
 enr <- as.data.frame(gsRanking(res, signif.only = FALSE))
-arrange(enr, ADJ.PVAL)
+arrange(enr, PVAL)
 ```
 
 > This result is the same as above.
