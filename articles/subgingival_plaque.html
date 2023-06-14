@@ -108,6 +108,21 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/microbiome/mia" class="external-link">mia</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">bc3net</span><span class="op">)</span></span></code></pre></div>
+<p>Main goals of this vignette:</p>
+<ul>
+<li>Find bugphyzz signatures (aerophilicity) enriched in the taxa that
+are differentially abundant in the <em>subgingival</em> plaque. Expected
+result: anaerobic.</li>
+<li>Find bugphyzz signatures (aerophilicity) enriched in the taxa that
+are differentially abundant in the <em>supragingival</em> plaque.
+Expected result: aerobic.</li>
+<li>Contrast for DA: subgingival vs supragingival plaque. Subgingival
+will be the ‘control’ or 0, so a negative fold change means more
+abundant in the subgingival plaque and a positive fold change means more
+abundant in the supragingival plaque.</li>
+<li>Enrihcment using ORA inlcuded in the bc3net and EnrichmentBrowser
+packages.</li>
+</ul>
 <div class="section level2">
 <h2 id="import-data">Import Data<a class="anchor" aria-label="anchor" href="#import-data"></a>
 </h2>
@@ -170,7 +185,7 @@
 <p>Signatures at the genus level:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/importBugphyzz.html" class="external-link">importBugphyzz</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Using data downloaded on 2023-06-14 01:06:14.</span></span>
+<span><span class="co">#&gt; Using data downloaded on 2023-06-14 02:11:22.</span></span>
 <span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">bp</span>, <span class="va">Attribute_group</span> <span class="op">==</span> <span class="st">'aerophilicity'</span><span class="op">)</span></span>
 <span><span class="va">gn_sigs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getBugphyzzSignatures.html" class="external-link">getBugphyzzSignatures</a></span><span class="op">(</span></span>
 <span>  df <span class="op">=</span> <span class="va">bp</span>, tax.id.type <span class="op">=</span> <span class="st">'NCBI_ID'</span>, tax.level <span class="op">=</span> <span class="st">'genus'</span></span>
@@ -212,7 +227,7 @@ plaque.</li>
 <span>  adj <span class="op">=</span> <span class="st">'BH'</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">supg_ora</span>, <span class="va">padj</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">supg_ora</span>, <span class="va">pval</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                  TermID genes all         pval        padj</span></span>
 <span><span class="co">#&gt; 1                 aerophilicity:aerobic     7  12 0.0009869354 0.003947741</span></span>
 <span><span class="co">#&gt; 2 aerophilicity:facultatively_anaerobic     5  15 0.2144975899 0.428995180</span></span>
@@ -227,7 +242,7 @@ plaque.</li>
 <span>  adj <span class="op">=</span> <span class="st">'BH'</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">subg_ora</span>, <span class="va">padj</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">subg_ora</span>, <span class="va">pval</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                  TermID genes all        pval       padj</span></span>
 <span><span class="co">#&gt; 1               aerophilicity:anaerobic    13  21 0.009395705 0.03758282</span></span>
 <span><span class="co">#&gt; 2 aerophilicity:facultatively_anaerobic     2  15 0.999903934 1.00000000</span></span>
@@ -248,7 +263,7 @@ supragingival plaque.</p>
 <span>  adj <span class="op">=</span> <span class="st">'BH'</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">both_ora</span>, <span class="va">padj</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">both_ora</span>, <span class="va">pval</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                  TermID genes all      pval      padj</span></span>
 <span><span class="co">#&gt; 1               aerophilicity:anaerobic    15  21 0.4085836 0.9968043</span></span>
 <span><span class="co">#&gt; 2                 aerophilicity:aerobic     7  12 0.8918528 0.9968043</span></span>
@@ -256,7 +271,7 @@ supragingival plaque.</p>
 <span><span class="co">#&gt; 4 aerophilicity:facultatively_anaerobic     7  15 0.9968043 0.9968043</span></span></code></pre></div>
 <blockquote>
 <p>When both sets are combined, no significant enrichment is found. The
-output is the same as EnrichmentBrowser (below).</p>
+output is the same as the output of EnrichmentBrowser (below).</p>
 </blockquote>
 </div>
 <div class="section level2">
@@ -265,11 +280,11 @@ output is the same as EnrichmentBrowser (below).</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
 <span>  method <span class="op">=</span> <span class="st">'ora'</span>, se <span class="op">=</span> <span class="va">edger</span>, gs <span class="op">=</span> <span class="va">gn_sigs</span>, perm <span class="op">=</span> <span class="fl">0</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>,</span>
-<span>  alpha <span class="op">=</span> <span class="fl">0.1</span></span>
+<span>  alpha <span class="op">=</span> <span class="fl">0.1</span> <span class="co"># FDR cutoff for DA taxa</span></span>
 <span>  </span>
 <span><span class="op">)</span></span>
 <span><span class="va">enr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/eaBrowse.html" class="external-link">gsRanking</a></span><span class="op">(</span><span class="va">res</span>, signif.only <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">enr</span>, <span class="va">ADJ.PVAL</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">enr</span>, <span class="va">PVAL</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                GENE.SET NR.GENES NR.SIG.GENES  PVAL ADJ.PVAL</span></span>
 <span><span class="co">#&gt; 1               aerophilicity:anaerobic       21           15 0.409    0.997</span></span>
 <span><span class="co">#&gt; 2                 aerophilicity:aerobic       12            7 0.892    0.997</span></span>
