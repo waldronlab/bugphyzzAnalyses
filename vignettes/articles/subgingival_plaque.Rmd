@@ -9,7 +9,8 @@ output:
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  warning = FALSE
+  warning = FALSE,
+  message = FALSE
 )
 ```
 
@@ -18,156 +19,108 @@ library(bugphyzzAnalyses)
 library(MicrobiomeBenchmarkData)
 library(bugphyzz)
 library(EnrichmentBrowser)
-library(dplyr)
-library(purrr)
-library(tibble)
 library(mia)
-library(bc3net)
+library(dplyr)
 ```
 
-Main goals of this vignette:
-
-+ Find bugphyzz signatures (aerophilicity) enriched in the taxa that
-are differentially abundant in the *subgingival* plaque. Expected result:
-anaerobic.
-+ Find bugphyzz signatures (aerophilicity) enriched in the taxa that
-are differentially abundant in the *supragingival* plaque. Expected result:
-aerobic.
-+ Contrast for DA: subgingival vs supragingival plaque. Subgingival will be
-the 'control' or 0, so a negative fold change means more abundant in the 
-subgingival plaque and a positive fold change means more abundant in the 
-supragingival plaque.
-+ Enrihcment using ORA inlcuded in the bc3net and EnrichmentBrowser packages.
-
-# Import Data
+# Microbiome data
 
 ```{r import tse data, message=FALSE}
 dat_name <- 'HMP_2012_16S_gingival_V35'
 tse <- getBenchmarkData(dat_name, dryrun = FALSE)[[1]]
-colData(tse)$GROUP <- ifelse(
-  colData(tse)$body_subsite == 'subgingival_plaque', 0, 1
-)
-rowData(tse) <- DataFrame(importTaxids())
-tse
-```
-
-# Agglomerate taxa by genus
-
-```{r filter tse}
 tse_genus <- splitByRanks(tse)$genus
-tse_subset <- filterTaxa(tse_genus) 
+## Filter taxa with at least 1 abundance in at least 20% of samples
+min_n_samples <- round(ncol(tse_genus) * 0.2)
+tse_subset <- tse_genus[rowSums(assay(tse_genus) >= 1) >= min_n_samples,]
 tse_subset
 ```
-
-Number of samples per condition:
+Number of samples per condition
 
 ```{r}
-table(colData(tse)$body_subsite)
+table(tse_subset$body_subsite)
 ```
 
-# bugphyzz data
+# bugphyzz signatures
 
 Signatures at the genus level:
 
 ```{r bp signatures genus}
 bp <- importBugphyzz()
-bp <- filter(bp, Attribute_group == 'aerophilicity')
+aer <- filter(bp, Attribute_group == 'aerophilicity')
 gn_sigs <- getBugphyzzSignatures(
-  df = bp, tax.id.type = 'NCBI_ID', tax.level = 'genus'
+  df = aer, tax.id.type = 'Taxon_name', tax.level = 'genus'
 )
 ```
 
 # Differential abundance
 
-This step should create a couple of sets:
-
-+ increased abundance. More abundance in the supragingival plaque.
-+ decreased abundance. More abundance in the subgingival plaque.
-
 ```{r DA - edgeR}
+tse_subset$GROUP <- ifelse(
+  tse_subset$body_subsite == 'subgingival_plaque', 0, 1
+)
 edger <- deAna(
     expr = tse_subset, de.method = 'edgeR', padj.method = 'BH', 
-     filter.by.expr = FALSE
+    filter.by.expr = FALSE, 
 )
 ```
 
-# Enrichment with bc3net
-
-Let's separate the sets:
-
-```{r DA sets}
-da_res <- as.data.frame(rowData(edger))
-da_res <- rownames_to_column(da_res, var = 'otu')
-## increased abundance
-supragingival <- filter(da_res, FC > 0, ADJ.PVAL < 0.1)$otu
-## descreased bundance
-subgingival <- filter(da_res, FC < 0, ADJ.PVAL < 0.1)$otu
-ref <- da_res$otu
-```
-
-Run enrichment (supragingival):
-
-```{r supragingival ora}
-supg_ora <- enrichment(
-  genes = supragingival,
-  reference = ref,
-  genesets = gn_sigs,
-  adj = 'BH',
-  verbose = FALSE
-)
-arrange(supg_ora, pval)
-```
-
-Run enrichment (subgingival):
-
-```{r subgingival ora}
-subg_ora <- enrichment(
-  genes = subgingival,
-  reference = ref,
-  genesets = gn_sigs,
-  adj = 'BH',
-  verbose = FALSE
-)
-arrange(subg_ora, pval)
-```
-
-> Above, we got the expected results. Enrichment of anaerobic taxa in the
-subgingival plaque and enrichment of aerobic taxa in the supragingival plaque.
-
-Let's combine both sets into a single one:
+# Enrichment (GSEA)
 
 ```{r}
-both_set <- c(subgingival, supragingival)
-both_ora <- enrichment(
-  genes = both_set,
-  reference = ref,
-  genesets = gn_sigs,
-  adj = 'BH',
-  verbose = FALSE
-)
-arrange(both_ora, pval)
-```
-
-> When both sets are combined, no significant enrichment is found.
-The output is the same as the output of EnrichmentBrowser (below).
-
-# ORA (EnrichmentBrowser)
-
-```{r}
-res <- sbea(
-  method = 'ora', se = edger, gs = gn_sigs, perm = 0, padj.method = 'BH',
-  alpha = 0.1 # FDR cutoff for DA taxa
+gsea <- sbea(
+  method = 'gsea', se = edger, gs = gn_sigs, perm = 1000, padj.method = 'BH',
+  alpha = 0.1
   
 )
-enr <- as.data.frame(gsRanking(res, signif.only = FALSE))
-arrange(enr, PVAL)
+gsea_tbl <- as.data.frame(gsRanking(gsea, signif.only = FALSE))
+arrange(gsea_tbl, PVAL)
 ```
 
-> This result is the same as above.
+# Enrichment (ORA)
+
+Enriched in supragingival (up):
+
+```{r}
+edger_up <- edger
+rowData(edger_up)$ADJ.PVAL <- ifelse(
+  rowData(edger_up)$FC < 0, 1, rowData(edger_up)$ADJ.PVAL
+)
+ora_up <- sbea(
+  method = 'ora', se = edger_up, gs = gn_sigs, alpha = 0.1, perm = 0, 
+  padj.method = 'BH'
+)
+ora_up_df <- as.data.frame(gsRanking(ora_up, signif.only = FALSE))
+arrange(ora_up_df, PVAL)
+```
+
+Enriched in subgingival (down):
+
+```{r}
+edger_down <- edger
+rowData(edger_down)$ADJ.PVAL <- ifelse(
+  rowData(edger_down)$FC > 0, 1, rowData(edger_down)$ADJ.PVAL
+)
+ora_down <- sbea(
+  method = 'ora', se = edger_down, gs = gn_sigs, alpha = 0.1, perm = 0, 
+  padj.method = 'BH'
+)
+ora_down_df <- as.data.frame(gsRanking(ora_down, signif.only = FALSE))
+arrange(ora_down_df, PVAL) |> 
+  DT::datatable(
+    filter = 'top',
+    options = list(
+      dom = '<"top"B>lfrtip',
+      buttons = list('copy', 'print'),
+      iDisplayLength = 10,
+      keys = TRUE,
+      autoWidth = TRUE
+    )
+  )
+```
 
 # Session information
 
-```{r}
+```{r session info}
 sessioninfo::session_info()
 ```
 
