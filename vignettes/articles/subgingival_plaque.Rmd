@@ -28,6 +28,13 @@ library(tidyr)
 library(ggplot2)
 ```
 
+The main purpose of this vignette is to find the expected enrichment results
+in a biological dataset with ground truth. The expected result is enrichment
+of aerobic taxa in the supragingival plaque and enrichment of anaerobic taxa
+in the subgingival plaque. Obtaining the expected results could be interpreted
+as an indicative that the bugphyzz annotations are useful for meaningful
+bug set enrichemnt analysis (BSEA).
+
 # Microbiome data
 
 ```{r import tse data, message=FALSE}
@@ -87,6 +94,16 @@ gsea_tbl <- gsea_tbl |>
   ) |> 
   rename(BUG.SET = GENE.SET)
 
+
+caption1 <- c(
+  'Table 1. GSEA results comparing subgingival vs supragingival plaque.
+  ES = Enrichment score, NES = Normalized Enrichment Score. Positive and
+  negative scores (ES and NES) indicate enrichment in the supragingival and
+  subgingival plaque, respectively. Bug sets marked with an asterik (*) 
+  indicate significant enrichment results (adjusted p-value < 0.1). 
+  Benjamini & Hochberg (BH) was used for P value adjustment.'
+)
+
 datatable(
   data = gsea_tbl,
   filter = 'top',
@@ -98,6 +115,10 @@ datatable(
     iDisplayLength = 10,
     keys = TRUE,
     autoWidth = TRUE
+  ),
+  caption = htmltools::tags$caption(
+    style = 'caption-side: top; text-align: left;',
+    caption1
   )
 )
 ```
@@ -149,6 +170,15 @@ ora <- bind_rows(ora_up_df, ora_down_df) |>
     BUG.SET = GENE.SET, NR.BUGS = NR.GENES, NR.SIG.BUGS = NR.SIG.GENES
   )
 
+caption2 <- c(
+  'Table 2. ORA results comparing subgingival vs supragingival plaque.
+  NR.BUGS = Number of annotated bugs in the reference set, 
+  NR.SIG.BUGS = Number of annotated bugs with significant differential
+  abundance (FC > 0 & ADJ.PVAL < 0.1). Bug sets marked with an asterisk (*)
+  indicate significant enrichment resuts (adjusted p-value < 0.1). 
+  Benjamini & Hochberg (BH) was used for P value adjustment.'
+)
+
 datatable(
   data = ora,
   filter = 'top',
@@ -160,6 +190,10 @@ datatable(
     iDisplayLength = 10,
     keys = TRUE,
     autoWidth = TRUE
+  ),
+  caption = htmltools::tags$caption(
+    style = 'caption-side: top; text-align: left;',
+    caption2
   )
 )
 ```

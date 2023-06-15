@@ -42,7 +42,8 @@ Suggests:
     SummarizedExperiment,
     TreeSummarizedExperiment,
     nychanesmicrobiome,
-    bc3net
+    bc3net,
+    htmltools
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
