@@ -43,7 +43,8 @@ Suggests:
     TreeSummarizedExperiment,
     nychanesmicrobiome,
     bc3net,
-    htmltools
+    htmltools,
+    DT
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
@@ -56,7 +57,6 @@ Imports:
     bugsigdbr,
     ComplexHeatmap,
     dplyr,
-    DT,
     magrittr,
     purrr,
     readr,
