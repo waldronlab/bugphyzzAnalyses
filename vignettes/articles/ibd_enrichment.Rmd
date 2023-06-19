@@ -1,5 +1,5 @@
 ---
-title: "MSEA control vs IBD in cMD for aerophilicity attributes"
+title: "BSEA control vs IBD in cMD for aerophilicity attributes"
 output:
   html_document:
     toc: true
@@ -19,6 +19,7 @@ library(bugphyzz)
 library(curatedMetagenomicData)
 library(dplyr)
 library(EnrichmentBrowser)
+library(DT)
 ```
 
 # Expected result
@@ -38,79 +39,70 @@ tse <- curatedMetagenomicData(
     counts = TRUE
 )[[1]]
 colData(tse)$GROUP <- ifelse(colData(tse)$study_condition == 'control', 0, 1)
-tse 
+## Filter taxa with at least 1 count as abundance in at least 20% of samples
+min_n_samples <- round(ncol(tse) * 0.2)
+tse_subset <- tse[rowSums(assay(tse) >= 1) >= min_n_samples,]
+tse_subset
 ```
 # bugphyzz data
 
-```{r bp signatures species}
+```{r bp signatures species, message=FALSE}
 bp <- importBugphyzz()
-bp <- bp |> 
+aer <- bp |> 
   filter(Attribute_group == 'aerophilicity')
 sp_sigs <- getBugphyzzSignatures(
-  df = bp, tax.id.type = 'NCBI_ID', tax.level = 'species'
+  df = aer, tax.id.type = 'NCBI_ID', tax.level = 'species',
+  frequency = c('always', 'usually', 'sometimes')
 )
 ```
-
-# DESEQ2 + ORA and GSEA
 
 DA:
 
 ```{r}
-assay(tse, 'relab_plus_1') <- assay(tse, 'relative_abundance') + 1
-deseq <- deAna(
-    expr = tse, de.method = 'DESeq2', padj.method = 'BH', 
-    assay = 'relab_plus_1'
-)
-dim(deseq)
-```
-
-ORA:
-
-```{r, message=FALSE, warning=FALSE}
-deseq_ora <- sbea(
-    method = 'ora', se = deseq, gs = sp_sigs, alpha = 0.1, perm = 0,
-    padj.method = 'BH', assay = 'relab_plus_1'
-)
-gsRanking(res = deseq_ora, signif.only = FALSE)
-```
-
-GSEA:
-
-```{r, message=FALSE, warning=FALSE}
-deseq_gsea <- sbea(
-    method = 'gsea', se = deseq, gs = sp_sigs, alpha = 0.1, perm = 0,
-    padj.method = 'BH', assay = 'relab_plus_1'
-)
-gsRanking(res = deseq_gsea, signif.only = FALSE)
-```
-
-# edgeR
-
-```{r}
+assay(tse_subset, 'relab_plus_1') <- assay(tse_subset, 'relative_abundance') + 1
 edger <- deAna(
-    expr = tse, de.method = 'edgeR', padj.method = 'BH', 
-    assay = 'relab_plus_1'
+    expr = tse_subset, de.method = 'edgeR', padj.method = 'BH',
+    filter.by.expr = FALSE, assay = 'relab_plus_1'
 )
+dim(edger)
 ```
 
-ORA:
+## Enrichment (GSEA):
 
-```{r}
-edger_ora <- sbea(
-    method = 'ora', se = edger, gs = sp_sigs, alpha = 0.1, perm = 0,
+```{r, message=FALSE, warning=FALSE}
+gsea <- sbea(
+    method = 'gsea', se = edger, gs = sp_sigs, alpha = 0.1, perm = 1000,
     padj.method = 'BH', assay = 'relab_plus_1'
 )
-gsRanking(edger_ora, signif.only = FALSE)
-```
+gsea_res <- as.data.frame(gsea$res.tbl)
 
-GSEA:
-
-```{r}
-edger_gsea <- sbea(
-    method = 'gsea', se = edger, gs = sp_sigs, alpha = 0.1, perm = 0,
-    padj.method = 'BH', assay = 'relab_plus_1'
+caption1 <- c(
+  'Table 1. GSEA results comparing the gut microbiome of subjects with
+  a normal gut micriobiome (healthy controls) and subjects with IBD.
+  ES = Enrichment score, NES = Normalized Enrichment Score. Positive and
+  negative scores (ES and NES) indicate enrichment in the IBD and
+  healthy control samples, respectively. Bug sets marked with an asterik (*) 
+  indicate significant enrichment results (adjusted p-value < 0.1). 
+  Benjamini & Hochberg (BH) was used for P value adjustment.'
 )
-gsRanking(edger_gsea, signif.only = FALSE)
+
+datatable(
+  data = gsea_res,
+  filter = 'top',
+  rownames = FALSE,
+  extensions = 'Buttons',
+  options = list(
+    dom = 'Bft',
+    buttons = list('copy', 'print'),
+    iDisplayLength = 10,
+    keys = TRUE,
+    autoWidth = TRUE
+  ),
+  caption = htmltools::tags$caption(
+    style = 'caption-side: top; text-align: left;',
+    caption1
+  )
+)
 ```
 
 # Session Information

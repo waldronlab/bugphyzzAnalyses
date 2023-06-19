@@ -60,7 +60,8 @@ Signatures at the genus level:
 bp <- importBugphyzz()
 aer <- filter(bp, Attribute_group == 'aerophilicity')
 gn_sigs <- getBugphyzzSignatures(
-  df = aer, tax.id.type = 'Taxon_name', tax.level = 'genus'
+  df = aer, tax.id.type = 'Taxon_name', tax.level = 'genus', 
+  frequency = c('always', 'usually', 'sometimes')
 )
 ```
 
@@ -274,10 +275,8 @@ p2 <- data2 |>
 p2
 ```
 
-
 # Session information
 
 ```{r session info}
 sessioninfo::session_info()
 ```
-
