@@ -15,11 +15,14 @@ knitr::opts_chunk$set(
 ```
 
 ```{r packages, message=FALSE}
+library(bugphyzzAnalyses)
 library(bugphyzz)
 library(curatedMetagenomicData)
 library(dplyr)
 library(EnrichmentBrowser)
 library(DT)
+library(purrr)
+library(tibble)
 ```
 
 # Expected result
@@ -56,6 +59,8 @@ sp_sigs <- getBugphyzzSignatures(
 )
 ```
 
+# Differential abundance
+
 DA:
 
 ```{r}
@@ -67,7 +72,7 @@ edger <- deAna(
 dim(edger)
 ```
 
-## Enrichment (GSEA):
+# Enrichment (GSEA) - bugphyzz:
 
 ```{r, message=FALSE, warning=FALSE}
 gsea <- sbea(
@@ -103,6 +108,60 @@ datatable(
     caption1
   )
 )
+```
+
+# Import  biosis data
+
+```{r}
+biosis <- importBiosis()
+row_data <- as.data.frame(rowData(tse_subset))
+row_data <- rownames_to_column(row_data, var = 'rowname')
+# row_data <- modify_at(row_data, 'genus', ~ as.character(.x))
+row_data <- left_join(row_data, biosis, by = c('genus' = 'GenusID'))
+biosis_sigs <- split(row_data, factor(row_data$Attribute))
+biosis_sigs <- map(biosis_sigs, ~ unique(.x$rowname))
+biosis_sigs
+```
+> No aerobic taxa, which I think should be expected?
+
+# Enrichemnt (GSEA) - biosis
+
+```{r}
+gsea2 <- sbea(
+    method = 'gsea', se = edger, gs = biosis_sigs, alpha = 0.1, perm = 1000,
+    padj.method = 'BH', assay = 'relab_plus_1'
+)
+gsea2_res <- as.data.frame(gsea2$res.tbl)
+
+caption2 <- c(
+  'Table 2. GSEA results comparing the gut microbiome of subjects with
+  a normal gut micriobiome (healthy controls) and subjects with IBD using
+  biosis (nychanes) signatures.
+  ES = Enrichment score, NES = Normalized Enrichment Score. Positive and
+  negative scores (ES and NES) indicate enrichment in the IBD and
+  healthy control samples, respectively. Bug sets marked with an asterik (*) 
+  indicate significant enrichment results (adjusted p-value < 0.1). 
+  Benjamini & Hochberg (BH) was used for P value adjustment.'
+)
+
+datatable(
+  data = gsea2_res,
+  filter = 'top',
+  rownames = FALSE,
+  extensions = 'Buttons',
+  options = list(
+    dom = 'Bft',
+    buttons = list('copy', 'print'),
+    iDisplayLength = 10,
+    keys = TRUE,
+    autoWidth = TRUE
+  ),
+  caption = htmltools::tags$caption(
+    style = 'caption-side: top; text-align: left;',
+    caption2
+  )
+)
+
 ```
 
 # Session Information
