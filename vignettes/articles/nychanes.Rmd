@@ -104,6 +104,14 @@ edger_subset <- deAna(
 
 ## Enrichment 
 
+```{r}
+gsea_subset <- sbea(
+  method = 'gsea', se = edger_subset, gs = otu_sigs, perm = 1000, padj.method = 'BH',
+  alpha = 0.1
+  
+)
+```
+
 
 
 
