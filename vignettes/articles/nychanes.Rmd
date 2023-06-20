@@ -342,7 +342,6 @@ r8 <- as.data.frame(gsRanking(res = edger2_gsea2, signif.only = FALSE))
 r8
 ```
 
-
 # Session information
 
 ```{r}
