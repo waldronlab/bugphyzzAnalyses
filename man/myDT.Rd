@@ -4,12 +4,14 @@
 \alias{myDT}
 \title{My DataTable}
 \usage{
-myDT(df, cap)
+myDT(df, cap = "Table. Caption...", ap = 0.1)
 }
 \arguments{
 \item{df}{A data.frame.}
 
 \item{cap}{A caption.}
+
+\item{ap}{= ADJ.PVAL threshold.}
 }
 \value{
 A data.table.

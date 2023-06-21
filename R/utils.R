@@ -184,11 +184,15 @@ importTaxids <- function(x = 'HMP_2012_16S_gingival_V35_taxids') {
 #'
 #' @param df A data.frame.
 #' @param cap A caption.
+#' @param ap = ADJ.PVAL threshold.
 #'
 #' @return A data.table.
 #' @export
 #'
-myDT <- function(df, cap) {
+myDT <- function(df, cap = 'Table. Caption...', ap = 0.1) {
+    colnames(df) <- sub('GENE', 'BUG', colnames(df))
+    df$BUG.SET <- ifelse(df$ADJ.PVAL < ap, paste0(df$BUG.SET, '*'), df$BUG.SET)
+    df <- dplyr::arrange(df, .data$PVAL)
     DT::datatable(
         data = df,
         filter = 'top',
