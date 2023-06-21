@@ -178,4 +178,32 @@ importTaxids <- function(x = 'HMP_2012_16S_gingival_V35_taxids') {
     dplyr::select(df, -.data$full_taxon_name, -.data$taxon_annotation)
 }
 
-
+#' My DataTable
+#'
+#' \code{myDT} prints a datatable
+#'
+#' @param df A data.frame.
+#' @param cap A caption.
+#'
+#' @return A data.table.
+#' @export
+#'
+myDT <- function(df, cap) {
+    DT::datatable(
+        data = df,
+        filter = 'top',
+        rownames = FALSE,
+        extensions = 'Buttons',
+        options = list(
+            dom = 'Bft',
+            buttons = list('copy', 'print'),
+            iDisplayLength = 10,
+            keys = TRUE,
+            autoWidth = TRUE
+        ),
+        caption = htmltools::tags$caption(
+            style = 'caption-side: top; text-align: left;',
+           cap
+        )
+    )
+}
