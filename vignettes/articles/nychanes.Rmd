@@ -96,6 +96,22 @@ caption1 <- 'caption1'
 myDT(gsea_gn_res, caption1)
 ```
 
+## Enrichment ORA
+
+### Significant (mixed) vs Non-Significant
+
+```{r}
+ora_gn <- sbea(
+  method = 'ora', se = edger_gn, gs = gn_sigs, perm = 0, 
+  padj.method = 'BH', alpha = 0.1
+)
+ora_gn_res <- as.data.frame(ora_gn$res.tbl)
+myDT(ora_gn_res, 'caption')
+```
+
+### Significant over-abundant vs Reference
+
+### Significant under-abundant vs Reference
 
 # Analysis at the OTU level with bugphyzz signatures
 
@@ -136,6 +152,19 @@ gsea <- sbea(
 )
 gsea_res <- as.data.frame(gsea$res.tbl)
 myDT(gsea_res, 'caption2')
+```
+
+## Enrichment (ORA)
+
+### Significant (mixed) vs Non-Significant
+
+```{r}
+ora <- sbea(
+  method = 'ora', se = edger, gs = otu_sigs, perm = 0, 
+  padj.method = 'BH', alpha = 0.1
+)
+ora_res <- as.data.frame(ora$res.tbl)
+myDT(ora_res, 'caption')
 ```
 
 # Session information
