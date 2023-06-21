@@ -7,8 +7,10 @@ navbar:
       href: articles/data_integration_and_stats.html
     - text: "Known ground truth - Subgingival vs supragingival plaque"
       href: articles/subgingival_plaque.html
-    - text: "Reproducibility of previous study - NYCHANES study"
+    - text: "Reproducibility of previous study - NYCHANES study - bugphyzz"
       href: articles/nychanes.html
+    - text: "Reproducibility of previous study - NYCHANES study - biosis"
+      href: articles/nychanes2.html
     - text: "High-throughput MSAE with BugSigDB sets"
       href: articles/high_throughput_msea_bsdb.html
     - text: "Enrichment of IBD samples"
