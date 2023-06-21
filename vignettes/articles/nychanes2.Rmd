@@ -33,7 +33,7 @@ original annotations from the NYCHANES study.
 > For the sake of reproducibility, taxa won't be filtered based on abundance and
 the matrix will be transformed with limma.
 
-# Analysis at the genus level with bugphyzz signatures
+# Analysis at the genus level with biosis signatures
 
 ## Microbiome data
 
@@ -96,7 +96,7 @@ caption1 <- 'caption1'
 myDT(gsea_gn_res, caption1)
 ```
 
-# Analysis at the OTU level with bugphyzz signatures
+# Analysis at the OTU level with biosis signatures
 
 ## Microbiome data
 
