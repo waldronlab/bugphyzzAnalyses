@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>nychanes2.Rmd • bugphyzzAnalyses</title>
+<title>Reproducibility of a published result - NYCHANES study - bugphyzz • bugphyzzAnalyses</title>
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="nychanes2.Rmd">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Reproducibility of a published result - NYCHANES study - bugphyzz">
 <meta property="og:description" content="bugphyzzAnalyses">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -56,7 +56,10 @@
       <a href="../articles/subgingival_plaque.html">Known ground truth - Subgingival vs supragingival plaque</a>
     </li>
     <li>
-      <a href="../articles/nychanes.html">Reproducibility of previous study - NYCHANES study</a>
+      <a href="../articles/nychanes.html">Reproducibility of previous study - NYCHANES study - bugphyzz</a>
+    </li>
+    <li>
+      <a href="../articles/nychanes2.html">Reproducibility of previous study - NYCHANES study - biosis</a>
     </li>
     <li>
       <a href="../articles/high_throughput_msea_bsdb.html">High-throughput MSAE with BugSigDB sets</a>
@@ -84,10 +87,18 @@
 
       
 
-      </header><div class="row">
+      </header><script src="nychanes_files/htmlwidgets-1.6.2/htmlwidgets.js"></script><link href="nychanes_files/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="nychanes_files/datatables-binding-0.28/datatables.js"></script><link href="nychanes_files/dt-core-1.13.4/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="nychanes_files/dt-core-1.13.4/css/jquery.dataTables.extra.css" rel="stylesheet">
+<script src="nychanes_files/dt-core-1.13.4/js/jquery.dataTables.min.js"></script><link href="nychanes_files/dt-ext-buttons-1.13.4/css/buttons.dataTables.min.css" rel="stylesheet">
+<script src="nychanes_files/dt-ext-buttons-1.13.4/js/dataTables.buttons.min.js"></script><script src="nychanes_files/dt-ext-buttons-1.13.4/js/buttons.html5.min.js"></script><script src="nychanes_files/dt-ext-buttons-1.13.4/js/buttons.colVis.min.js"></script><script src="nychanes_files/dt-ext-buttons-1.13.4/js/buttons.print.min.js"></script><link href="nychanes_files/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet">
+<script src="nychanes_files/nouislider-7.0.10/jquery.nouislider.min.js"></script><link href="nychanes_files/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet">
+<script src="nychanes_files/selectize-0.12.0/selectize.min.js"></script><link href="nychanes_files/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet">
+<script src="nychanes_files/crosstalk-1.2.0/js/crosstalk.min.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>nychanes2.Rmd</h1>
+      <h1 data-toc-skip>Reproducibility of a published result - NYCHANES
+study - bugphyzz</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/waldronlab/bugphyzzAnalyses/blob/HEAD/vignettes/articles/nychanes.Rmd" class="external-link"><code>vignettes/articles/nychanes.Rmd</code></a></small>
@@ -103,44 +114,58 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/microbiome/mia" class="external-link">mia</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">EnrichmentBrowser</span><span class="op">)</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="analysis-at-the-genus-level-with-bugphyzz-signatures">Analysis at the genus level with bugphyzz signatures<a class="anchor" aria-label="anchor" href="#analysis-at-the-genus-level-with-bugphyzz-signatures"></a>
-</h3>
+<div class="section level2">
+<h2 id="expected-results">Expected results<a class="anchor" aria-label="anchor" href="#expected-results"></a>
+</h2>
+<ul>
+<li>Enrichment of anaerobic taxa in smokers.</li>
+<li>Enrichment of aerobic taxa in control (never smoker).</li>
+</ul>
 </div>
 <div class="section level2">
-<h2 id="microbiome-data">Microbiome data<a class="anchor" aria-label="anchor" href="#microbiome-data"></a>
+<h2 id="analysis-at-the-genus-level-with-bugphyzz-signatures">Analysis at the genus level with bugphyzz signatures<a class="anchor" aria-label="anchor" href="#analysis-at-the-genus-level-with-bugphyzz-signatures"></a>
 </h2>
+<div class="section level3">
+<h3 id="microbiome-data">Microbiome data<a class="anchor" aria-label="anchor" href="#microbiome-data"></a>
+</h3>
+<p>Data used here is a subset of the original data used for the <a href="https://pubmed.ncbi.nlm.nih.gov/31076212/" class="external-link">NYCHANES study</a>.
+Full data can be found on <a href="https://github.com/waldronlab/nychanesmicrobiome" class="external-link">GitHub</a>.
+Signatures from this study have been published on <a href="https://bugsigdb.org/Study_727" class="external-link">BugSigDB</a>.</p>
+<p>The data subset presented here only contains abundance values for
+“Never smoker” vs “Cigarette” samples (“smokingstatus” column in
+metadata).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tse</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/importNYCHANES.html">importNYCHANES</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">tse_genus</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mia/man/splitByRanks.html" class="external-link">splitByRanks</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">$</span><span class="va">Genus</span></span>
+<span><span class="va">tse_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mia/man/splitByRanks.html" class="external-link">splitByRanks</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">$</span><span class="va">Genus</span></span>
 <span><span class="co">## Filter taxa with at least 1 count as abundance in at least 20% of samples</span></span>
-<span><span class="va">min_n_samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">tse_genus</span><span class="op">)</span> <span class="op">*</span> <span class="fl">0.2</span><span class="op">)</span></span>
-<span><span class="va">tse_subset</span> <span class="op">&lt;-</span> <span class="va">tse_genus</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">tse_genus</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="va">min_n_samples</span>,<span class="op">]</span></span>
-<span><span class="va">tse_subset</span></span>
+<span><span class="co"># min_n_samples &lt;- round(ncol(tse_gn) * 0.2)</span></span>
+<span><span class="co"># tse_gn_subset &lt;- tse_gn[rowSums(assay(tse_gn) &gt;= 1) &gt;= min_n_samples,]</span></span>
+<span><span class="va">tse_gn</span></span>
 <span><span class="co">#&gt; class: TreeSummarizedExperiment </span></span>
-<span><span class="co">#&gt; dim: 101 129 </span></span>
+<span><span class="co">#&gt; dim: 173 129 </span></span>
 <span><span class="co">#&gt; metadata(1): agglomerated_by_rank</span></span>
 <span><span class="co">#&gt; assays(1): counts</span></span>
-<span><span class="co">#&gt; rownames(101): Streptococcus unclassified ... Bacillus unclassified_22</span></span>
+<span><span class="co">#&gt; rownames(173): Streptococcus unclassified ... Aerococcus</span></span>
+<span><span class="co">#&gt;   unclassified_22</span></span>
 <span><span class="co">#&gt; rowData names(8): Domain Phylum ... Species GenusID</span></span>
 <span><span class="co">#&gt; colnames(129): NYDH0033 NYDH0026 ... NYDH1460 NYDH0847</span></span>
 <span><span class="co">#&gt; colData names(714): KEY Burklab_ID ... INC3C DBQ_10_3CAT</span></span>
 <span><span class="co">#&gt; reducedDimNames(0):</span></span>
 <span><span class="co">#&gt; mainExpName: NULL</span></span>
 <span><span class="co">#&gt; altExpNames(0):</span></span>
-<span><span class="co">#&gt; rowLinks: a LinkDataFrame (101 rows)</span></span>
+<span><span class="co">#&gt; rowLinks: a LinkDataFrame (173 rows)</span></span>
 <span><span class="co">#&gt; rowTree: 1 phylo tree(s) (1291 leaves)</span></span>
 <span><span class="co">#&gt; colLinks: NULL</span></span>
 <span><span class="co">#&gt; colTree: NULL</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">tse_subset</span><span class="op">$</span><span class="va">smokingstatus</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">tse_gn</span><span class="op">$</span><span class="va">smokingstatus</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Never smoker    Cigarette </span></span>
 <span><span class="co">#&gt;           43           86</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="bugphyzz-data">Bugphyzz data<a class="anchor" aria-label="anchor" href="#bugphyzz-data"></a>
-</h2>
+<div class="section level3">
+<h3 id="bugphyzz-data">Bugphyzz data<a class="anchor" aria-label="anchor" href="#bugphyzz-data"></a>
+</h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/importBugphyzz.html" class="external-link">importBugphyzz</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">aer</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">bp</span>, <span class="va">Attribute_group</span> <span class="op">==</span> <span class="st">'aerophilicity'</span><span class="op">)</span></span>
@@ -161,75 +186,104 @@
 <span><span class="co">#&gt; [1] "Capnocytophaga" "Kistimonas"     "Trueperella"    "Telmatobacter" </span></span>
 <span><span class="co">#&gt; [5] "Alishewanella"  "Muricauda"</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="differential-expression">Differential expression<a class="anchor" aria-label="anchor" href="#differential-expression"></a>
-</h2>
+<div class="section level3">
+<h3 id="differential-expression">Differential expression<a class="anchor" aria-label="anchor" href="#differential-expression"></a>
+</h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tse_subset</span><span class="op">$</span><span class="va">GROUP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span></span>
-<span>  <span class="va">tse_subset</span><span class="op">$</span><span class="va">smokingstatus</span> <span class="op">==</span> <span class="st">'Never smoker'</span>, <span class="fl">0</span>, <span class="fl">1</span></span>
+<code class="sourceCode R"><span><span class="va">tse_gn</span><span class="op">$</span><span class="va">GROUP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span></span>
+<span>  <span class="va">tse_gn</span><span class="op">$</span><span class="va">smokingstatus</span> <span class="op">==</span> <span class="st">'Never smoker'</span>, <span class="fl">0</span>, <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">edger</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/deAna.html" class="external-link">deAna</a></span><span class="op">(</span></span>
-<span>    expr <span class="op">=</span> <span class="va">tse_subset</span>, de.method <span class="op">=</span> <span class="st">'edgeR'</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>, </span>
+<span><span class="va">edger_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/deAna.html" class="external-link">deAna</a></span><span class="op">(</span></span>
+<span>    expr <span class="op">=</span> <span class="va">tse_gn</span>, de.method <span class="op">=</span> <span class="st">'edgeR'</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>, </span>
 <span>    filter.by.expr <span class="op">=</span> <span class="cn">FALSE</span>, </span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="enrichment-gsea">Enrichment GSEA<a class="anchor" aria-label="anchor" href="#enrichment-gsea"></a>
-</h2>
+<div class="section level3">
+<h3 id="enrichment-gsea">Enrichment GSEA<a class="anchor" aria-label="anchor" href="#enrichment-gsea"></a>
+</h3>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gsea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
-<span>  method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">edger</span>, gs <span class="op">=</span> <span class="va">gn_sigs</span>, perm <span class="op">=</span> <span class="fl">1000</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>,</span>
+<code class="sourceCode R"><span><span class="va">design1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span> <span class="va">smokingstatus</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse_gn</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">assay.voom1</span> <span class="op">&lt;-</span> <span class="fu">limma</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/limma/man/voom.html" class="external-link">voom</a></span><span class="op">(</span></span>
+<span>  <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">edger_gn</span><span class="op">)</span>, design <span class="op">=</span> <span class="va">design1</span>, plot <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">edger_gn</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">assay.voom1</span><span class="op">$</span><span class="va">E</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">edger_gn</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"matrix"</span></span>
+<span></span>
+<span><span class="va">gsea_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>  method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">edger_gn</span>, gs <span class="op">=</span> <span class="va">gn_sigs</span>, perm <span class="op">=</span> <span class="fl">1000</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">0.1</span></span>
 <span>  </span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span><span class="va">gsea_gn_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">gsea_gn</span><span class="op">$</span><span class="va">res.tbl</span><span class="op">)</span></span>
+<span><span class="va">caption1</span> <span class="op">&lt;-</span> <span class="st">'caption1'</span></span>
+<span><span class="fu"><a href="../reference/myDT.html">myDT</a></span><span class="op">(</span><span class="va">gsea_gn_res</span>, <span class="va">caption1</span><span class="op">)</span></span></code></pre></div>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-4ea874d34af5facfc2f9" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-4ea874d34af5facfc2f9">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-0.604\" data-max=\"0.443\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-1.66\" data-max=\"1.28\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.0117\" data-max=\"0.19\" data-scale=\"4\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.0351\" data-max=\"0.19\" data-scale=\"5\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption style=\"caption-side: top; text-align: left;\">caption1<\/caption>","data":[["aerophilicity:facultatively_anaerobic","aerophilicity:aerobic","aerophilicity:anaerobic"],[-0.604,-0.555,0.443],[-1.66,-1.49,1.28],[0.0117,0.0445,0.19],[0.0351,0.06675,0.19]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>GENE.SET<\/th>\n      <th>ES<\/th>\n      <th>NES<\/th>\n      <th>PVAL<\/th>\n      <th>ADJ.PVAL<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Bft","buttons":["copy","print"],"iDisplayLength":10,"keys":true,"autoWidth":true,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4]}],"order":[],"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
+</div>
 </div>
 <div class="section level2">
 <h2 id="analysis-at-the-otu-level-with-bugphyzz-signatures">Analysis at the OTU level with bugphyzz signatures<a class="anchor" aria-label="anchor" href="#analysis-at-the-otu-level-with-bugphyzz-signatures"></a>
 </h2>
 <div class="section level3">
-<h3 id="microbiome-data-1">Microbiome data<a class="anchor" aria-label="anchor" href="#microbiome-data-1"></a>
-</h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">min_n_samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span> <span class="op">*</span> <span class="fl">0.2</span><span class="op">)</span></span>
-<span><span class="va">tse_subset</span> <span class="op">&lt;-</span> <span class="va">tse</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="va">min_n_samples</span>,<span class="op">]</span></span></code></pre></div>
-</div>
-<div class="section level3">
 <h3 id="otu-signatures-bugphyzz">otu signatures (bugphyzz)<a class="anchor" aria-label="anchor" href="#otu-signatures-bugphyzz"></a>
 </h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">genera</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">$</span><span class="va">Genus</span> </span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">genera</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span></span>
-<span><span class="va">otu_sigs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">gn_sigs</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">genera</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">genera</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">x</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">otu_sigs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">gn_sigs</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">genera</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">genera</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">x</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">otu_sigs</span>, <span class="va">head</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $`aerophilicity:aerobic`</span></span>
+<span><span class="co">#&gt; [1] "New.CleanUp.ReferenceOTU10697" "New.CleanUp.ReferenceOTU11549"</span></span>
+<span><span class="co">#&gt; [3] "New.CleanUp.ReferenceOTU11122" "New.CleanUp.ReferenceOTU8077" </span></span>
+<span><span class="co">#&gt; [5] "New.CleanUp.ReferenceOTU11146" "New.CleanUp.ReferenceOTU7397" </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`aerophilicity:anaerobic`</span></span>
+<span><span class="co">#&gt; [1] "New.CleanUp.ReferenceOTU8003"  "New.CleanUp.ReferenceOTU10070"</span></span>
+<span><span class="co">#&gt; [3] "New.CleanUp.ReferenceOTU8703"  "New.CleanUp.ReferenceOTU3192" </span></span>
+<span><span class="co">#&gt; [5] "New.CleanUp.ReferenceOTU3925"  "New.CleanUp.ReferenceOTU5093" </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $`aerophilicity:facultatively_anaerobic`</span></span>
+<span><span class="co">#&gt; [1] "New.CleanUp.ReferenceOTU7367" "New.CleanUp.ReferenceOTU7623"</span></span>
+<span><span class="co">#&gt; [3] "New.ReferenceOTU195"          "New.CleanUp.ReferenceOTU2376"</span></span>
+<span><span class="co">#&gt; [5] "New.CleanUp.ReferenceOTU3539" "New.CleanUp.ReferenceOTU7335"</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="differential-abundance">Differential abundance<a class="anchor" aria-label="anchor" href="#differential-abundance"></a>
 </h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tse_subset</span><span class="op">$</span><span class="va">GROUP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span></span>
-<span>  <span class="va">tse_subset</span><span class="op">$</span><span class="va">smokingstatus</span> <span class="op">==</span> <span class="st">'Never smoker'</span>, <span class="fl">0</span>, <span class="fl">1</span></span>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tse</span><span class="op">$</span><span class="va">GROUP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span></span>
+<span>  <span class="va">tse</span><span class="op">$</span><span class="va">smokingstatus</span> <span class="op">==</span> <span class="st">'Never smoker'</span>, <span class="fl">0</span>, <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">edger_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/deAna.html" class="external-link">deAna</a></span><span class="op">(</span></span>
-<span>  expr <span class="op">=</span> <span class="va">tse_subset</span>, de.method <span class="op">=</span> <span class="st">'edgeR'</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>, </span>
+<span><span class="va">edger</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/deAna.html" class="external-link">deAna</a></span><span class="op">(</span></span>
+<span>  expr <span class="op">=</span> <span class="va">tse</span>, de.method <span class="op">=</span> <span class="st">'edgeR'</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>, </span>
 <span>  filter.by.expr <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="enrichment">Enrichment<a class="anchor" aria-label="anchor" href="#enrichment"></a>
+<h3 id="enrichment-gsea-1">Enrichment (GSEA)<a class="anchor" aria-label="anchor" href="#enrichment-gsea-1"></a>
 </h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gsea_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
-<span>  method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">edger_subset</span>, gs <span class="op">=</span> <span class="va">otu_sigs</span>, perm <span class="op">=</span> <span class="fl">1000</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>,</span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">design2</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/model.matrix.html" class="external-link">model.matrix</a></span><span class="op">(</span><span class="op">~</span><span class="va">smokingstatus</span>, data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">colData</a></span><span class="op">(</span><span class="va">tse</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">assay.voom2</span> <span class="op">&lt;-</span> <span class="fu">limma</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/limma/man/voom.html" class="external-link">voom</a></span><span class="op">(</span></span>
+<span>  <span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">edger</span><span class="op">)</span>, design <span class="op">=</span> <span class="va">design2</span>, plot <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">edger</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">assay.voom2</span><span class="op">$</span><span class="va">E</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="fu">SummarizedExperiment</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">edger</span><span class="op">)</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="st">"matrix"</span></span>
+<span></span>
+<span><span class="va">gsea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>  method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">edger</span>, gs <span class="op">=</span> <span class="va">otu_sigs</span>, perm <span class="op">=</span> <span class="fl">1000</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">0.1</span></span>
-<span>  </span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>#&gt; Analysis at the genus level with nychanes signatures #?
-Analyiss at the OTU level with nychanes signatures</p>
+<span><span class="op">)</span></span>
+<span><span class="va">gsea_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">gsea</span><span class="op">$</span><span class="va">res.tbl</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/myDT.html">myDT</a></span><span class="op">(</span><span class="va">gsea_res</span>, <span class="st">'caption2'</span><span class="op">)</span></span></code></pre></div>
+<div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3224c9468f26562a52da" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-3224c9468f26562a52da">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-0.42\" data-max=\"0.162\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-1.67\" data-max=\"0.64\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.00554\" data-max=\"0.925\" data-scale=\"5\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.01662\" data-max=\"0.925\" data-scale=\"5\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption style=\"caption-side: top; text-align: left;\">caption2<\/caption>","data":[["aerophilicity:aerobic","aerophilicity:facultatively_anaerobic","aerophilicity:anaerobic"],[-0.42,-0.322,0.162],[-1.67,-1.4,0.64],[0.00554,0.0583,0.925],[0.01662,0.08745,0.925]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>GENE.SET<\/th>\n      <th>ES<\/th>\n      <th>NES<\/th>\n      <th>PVAL<\/th>\n      <th>ADJ.PVAL<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Bft","buttons":["copy","print"],"iDisplayLength":10,"keys":true,"autoWidth":true,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4]}],"order":[],"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/sessioninfo/reference/session_info.html" class="external-link">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Session info ───────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">setting </span> <span style="color: #555555; font-style: italic;">value</span></span></span>
@@ -241,7 +295,7 @@ Analyiss at the OTU level with nychanes signatures</p>
 <span><span class="co">#&gt;  collate  en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  ctype    en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  tz       Etc/UTC</span></span>
-<span><span class="co">#&gt;  date     2023-06-20</span></span>
+<span><span class="co">#&gt;  date     2023-06-21</span></span>
 <span><span class="co">#&gt;  pandoc   2.19.2 @ /usr/local/bin/ (via rmarkdown)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Packages ───────────────────────────────────────────────────────────────────</span></span></span>
@@ -264,8 +318,8 @@ Analyiss at the OTU level with nychanes signatures</p>
 <span><span class="co">#&gt;  blob                       1.2.4     <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  bold                       1.3.0     <span style="color: #555555;">2023-05-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  bslib                      0.5.0     <span style="color: #555555;">2023-06-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  bugphyzz                 * 0.0.1.3   <span style="color: #555555;">2023-06-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@7abbf41)</span></span></span>
-<span><span class="co">#&gt;  bugphyzzAnalyses         * 0.1.0     <span style="color: #555555;">2023-06-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
+<span><span class="co">#&gt;  bugphyzz                 * 0.0.1.3   <span style="color: #555555;">2023-06-21</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@7abbf41)</span></span></span>
+<span><span class="co">#&gt;  bugphyzzAnalyses         * 0.1.0     <span style="color: #555555;">2023-06-21</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
 <span><span class="co">#&gt;  cachem                     1.0.8     <span style="color: #555555;">2023-05-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  cli                        3.6.1     <span style="color: #555555;">2023-03-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  cluster                    2.1.4     <span style="color: #555555;">2022-08-22</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.3.0)</span></span></span>
@@ -273,6 +327,7 @@ Analyiss at the OTU level with nychanes signatures</p>
 <span><span class="co">#&gt;  colorspace                 2.1-0     <span style="color: #555555;">2023-01-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  conditionz                 0.1.0     <span style="color: #555555;">2019-04-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  crayon                     1.5.2     <span style="color: #555555;">2022-09-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  crosstalk                  1.2.0     <span style="color: #555555;">2021-11-04</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  crul                       1.4.0     <span style="color: #555555;">2023-05-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  curl                       5.0.1     <span style="color: #555555;">2023-06-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  data.table                 1.14.8    <span style="color: #555555;">2023-02-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
@@ -286,7 +341,9 @@ Analyiss at the OTU level with nychanes signatures</p>
 <span><span class="co">#&gt;  digest                     0.6.31    <span style="color: #555555;">2022-12-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  DirichletMultinomial       1.42.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  dplyr                    * 1.1.2     <span style="color: #555555;">2023-04-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  DT                         0.28      <span style="color: #555555;">2023-05-18</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  edgeR                      3.42.4    <span style="color: #555555;">2023-05-31</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
+<span><span class="co">#&gt;  ellipsis                   0.3.2     <span style="color: #555555;">2021-04-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  EnrichmentBrowser        * 2.30.1    <span style="color: #555555;">2023-05-14</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  evaluate                   0.21      <span style="color: #555555;">2023-05-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  fansi                      1.0.4     <span style="color: #555555;">2023-01-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
@@ -307,6 +364,7 @@ Analyiss at the OTU level with nychanes signatures</p>
 <span><span class="co">#&gt;  gtable                     0.3.3     <span style="color: #555555;">2023-03-21</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  hoardr                     0.5.3     <span style="color: #555555;">2023-01-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  htmltools                  0.5.5     <span style="color: #555555;">2023-03-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  htmlwidgets                1.6.2     <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  httpcode                   0.3.0     <span style="color: #555555;">2020-04-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  httr                       1.4.6     <span style="color: #555555;">2023-05-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  IRanges                  * 2.34.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
@@ -361,14 +419,14 @@ Analyiss at the OTU level with nychanes signatures</p>
 <span><span class="co">#&gt;  scuttle                    1.10.1    <span style="color: #555555;">2023-05-02</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  sessioninfo                1.2.2     <span style="color: #555555;">2021-12-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  SingleCellExperiment     * 1.22.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
-<span><span class="co">#&gt;  sparseMatrixStats          1.12.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
+<span><span class="co">#&gt;  sparseMatrixStats          1.12.1    <span style="color: #555555;">2023-06-20</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  statmod                    1.5.0     <span style="color: #555555;">2023-01-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  stringi                    1.7.12    <span style="color: #555555;">2023-01-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  stringr                    1.5.0     <span style="color: #555555;">2022-12-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  SummarizedExperiment     * 1.30.2    <span style="color: #555555;">2023-06-06</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  systemfonts                1.0.4     <span style="color: #555555;">2022-02-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  taxa                       0.4.2     <span style="color: #555555;">2022-04-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  taxize                     1.0       <span style="color: #555555;">2023-06-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
+<span><span class="co">#&gt;  taxize                     1.0       <span style="color: #555555;">2023-06-21</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
 <span><span class="co">#&gt;  taxizedb                   0.3.1     <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  textshaping                0.3.6     <span style="color: #555555;">2021-10-13</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  tibble                     3.2.1     <span style="color: #555555;">2023-03-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
