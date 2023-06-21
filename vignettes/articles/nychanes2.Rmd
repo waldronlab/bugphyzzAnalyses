@@ -1,5 +1,5 @@
 ---
-title: "Reproducibility of a published result - NYCHANES study - bugphyzz"
+title: "Reproducibility of a published result - NYCHANES study - biosis"
 output:
   html_document:
     toc:
@@ -22,10 +22,16 @@ library(dplyr)
 library(EnrichmentBrowser)
 ```
 
+> For the sake of reproducibility, I'm running this analysis with the
+original annotations from the NYCHANES study.
+
 # Expected results
 
 + Enrichment of anaerobic taxa in smokers.
 + Enrichment of aerobic taxa in control (never smoker).
+
+> For the sake of reproducibility, taxa won't be filtered based on abundance and
+the matrix will be transformed with limma.
 
 # Analysis at the genus level with bugphyzz signatures
 
@@ -42,9 +48,6 @@ The data subset presented here only contains abundance values for
 ```{r import nychanes data, message=FALSE}
 tse <- importNYCHANES()
 tse_gn <- splitByRanks(tse)$Genus
-## Filter taxa with at least 1 count as abundance in at least 20% of samples
-# min_n_samples <- round(ncol(tse_gn) * 0.2)
-# tse_gn_subset <- tse_gn[rowSums(assay(tse_gn) >= 1) >= min_n_samples,]
 tse_gn
 ```
 
@@ -52,18 +55,15 @@ tse_gn
 table(tse_gn$smokingstatus)
 ```
 
-## Bugphyzz data
+## Biosis data
 
-```{r, message=FALSE}
-bp <- importBugphyzz()
-aer <- filter(bp, Attribute_group == 'aerophilicity')
-gn_sigs <- getBugphyzzSignatures(
-    df = aer, tax.id.type = 'Taxon_name', tax.level = 'genus', 
-    frequency = c('always', 'usually', 'sometimes')
-)
+
+```{r}
+biosis <- importBiosis()
+gn_sigs <- split(biosis, factor(biosis$Attribute)) |> 
+  lapply(function(x) unique(x$Genus))
 lapply(gn_sigs, head)
 ```
-
 ## Differential expression
 
 ```{r}
@@ -87,8 +87,8 @@ SummarizedExperiment::assay(edger_gn) <- assay.voom1$E
 class(SummarizedExperiment::assay(edger_gn)) <- "matrix"
 
 gsea_gn <- sbea(
-  method = 'gsea', se = edger_gn, gs = gn_sigs, perm = 1000, padj.method = 'BH',
-  alpha = 0.1
+  method = 'gsea', se = edger_gn, gs = gn_sigs, perm = 1000,
+  padj.method = 'BH',  alpha = 0.1
   
 )
 gsea_gn_res <- as.data.frame(gsea_gn$res.tbl)
@@ -96,10 +96,15 @@ caption1 <- 'caption1'
 myDT(gsea_gn_res, caption1)
 ```
 
-
 # Analysis at the OTU level with bugphyzz signatures
 
-## otu signatures (bugphyzz)
+## Microbiome data
+
+```{r}
+tse
+```
+
+## otu signatures (biosis)
 
 ```{r}
 genera <- rowData(tse)$Genus 
@@ -118,6 +123,7 @@ edger <- deAna(
   expr = tse, de.method = 'edgeR', padj.method = 'BH', 
   filter.by.expr = FALSE
 )
+
 ```
 
 ## Enrichment (GSEA)
