@@ -224,7 +224,7 @@ myDT <- function(df, cap = 'Table. Caption...', ap = 0.1) {
 #'
 limmaVoom <- function(tse) {
     df <- data.frame(SummarizedExperiment::colData(tse))
-    design <- stats::model.matrix(~ smokingstatus, data = df)
+    design <- stats::model.matrix(~ GROUP, data = df)
     assay_voom1 <- limma::voom(
         SummarizedExperiment::assay(tse), design = design, plot = FALSE
     )

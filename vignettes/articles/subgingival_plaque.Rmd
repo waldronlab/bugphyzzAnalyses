@@ -80,6 +80,7 @@ edger <- deAna(
 # Enrichment (GSEA)
 
 ```{r, message=FALSE}
+edger <- limmaVoom(edger)
 gsea <- sbea(
   method = 'gsea', se = edger, gs = gn_sigs, perm = 1000, padj.method = 'BH',
   alpha = 0.1

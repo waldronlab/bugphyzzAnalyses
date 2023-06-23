@@ -11,7 +11,8 @@ navbar:
       href: articles/nychanes.html
     - text: "Reproducibility of previous study - NYCHANES study - biosis"
       href: articles/nychanes2.html
-    - text: "High-throughput MSAE with BugSigDB sets"
-      href: articles/high_throughput_msea_bsdb.html
-    - text: "Enrichment of IBD samples"
+    - text: "Enrichment in IBD samples"
       href: articles/ibd_enrichment.html
+    - text: "High-throughput BSEA with BugSigDB sets"
+      href: articles/high_throughput_msea_bsdb.html
+
