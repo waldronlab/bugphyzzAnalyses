@@ -211,3 +211,24 @@ myDT <- function(df, cap = 'Table. Caption...', ap = 0.1) {
         )
     )
 }
+
+#' Normalize assay with limma::voom
+#'
+#' \code{limmaVoom} normalizes an assay (the first one) from a
+#' (Tree)SummarizedExperiment with lima::voom.
+#'
+#' @param tse A (Tree)SummarizedExperiment.
+#'
+#' @return A (Tree)SummarizedExperiment.
+#' @export
+#'
+limmaVoom <- function(tse) {
+    df <- data.frame(SummarizedExperiment::colData(tse))
+    design <- stats::model.matrix(~ smokingstatus, data = df)
+    assay_voom1 <- limma::voom(
+        SummarizedExperiment::assay(tse), design = design, plot = FALSE
+    )
+    SummarizedExperiment::assay(tse) <- assay_voom1$E
+    class(SummarizedExperiment::assay(tse)) <- "matrix"
+    return(tse)
+}

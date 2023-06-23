@@ -24,8 +24,27 @@ library(EnrichmentBrowser)
 
 # Expected results
 
-+ Enrichment of anaerobic taxa in smokers.
-+ Enrichment of aerobic taxa in control (never smoker).
+Direct quotes from [Tobacco exposure associated with oral microbiota oxygen utilization in the New York City Health and Nutrition Examination Study](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6548637/)
+
+**ORA**
+
+>"... differentially abundant OTUs between current smokers and
+never smokers to be over-represented in aerobic OTUs (Hypergeometric test,
+p = 0.004)."
+
+**GSEA**
+
+>"...aerobic OTUs were significantly depleted among current smokers relative to never
+smokers (Enrichment Score test statistic ES = −0.75, p = 0.002, GSEA permutation
+test)."
+
+>"Anaerobic OTUs were enriched in smokers relative to never smokers but the
+difference was not statistically significant (ES = 0.36, p = 0.14, GSEA 
+permutation test)."
+
+>"... enrichment of facultative anaerobic OTUs
+among never smokers compared to current smokers but this result was not
+statistically significant (ES = −0.29, p = 0.48, GSEA permutation test)."
 
 # Analysis at the genus level with bugphyzz signatures
 
@@ -79,21 +98,14 @@ edger_gn <- deAna(
 ## Enrichment GSEA
 
 ```{r}
-design1 <- model.matrix(~ smokingstatus, data = data.frame(colData(tse_gn)))
-assay.voom1 <- limma::voom(
-  SummarizedExperiment::assay(edger_gn), design = design1, plot = FALSE
-)
-SummarizedExperiment::assay(edger_gn) <- assay.voom1$E
-class(SummarizedExperiment::assay(edger_gn)) <- "matrix"
-
+edger_gn <- limmaVoom(edger_gn)
 gsea_gn <- sbea(
   method = 'gsea', se = edger_gn, gs = gn_sigs, perm = 1000, padj.method = 'BH',
   alpha = 0.1
   
 )
 gsea_gn_res <- as.data.frame(gsea_gn$res.tbl)
-caption1 <- 'caption1'
-myDT(gsea_gn_res, caption1)
+myDT(gsea_gn_res)
 ```
 
 ## Enrichment ORA
@@ -106,12 +118,39 @@ ora_gn <- sbea(
   padj.method = 'BH', alpha = 0.1
 )
 ora_gn_res <- as.data.frame(ora_gn$res.tbl)
-myDT(ora_gn_res, 'caption')
+myDT(ora_gn_res)
 ```
 
 ### Significant over-abundant vs Reference
 
+```{r}
+edger_gn_up <- edger_gn
+rowData(edger_gn_up)$ADJ.PVAL <- ifelse(
+  rowData(edger_gn_up)$FC < 0, 1, rowData(edger_gn_up)$ADJ.PVAL
+)
+ora_gn_up <- sbea(
+  method = 'ora', se = edger_gn_up, gs = gn_sigs, alpha = 0.1, perm = 0, 
+  padj.method = 'BH'
+)
+ora_gn_up_res <- as.data.frame(ora_gn_up$res.tbl)
+myDT(ora_gn_up_res)
+```
+
+
 ### Significant under-abundant vs Reference
+
+```{r}
+edger_gn_down <- edger_gn
+rowData(edger_gn_down)$ADJ.PVAL <- ifelse(
+  rowData(edger_gn_down)$FC < 1, 0, rowData(edger_gn_down)$ADJ.PVAL
+)
+ora_gn_down <- sbea(
+  method = 'ora', se = edger_gn_down, gs = gn_sigs, alpha = 0.1, perm = 0, 
+  padj.method = 'BH'
+)
+ora_gn_down_res <- as.data.frame(ora_gn_down$res.tbl)
+myDT(ora_gn_down_res)
+```
 
 # Analysis at the OTU level with bugphyzz signatures
 
@@ -139,26 +178,20 @@ edger <- deAna(
 ## Enrichment (GSEA)
 
 ```{r}
-design2 = model.matrix(~smokingstatus, data = data.frame(colData(tse)))
-assay.voom2 <- limma::voom(
-  SummarizedExperiment::assay(edger), design = design2, plot = FALSE
-)
-SummarizedExperiment::assay(edger) <- assay.voom2$E
-class(SummarizedExperiment::assay(edger)) <- "matrix"
-
+edger <- limmaVoom(edger)
 gsea <- sbea(
   method = 'gsea', se = edger, gs = otu_sigs, perm = 1000, padj.method = 'BH',
   alpha = 0.1
 )
 gsea_res <- as.data.frame(gsea$res.tbl)
-myDT(gsea_res, 'caption2')
+myDT(gsea_res)
 ```
 
 ## Enrichment (ORA)
 
 ### Significant (mixed) vs Non-Significant
 
-```{r}
+```{r, message=FALSE}
 ora <- sbea(
   method = 'ora', se = edger, gs = otu_sigs, perm = 0, 
   padj.method = 'BH', alpha = 0.1
@@ -167,10 +200,39 @@ ora_res <- as.data.frame(ora$res.tbl)
 myDT(ora_res, 'caption')
 ```
 
+
+### Significant over-abundant vs Reference
+
+```{r}
+edger_up <- edger
+rowData(edger_up)$ADJ.PVAL <- ifelse(
+  rowData(edger_up)$FC < 0, 1, rowData(edger_up)$ADJ.PVAL
+)
+ora_up <- sbea(
+  method = 'ora', se = edger_up, gs = otu_sigs, alpha = 0.1, perm = 0, 
+  padj.method = 'BH'
+)
+ora_up_res <- as.data.frame(ora_up$res.tbl)
+myDT(ora_up_res)
+```
+
+### Significant under-abundant vs Reference
+
+```{r}
+edger_down <- edger
+rowData(edger_down)$ADJ.PVAL <- ifelse(
+  rowData(edger_down)$FC < 1, 0, rowData(edger_down)$ADJ.PVAL
+)
+ora_down <- sbea(
+  method = 'ora', se = edger_down, gs = otu_sigs, alpha = 0.1, perm = 0, 
+  padj.method = 'BH'
+)
+ora_down_res <- as.data.frame(ora_down$res.tbl)
+myDT(ora_down_res)
+```
+
 # Session information
 
 ```{r}
 sessioninfo::session_info()
 ```
-
-
