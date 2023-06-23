@@ -9,7 +9,7 @@ navbar:
       href: articles/subgingival_plaque.html
     - text: "Reproducibility of previous study - NYCHANES study - bugphyzz"
       href: articles/nychanes.html
-    - text: "Reproducibility of previous study - NYCHANES study - biosis"
+    - text: "Reproducibility of previous study - NYCHANES study - original annotations"
       href: articles/nychanes2.html
     - text: "Enrichment in IBD samples"
       href: articles/ibd_enrichment.html
