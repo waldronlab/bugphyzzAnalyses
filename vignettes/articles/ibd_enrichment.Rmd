@@ -64,10 +64,10 @@ sp_sigs <- getBugphyzzSignatures(
 DA:
 
 ```{r}
-assay(tse_subset, 'relab_plus_1') <- assay(tse_subset, 'relative_abundance') + 1
+assay(tse_subset) <- assay(tse_subset) + 1
 edger <- deAna(
     expr = tse_subset, de.method = 'edgeR', padj.method = 'BH',
-    filter.by.expr = FALSE, assay = 'relab_plus_1'
+    filter.by.expr = FALSE 
 )
 dim(edger)
 ```
@@ -75,9 +75,10 @@ dim(edger)
 # Enrichment (GSEA) - bugphyzz:
 
 ```{r, message=FALSE, warning=FALSE}
+edger <- limmaVoom(edger)
 gsea <- sbea(
     method = 'gsea', se = edger, gs = sp_sigs, alpha = 0.1, perm = 1000,
-    padj.method = 'BH', assay = 'relab_plus_1'
+    padj.method = 'BH'
 )
 gsea_res <- as.data.frame(gsea$res.tbl)
 
@@ -129,7 +130,7 @@ biosis_sigs
 ```{r}
 gsea2 <- sbea(
     method = 'gsea', se = edger, gs = biosis_sigs, alpha = 0.1, perm = 1000,
-    padj.method = 'BH', assay = 'relab_plus_1'
+    padj.method = 'BH'
 )
 gsea2_res <- as.data.frame(gsea2$res.tbl)
 
