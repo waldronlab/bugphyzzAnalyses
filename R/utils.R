@@ -266,8 +266,9 @@ calcPredStats <- function(df) {
         ~ stat, ~ value,
         "sensitivity (recall)", TP / (TP + FN),
         "specificity", TN / (TN + FP),
-        "precision", TP / (TP + FP)
-
+        "precision", TP / (TP + FP),
+        "FDR", FP / (FP + TP),
+        "FPR", FP / (FP + TN)
     )
 
 }
