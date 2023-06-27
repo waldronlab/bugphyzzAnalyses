@@ -232,3 +232,46 @@ limmaVoom <- function(tse) {
     class(SummarizedExperiment::assay(tse)) <- "matrix"
     return(tse)
 }
+
+#' Cacl prediciton stats
+#'
+#' \code{calcPredStats} calculates prediction stats related to AUC ROC
+#'
+#' @param df A data.frame
+#'
+#' @return A data.frame
+#' @export
+#'
+calcPredStats <- function(df) {
+    df <- df |>
+        dplyr::count(label)
+
+    TP <- df |>
+        dplyr::filter(label == 'TP') |>
+        dplyr::pull(n)
+
+    FP <- df |>
+        dplyr::filter(label == 'FP') |>
+        dplyr::pull(n)
+
+    FN <- df |>
+        dplyr::filter(label == 'FN') |>
+        dplyr::pull(n)
+
+    TN <- df |>
+        dplyr::filter(label == 'TN') |>
+        dplyr::pull(n)
+
+    tibble::tribble(
+        ~ stat, ~ value,
+        "sensitivity (recall)", TP / (TP + FN),
+        "specificity", TN / (TN + FP),
+        "precision", TP / (TP + FP)
+
+    )
+
+}
+
+
+
+
