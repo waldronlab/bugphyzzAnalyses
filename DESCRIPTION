@@ -46,7 +46,8 @@ Suggests:
     htmltools,
     DT,
     limma,
-    pROC
+    pROC,
+    knitr
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
