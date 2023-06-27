@@ -34,7 +34,7 @@ data <- tribble(
     '1', 'Facultatibe anaerobic', 0, 0, 0, 0, "TN",
     '1', 'Aerotolerant', 0, 0.5, 0, 1, 'FP'
 )
-data
+knitr::kable(data, caption = 'Example with a threshold of 0.5 (sometimes)')
 ```
 
 Import test set
@@ -46,7 +46,7 @@ download.file(url = link, destfile = fname)
 test <- read.csv(fname)
 test$NCBI_ID <- sub('^.__', '', test$NCBI_ID)
 test_aer <- filter(test, Attribute_group == 'aerophilicity')
-count(test_aer, Evidence)
+knitr::kable(count(test_aer, Evidence), caption = 'Evidence of the test set')
 ```
 Import predicted set
 
@@ -57,8 +57,9 @@ download.file(url = link, destfile = fname)
 bp <- read.csv(fname)
 predicted_aer <- filter(bp, Attribute_group == 'aerophilicity')
 predicted_aer |> 
-    filter(NCBI_ID %in% unique(test_aer$NCBI_ID)) |> 
-    count(Evidence)
+  filter(NCBI_ID %in% unique(test_aer$NCBI_ID)) |> 
+  count(Evidence) |> 
+  knitr::kable(caption = 'Evidence of the predicted set')
 ```
 
 Percentage of NCBI_IDs in the test set that were predicted
@@ -116,12 +117,12 @@ sometimes <- result |>
             t_val == 0 & p_val == 1 ~ 'FP'
         )
     )
-count(sometimes, label)
+knitr::kable(count(sometimes, label), caption = 'Counts of TP, TN, FP, FN')
 ```
 stats:
 
 ```{r}
-calcPredStats(sometimes)
+knitr::kable(calcPredStats(sometimes))
 ```
 
 AUC:
@@ -152,12 +153,12 @@ usually <- result |>
             t_val == 0 & p_val == 1 ~ 'FP'
         )
     )
-count(usually, label)
+knitr::kable(count(usually, label), caption = 'Counts of TP, TN, FP, FN')
 ```
 Calc Stats:
 
 ```{r}
-calcPredStats(usually)
+knitr::kable(calcPredStats(usually))
 ```
 
 AUC:
@@ -171,6 +172,8 @@ ROC plot:
 ```{r, message=FALSE}
 plot.roc(usually$t_val, usually$p_val)
 ```
+
+
 ## Threshold 1 (always)
 
 ```{r}
@@ -185,13 +188,13 @@ always <- result |>
             t_val == 0 & p_val == 1 ~ 'FP'
         )
     )
-count(always, label)
+knitr::kable(count(always, label), caption = 'Counts of TP, TN, FP, FN')
 ```
 
 Calc stats:
 
 ```{r}
-calcPredStats(always)
+knitr::kable(calcPredStats(always))
 ```
 
 AUC:
