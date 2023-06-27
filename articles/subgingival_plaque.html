@@ -53,6 +53,9 @@
       <a href="../articles/data_integration_and_stats.html">Data integration and stats</a>
     </li>
     <li>
+      <a href="../articles/evaluation.html">Evaluation of predicted annotations (aerophilicity)</a>
+    </li>
+    <li>
       <a href="../articles/subgingival_plaque.html">Known ground truth - Subgingival vs supragingival plaque</a>
     </li>
     <li>
@@ -394,7 +397,7 @@ annotations are useful for meaningful bug set enrichemnt analysis
 <span><span class="co">#&gt;  collate  en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  ctype    en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  tz       Etc/UTC</span></span>
-<span><span class="co">#&gt;  date     2023-06-23</span></span>
+<span><span class="co">#&gt;  date     2023-06-27</span></span>
 <span><span class="co">#&gt;  pandoc   2.19.2 @ /usr/local/bin/ (via rmarkdown)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Packages ───────────────────────────────────────────────────────────────────</span></span></span>
@@ -417,8 +420,8 @@ annotations are useful for meaningful bug set enrichemnt analysis
 <span><span class="co">#&gt;  blob                       1.2.4     <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  bold                       1.3.0     <span style="color: #555555;">2023-05-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  bslib                      0.5.0     <span style="color: #555555;">2023-06-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  bugphyzz                 * 0.0.1.3   <span style="color: #555555;">2023-06-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@7abbf41)</span></span></span>
-<span><span class="co">#&gt;  bugphyzzAnalyses         * 0.1.0     <span style="color: #555555;">2023-06-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
+<span><span class="co">#&gt;  bugphyzz                 * 0.0.1.3   <span style="color: #555555;">2023-06-27</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@7abbf41)</span></span></span>
+<span><span class="co">#&gt;  bugphyzzAnalyses         * 0.1.0     <span style="color: #555555;">2023-06-27</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
 <span><span class="co">#&gt;  cachem                     1.0.8     <span style="color: #555555;">2023-05-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  cli                        3.6.1     <span style="color: #555555;">2023-03-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  cluster                    2.1.4     <span style="color: #555555;">2022-08-22</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.3.0)</span></span></span>
@@ -490,7 +493,7 @@ annotations are useful for meaningful bug set enrichemnt analysis
 <span><span class="co">#&gt;  mgcv                       1.8-42    <span style="color: #555555;">2023-03-02</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  mgsub                      1.7.3     <span style="color: #555555;">2021-07-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  mia                      * 1.8.0     <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
-<span><span class="co">#&gt;  MicrobiomeBenchmarkData  * 1.3.0     <span style="color: #555555;">2023-06-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/MicrobiomeBenchmarkData@a131a61)</span></span></span>
+<span><span class="co">#&gt;  MicrobiomeBenchmarkData  * 1.3.0     <span style="color: #555555;">2023-06-27</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/MicrobiomeBenchmarkData@a131a61)</span></span></span>
 <span><span class="co">#&gt;  MultiAssayExperiment     * 1.26.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  munsell                    0.5.0     <span style="color: #555555;">2018-06-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  nlme                       3.1-162   <span style="color: #555555;">2023-01-31</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.3.0)</span></span></span>
@@ -531,7 +534,7 @@ annotations are useful for meaningful bug set enrichemnt analysis
 <span><span class="co">#&gt;  SummarizedExperiment     * 1.30.2    <span style="color: #555555;">2023-06-06</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  systemfonts                1.0.4     <span style="color: #555555;">2022-02-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  taxa                       0.4.2     <span style="color: #555555;">2022-04-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  taxize                     1.0       <span style="color: #555555;">2023-06-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
+<span><span class="co">#&gt;  taxize                     1.0       <span style="color: #555555;">2023-06-27</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
 <span><span class="co">#&gt;  taxizedb                   0.3.1     <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  textshaping                0.3.6     <span style="color: #555555;">2021-10-13</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  tibble                   * 3.2.1     <span style="color: #555555;">2023-03-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>

@@ -13,6 +13,9 @@
     <loc>/articles/data_integration_and_stats.html</loc>
   </url>
   <url>
+    <loc>/articles/evaluation.html</loc>
+  </url>
+  <url>
     <loc>/articles/high_throughput_msea_bsdb.html</loc>
   </url>
   <url>
@@ -35,6 +38,9 @@
   </url>
   <url>
     <loc>/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/calcPredStats.html</loc>
   </url>
   <url>
     <loc>/reference/classif2Table.html</loc>
