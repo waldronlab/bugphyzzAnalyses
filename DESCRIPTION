@@ -45,7 +45,8 @@ Suggests:
     bc3net,
     htmltools,
     DT,
-    limma
+    limma,
+    pROC
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
