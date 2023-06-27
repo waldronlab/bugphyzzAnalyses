@@ -125,14 +125,66 @@
 <span>    <span class="st">'1'</span>, <span class="st">'Facultatibe anaerobic'</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="st">"TN"</span>,</span>
 <span>    <span class="st">'1'</span>, <span class="st">'Aerotolerant'</span>, <span class="fl">0</span>, <span class="fl">0.5</span>, <span class="fl">0</span>, <span class="fl">1</span>, <span class="st">'FP'</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">data</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 7</span></span></span>
-<span><span class="co">#&gt;   NCBI_ID Attribute  test_score predicted_score test_value predicted_value label</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1       Aerobic           0.5             0.5          1               1 TP   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1       Anaerobic         0.5             0            1               0 FN   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1       Facultati…        0               0            0               0 TN   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1       Aerotoler…        0               0.5          0               1 FP</span></span></code></pre></div>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">data</span>, caption <span class="op">=</span> <span class="st">'Example with a threshold of 0.5 (sometimes)'</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Example with a threshold of 0.5 (sometimes)</caption>
+<colgroup>
+<col width="8%">
+<col width="24%">
+<col width="12%">
+<col width="17%">
+<col width="12%">
+<col width="17%">
+<col width="6%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">NCBI_ID</th>
+<th align="left">Attribute</th>
+<th align="right">test_score</th>
+<th align="right">predicted_score</th>
+<th align="right">test_value</th>
+<th align="right">predicted_value</th>
+<th align="left">label</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left">Aerobic</td>
+<td align="right">0.5</td>
+<td align="right">0.5</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">TP</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="left">Anaerobic</td>
+<td align="right">0.5</td>
+<td align="right">0.0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="left">FN</td>
+</tr>
+<tr class="odd">
+<td align="left">1</td>
+<td align="left">Facultatibe anaerobic</td>
+<td align="right">0.0</td>
+<td align="right">0.0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">TN</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="left">Aerotolerant</td>
+<td align="right">0.0</td>
+<td align="right">0.5</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">FP</td>
+</tr>
+</tbody>
+</table>
 <p>Import test set</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">link</span> <span class="op">&lt;-</span> <span class="st">'https://github.com/sdgamboa/bugphyzzExportsPerformance/raw/rep1/test_set.csv.bz2'</span></span>
@@ -141,12 +193,32 @@
 <span><span class="va">test</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">fname</span><span class="op">)</span></span>
 <span><span class="va">test</span><span class="op">$</span><span class="va">NCBI_ID</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'^.__'</span>, <span class="st">''</span>, <span class="va">test</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span></span>
 <span><span class="va">test_aer</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">test</span>, <span class="va">Attribute_group</span> <span class="op">==</span> <span class="st">'aerophilicity'</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">test_aer</span>, <span class="va">Evidence</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Evidence    n</span></span>
-<span><span class="co">#&gt; 1      exp 1139</span></span>
-<span><span class="co">#&gt; 2      igc  347</span></span>
-<span><span class="co">#&gt; 3      nas  287</span></span>
-<span><span class="co">#&gt; 4      tas 1130</span></span></code></pre></div>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">test_aer</span>, <span class="va">Evidence</span><span class="op">)</span>, caption <span class="op">=</span> <span class="st">'Evidence of the test set'</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Evidence of the test set</caption>
+<thead><tr class="header">
+<th align="left">Evidence</th>
+<th align="right">n</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">exp</td>
+<td align="right">1139</td>
+</tr>
+<tr class="even">
+<td align="left">igc</td>
+<td align="right">347</td>
+</tr>
+<tr class="odd">
+<td align="left">nas</td>
+<td align="right">287</td>
+</tr>
+<tr class="even">
+<td align="left">tas</td>
+<td align="right">1130</td>
+</tr>
+</tbody>
+</table>
 <p>Import predicted set</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">link</span> <span class="op">&lt;-</span> <span class="st">'https://github.com/sdgamboa/bugphyzzExportsPerformance/raw/rep1/full_dump_categorical.csv.bz2'</span></span>
@@ -155,12 +227,30 @@
 <span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="va">fname</span><span class="op">)</span></span>
 <span><span class="va">predicted_aer</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">bp</span>, <span class="va">Attribute_group</span> <span class="op">==</span> <span class="st">'aerophilicity'</span><span class="op">)</span></span>
 <span><span class="va">predicted_aer</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">NCBI_ID</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">test_aer</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">Evidence</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Evidence    n</span></span>
-<span><span class="co">#&gt; 1      asr 2422</span></span>
-<span><span class="co">#&gt; 2      exp    1</span></span>
-<span><span class="co">#&gt; 3      inh 7952</span></span></code></pre></div>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">NCBI_ID</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">test_aer</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">Evidence</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">'Evidence of the predicted set'</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Evidence of the predicted set</caption>
+<thead><tr class="header">
+<th align="left">Evidence</th>
+<th align="right">n</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">asr</td>
+<td align="right">2422</td>
+</tr>
+<tr class="even">
+<td align="left">exp</td>
+<td align="right">1</td>
+</tr>
+<tr class="odd">
+<td align="left">inh</td>
+<td align="right">7952</td>
+</tr>
+</tbody>
+</table>
 <p>Percentage of NCBI_IDs in the test set that were predicted</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">test_aer</span><span class="op">$</span><span class="va">NCBI_ID</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">predicted_aer</span><span class="op">$</span><span class="va">NCBI_ID</span><span class="op">)</span> <span class="op">*</span> <span class="fl">100</span>, <span class="st">"%"</span><span class="op">)</span></span>
@@ -214,25 +304,63 @@
 <span>            <span class="va">t_val</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">p_val</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">~</span> <span class="st">'FP'</span></span>
 <span>        <span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
-<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">sometimes</span>, <span class="va">label</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 2</span></span></span>
-<span><span class="co">#&gt;   label     n</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> FN      580</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> FP      415</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> TN     <span style="text-decoration: underline;">8</span>067</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> TP     <span style="text-decoration: underline;">2</span>323</span></span></code></pre></div>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">sometimes</span>, <span class="va">label</span><span class="op">)</span>, caption <span class="op">=</span> <span class="st">'Counts of TP, TN, FP, FN'</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Counts of TP, TN, FP, FN</caption>
+<thead><tr class="header">
+<th align="left">label</th>
+<th align="right">n</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">FN</td>
+<td align="right">580</td>
+</tr>
+<tr class="even">
+<td align="left">FP</td>
+<td align="right">415</td>
+</tr>
+<tr class="odd">
+<td align="left">TN</td>
+<td align="right">8067</td>
+</tr>
+<tr class="even">
+<td align="left">TP</td>
+<td align="right">2323</td>
+</tr>
+</tbody>
+</table>
 <p>stats:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/calcPredStats.html">calcPredStats</a></span><span class="op">(</span><span class="va">sometimes</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
-<span><span class="co">#&gt;   stat                  value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sensitivity (recall) 0.800 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> specificity          0.951 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> precision            0.848 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> FDR                  0.152 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> FPR                  0.048<span style="text-decoration: underline;">9</span></span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="../reference/calcPredStats.html">calcPredStats</a></span><span class="op">(</span><span class="va">sometimes</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left">stat</th>
+<th align="right">value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">sensitivity (recall)</td>
+<td align="right">0.8002067</td>
+</tr>
+<tr class="even">
+<td align="left">specificity</td>
+<td align="right">0.9510729</td>
+</tr>
+<tr class="odd">
+<td align="left">precision</td>
+<td align="right">0.8484295</td>
+</tr>
+<tr class="even">
+<td align="left">FDR</td>
+<td align="right">0.1515705</td>
+</tr>
+<tr class="odd">
+<td align="left">FPR</td>
+<td align="right">0.0489271</td>
+</tr>
+</tbody>
+</table>
 <p>AUC:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/pROC/man/roc.html" class="external-link">roc</a></span><span class="op">(</span><span class="va">sometimes</span><span class="op">$</span><span class="va">t_val</span>, <span class="va">sometimes</span><span class="op">$</span><span class="va">p_val</span><span class="op">)</span></span>
@@ -263,25 +391,63 @@
 <span>            <span class="va">t_val</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">p_val</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">~</span> <span class="st">'FP'</span></span>
 <span>        <span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
-<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">usually</span>, <span class="va">label</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 2</span></span></span>
-<span><span class="co">#&gt;   label     n</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> FN      779</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> FP      245</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> TN     <span style="text-decoration: underline;">8</span>249</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> TP     <span style="text-decoration: underline;">2</span>112</span></span></code></pre></div>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">usually</span>, <span class="va">label</span><span class="op">)</span>, caption <span class="op">=</span> <span class="st">'Counts of TP, TN, FP, FN'</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Counts of TP, TN, FP, FN</caption>
+<thead><tr class="header">
+<th align="left">label</th>
+<th align="right">n</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">FN</td>
+<td align="right">779</td>
+</tr>
+<tr class="even">
+<td align="left">FP</td>
+<td align="right">245</td>
+</tr>
+<tr class="odd">
+<td align="left">TN</td>
+<td align="right">8249</td>
+</tr>
+<tr class="even">
+<td align="left">TP</td>
+<td align="right">2112</td>
+</tr>
+</tbody>
+</table>
 <p>Calc Stats:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/calcPredStats.html">calcPredStats</a></span><span class="op">(</span><span class="va">usually</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
-<span><span class="co">#&gt;   stat                  value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sensitivity (recall) 0.731 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> specificity          0.971 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> precision            0.896 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> FDR                  0.104 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> FPR                  0.028<span style="text-decoration: underline;">8</span></span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="../reference/calcPredStats.html">calcPredStats</a></span><span class="op">(</span><span class="va">usually</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left">stat</th>
+<th align="right">value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">sensitivity (recall)</td>
+<td align="right">0.7305431</td>
+</tr>
+<tr class="even">
+<td align="left">specificity</td>
+<td align="right">0.9711561</td>
+</tr>
+<tr class="odd">
+<td align="left">precision</td>
+<td align="right">0.8960543</td>
+</tr>
+<tr class="even">
+<td align="left">FDR</td>
+<td align="right">0.1039457</td>
+</tr>
+<tr class="odd">
+<td align="left">FPR</td>
+<td align="right">0.0288439</td>
+</tr>
+</tbody>
+</table>
 <p>AUC:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/pROC/man/roc.html" class="external-link">roc</a></span><span class="op">(</span><span class="va">usually</span><span class="op">$</span><span class="va">t_val</span>, <span class="va">usually</span><span class="op">$</span><span class="va">p_val</span><span class="op">)</span></span>
@@ -294,8 +460,11 @@
 <p>ROC plot:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/pROC/man/plot.roc.html" class="external-link">plot.roc</a></span><span class="op">(</span><span class="va">usually</span><span class="op">$</span><span class="va">t_val</span>, <span class="va">usually</span><span class="op">$</span><span class="va">p_val</span><span class="op">)</span></span></code></pre></div>
-<p><img src="evaluation_files/figure-html/unnamed-chunk-15-1.png" width="700">
-## Threshold 1 (always)</p>
+<p><img src="evaluation_files/figure-html/unnamed-chunk-15-1.png" width="700"></p>
+</div>
+<div class="section level3">
+<h3 id="threshold-1-always">Threshold 1 (always)<a class="anchor" aria-label="anchor" href="#threshold-1-always"></a>
+</h3>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">always</span> <span class="op">&lt;-</span> <span class="va">result</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
@@ -308,25 +477,63 @@
 <span>            <span class="va">t_val</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">p_val</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">~</span> <span class="st">'FP'</span></span>
 <span>        <span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
-<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">always</span>, <span class="va">label</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 2</span></span></span>
-<span><span class="co">#&gt;   label     n</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> FN     <span style="text-decoration: underline;">1</span>054</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> FP      217</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> TN     <span style="text-decoration: underline;">8</span>277</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> TP     <span style="text-decoration: underline;">1</span>837</span></span></code></pre></div>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">always</span>, <span class="va">label</span><span class="op">)</span>, caption <span class="op">=</span> <span class="st">'Counts of TP, TN, FP, FN'</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<caption>Counts of TP, TN, FP, FN</caption>
+<thead><tr class="header">
+<th align="left">label</th>
+<th align="right">n</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">FN</td>
+<td align="right">1054</td>
+</tr>
+<tr class="even">
+<td align="left">FP</td>
+<td align="right">217</td>
+</tr>
+<tr class="odd">
+<td align="left">TN</td>
+<td align="right">8277</td>
+</tr>
+<tr class="even">
+<td align="left">TP</td>
+<td align="right">1837</td>
+</tr>
+</tbody>
+</table>
 <p>Calc stats:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/calcPredStats.html">calcPredStats</a></span><span class="op">(</span><span class="va">always</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
-<span><span class="co">#&gt;   stat                  value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sensitivity (recall) 0.635 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> specificity          0.974 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> precision            0.894 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> FDR                  0.106 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> FPR                  0.025<span style="text-decoration: underline;">5</span></span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="../reference/calcPredStats.html">calcPredStats</a></span><span class="op">(</span><span class="va">always</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left">stat</th>
+<th align="right">value</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">sensitivity (recall)</td>
+<td align="right">0.6354203</td>
+</tr>
+<tr class="even">
+<td align="left">specificity</td>
+<td align="right">0.9744526</td>
+</tr>
+<tr class="odd">
+<td align="left">precision</td>
+<td align="right">0.8943525</td>
+</tr>
+<tr class="even">
+<td align="left">FDR</td>
+<td align="right">0.1056475</td>
+</tr>
+<tr class="odd">
+<td align="left">FPR</td>
+<td align="right">0.0255474</td>
+</tr>
+</tbody>
+</table>
 <p>AUC:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/pROC/man/roc.html" class="external-link">roc</a></span><span class="op">(</span><span class="va">always</span><span class="op">$</span><span class="va">t_val</span>, <span class="va">always</span><span class="op">$</span><span class="va">p_val</span><span class="op">)</span></span>
