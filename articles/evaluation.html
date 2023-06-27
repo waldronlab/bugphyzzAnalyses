@@ -225,12 +225,14 @@
 <p>stats:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calcPredStats.html">calcPredStats</a></span><span class="op">(</span><span class="va">sometimes</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
-<span><span class="co">#&gt;   stat                 value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sensitivity (recall) 0.800</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> specificity          0.951</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> precision            0.848</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
+<span><span class="co">#&gt;   stat                  value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sensitivity (recall) 0.800 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> specificity          0.951 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> precision            0.848 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> FDR                  0.152 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> FPR                  0.048<span style="text-decoration: underline;">9</span></span></span></code></pre></div>
 <p>AUC:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/pROC/man/roc.html" class="external-link">roc</a></span><span class="op">(</span><span class="va">sometimes</span><span class="op">$</span><span class="va">t_val</span>, <span class="va">sometimes</span><span class="op">$</span><span class="va">p_val</span><span class="op">)</span></span>
@@ -272,12 +274,14 @@
 <p>Calc Stats:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calcPredStats.html">calcPredStats</a></span><span class="op">(</span><span class="va">usually</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
-<span><span class="co">#&gt;   stat                 value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sensitivity (recall) 0.731</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> specificity          0.971</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> precision            0.896</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
+<span><span class="co">#&gt;   stat                  value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sensitivity (recall) 0.731 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> specificity          0.971 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> precision            0.896 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> FDR                  0.104 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> FPR                  0.028<span style="text-decoration: underline;">8</span></span></span></code></pre></div>
 <p>AUC:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/pROC/man/roc.html" class="external-link">roc</a></span><span class="op">(</span><span class="va">usually</span><span class="op">$</span><span class="va">t_val</span>, <span class="va">usually</span><span class="op">$</span><span class="va">p_val</span><span class="op">)</span></span>
@@ -315,12 +319,14 @@
 <p>Calc stats:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/calcPredStats.html">calcPredStats</a></span><span class="op">(</span><span class="va">always</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 2</span></span></span>
-<span><span class="co">#&gt;   stat                 value</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sensitivity (recall) 0.635</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> specificity          0.974</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> precision            0.894</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 2</span></span></span>
+<span><span class="co">#&gt;   stat                  value</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> sensitivity (recall) 0.635 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> specificity          0.974 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> precision            0.894 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> FDR                  0.106 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> FPR                  0.025<span style="text-decoration: underline;">5</span></span></span></code></pre></div>
 <p>AUC:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/pROC/man/roc.html" class="external-link">roc</a></span><span class="op">(</span><span class="va">always</span><span class="op">$</span><span class="va">t_val</span>, <span class="va">always</span><span class="op">$</span><span class="va">p_val</span><span class="op">)</span></span>
