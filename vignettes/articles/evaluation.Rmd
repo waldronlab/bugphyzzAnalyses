@@ -1,0 +1,214 @@
+---
+title: "Evaluation of predicted annotations"
+output:
+    html_document:
+        toc: true
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, message=FALSE}
+library(bugphyzzAnalyses)
+library(bugphyzz)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(pROC)
+```
+
+# Definition of TP, TN, FP, FN
+
+```{r}
+## 0.5 = sometimes
+## 1 = always
+## 0 = unknown
+data <- tribble(
+    ~ NCBI_ID, ~ Attribute, ~ test_score, ~ predicted_score, ~ test_value, ~ predicted_value, ~ label,
+    '1', 'Aerobic', 0.5, 0.5, 1, 1, "TP",
+    '1', 'Anaerobic', 0.5, 0, 1, 0, "FN",
+    '1', 'Facultatibe anaerobic', 0, 0, 0, 0, "TN",
+    '1', 'Aerotolerant', 0, 0.5, 0, 1, 'FP'
+)
+data
+```
+
+Import test set
+
+```{r, message=FALSE}
+link <- 'https://github.com/sdgamboa/bugphyzzExportsPerformance/raw/rep1/test_set.csv.bz2'
+fname <- tempfile()
+download.file(url = link, destfile = fname)
+test <- read.csv(fname)
+test$NCBI_ID <- sub('^.__', '', test$NCBI_ID)
+test_aer <- filter(test, Attribute_group == 'aerophilicity')
+count(test_aer, Evidence)
+```
+Import predicted set
+
+```{r, message=FALSE}
+link <- 'https://github.com/sdgamboa/bugphyzzExportsPerformance/raw/rep1/full_dump_categorical.csv.bz2'
+fname <- tempfile()
+download.file(url = link, destfile = fname)
+bp <- read.csv(fname)
+predicted_aer <- filter(bp, Attribute_group == 'aerophilicity')
+predicted_aer |> 
+    filter(NCBI_ID %in% unique(test_aer$NCBI_ID)) |> 
+    count(Evidence)
+```
+
+Percentage of NCBI_IDs in the test set that were predicted
+
+```{r}
+paste0(mean(test_aer$NCBI_ID %in% predicted_aer$NCBI_ID) * 100, "%")
+```
+
+Test set:
+
+```{r}
+## get test set
+test_set <- test_aer |> 
+    select(NCBI_ID, Attribute, Frequency) |> 
+    arrange(NCBI_ID) |> 
+    unique() |> 
+    pivot_wider(
+        names_from = 'Attribute', values_from = 'Frequency',
+        values_fill = 'unknown'
+    ) |> 
+    mutate(aerotolerant = 'unknown') |> 
+    pivot_longer(
+        cols = 2:last_col(), names_to = 'Attribute', values_to = 'Frequency'
+    ) |> 
+    rename(t_freq = Frequency)
+
+## get predicted set
+predicted_set <- predicted_aer |> 
+    select(NCBI_ID, Attribute, Frequency) |> 
+    arrange(NCBI_ID) |> 
+    unique() |> 
+    rename(p_freq = Frequency) |> 
+    mutate(NCBI_ID = as.character(NCBI_ID)) |> 
+    mutate(Attribute = sub('^.*:', '', Attribute)) |> 
+    mutate(Attribute = sub('_', ' ', Attribute))
+
+result <- left_join(test_set, predicted_set, by = c('NCBI_ID', 'Attribute')) |> 
+    mutate(p_freq = ifelse(is.na(p_freq), 'unknown', p_freq))
+```
+
+# Thresholds
+
+## Threshold 0.5 (sometimes) and above
+
+```{r}
+sometimes_freqs <- c('always', 'usually', 'sometimes')
+sometimes <- result |> 
+    mutate(
+        t_val = ifelse(t_freq %in% sometimes_freqs, 1, 0),
+        p_val = ifelse(p_freq %in% sometimes_freqs, 1, 0),
+        label = case_when(
+            t_val == 1 & p_val == 1 ~ 'TP',
+            t_val == 1 & p_val == 0 ~ 'FN',
+            t_val == 0 & p_val == 0 ~ 'TN',
+            t_val == 0 & p_val == 1 ~ 'FP'
+        )
+    )
+count(sometimes, label)
+```
+stats:
+
+```{r}
+calcPredStats(sometimes)
+```
+
+AUC:
+
+```{r, message=FALSE}
+roc(sometimes$t_val, sometimes$p_val)
+```
+
+ROC plot:
+
+```{r, message=FALSE}
+plot.roc(sometimes$t_val, sometimes$p_val)
+```
+
+
+## Threshold 0.8 (usually) and above
+
+```{r}
+usually_freqs <- c('always', 'usually')
+usually <- result |> 
+    mutate(
+        t_val = ifelse(t_freq %in% usually_freqs, 1, 0),
+        p_val = ifelse(p_freq %in% usually_freqs, 1, 0),
+        label = case_when(
+            t_val == 1 & p_val == 1 ~ 'TP',
+            t_val == 1 & p_val == 0 ~ 'FN',
+            t_val == 0 & p_val == 0 ~ 'TN',
+            t_val == 0 & p_val == 1 ~ 'FP'
+        )
+    )
+count(usually, label)
+```
+Calc Stats:
+
+```{r}
+calcPredStats(usually)
+```
+
+AUC:
+
+```{r, message=FALSE}
+roc(usually$t_val, usually$p_val)
+```
+
+ROC plot:
+
+```{r, message=FALSE}
+plot.roc(usually$t_val, usually$p_val)
+```
+## Threshold 1 (always)
+
+```{r}
+always <- result |> 
+    mutate(
+        t_val = ifelse(t_freq == 'always', 1, 0),
+        p_val = ifelse(p_freq == 'always', 1, 0),
+        label = case_when(
+            t_val == 1 & p_val == 1 ~ 'TP',
+            t_val == 1 & p_val == 0 ~ 'FN',
+            t_val == 0 & p_val == 0 ~ 'TN',
+            t_val == 0 & p_val == 1 ~ 'FP'
+        )
+    )
+count(always, label)
+```
+
+Calc stats:
+
+```{r}
+calcPredStats(always)
+```
+
+AUC:
+
+```{r, message=FALSE}
+roc(always$t_val, always$p_val)
+```
+
+ROC plot:
+
+```{r, message=FALSE}
+plot.roc(always$t_val, always$p_val)
+```
+
+# Session information
+
+```{r}
+sessioninfo::session_info()
+```
+
