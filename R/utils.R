@@ -250,17 +250,33 @@ calcPredStats <- function(df) {
         dplyr::filter(label == 'TP') |>
         dplyr::pull(n)
 
+    if (!length(TP)) {
+        TP <- 0
+    }
+
+    TN <- df |>
+        dplyr::filter(label == 'TN') |>
+        dplyr::pull(n)
+
+    if (!length(TN)) {
+        TN <- 0
+    }
+
     FP <- df |>
         dplyr::filter(label == 'FP') |>
         dplyr::pull(n)
+
+    if (!length(FP)) {
+        FP <- 0
+    }
 
     FN <- df |>
         dplyr::filter(label == 'FN') |>
         dplyr::pull(n)
 
-    TN <- df |>
-        dplyr::filter(label == 'TN') |>
-        dplyr::pull(n)
+    if (!length(FN)) {
+        FN <- 0
+    }
 
     tibble::tribble(
         ~ stat, ~ value,
@@ -269,7 +285,8 @@ calcPredStats <- function(df) {
         "precision", TP / (TP + FP),
         "FDR", FP / (FP + TP),
         "FPR", FP / (FP + TN)
-    )
+    ) |>
+        dplyr::mutate(value = ifelse(is.na(value), 0, value))
 
 }
 

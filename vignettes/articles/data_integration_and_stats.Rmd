@@ -31,7 +31,7 @@ library(purrr)
 # Data
 
 ```{r, message=FALSE}
-bp <- importBugphyzz(version = 'devel', force_download = TRUE)
+bp <- importBugphyzz(version = 'devel')
 ```
 
 # Source data
@@ -39,7 +39,7 @@ bp <- importBugphyzz(version = 'devel', force_download = TRUE)
 ## Number of original sources
 
 ```{r}
-bp_source <- bp[!is.na(bp$Attribute_source),]
+bp_source <- filter(bp, !is.na(Attribute_source))
 unique_sources <- bp_source |> 
     filter(Evidence  %in% c('exp', 'igc', 'tas', 'nas')) |> 
     pull(Attribute_source) |> 
@@ -52,15 +52,17 @@ n_sources <- length(unique_sources)
 n_sources
 ```
 
-## Number of annotaions per source
+## Number of annotations per source (top 10)
 
 Here, inheritance and asr are treated as two separate and new sources.
 Note that the majority of annotations actually come from the propagation step.
 
-```{r}
+```{r source summary}
 summary_source <- bp |> 
   mutate(
-        Attribute_source = ifelse(is.na(Attribute_source), Evidence, Attribute_source)
+    Attribute_source = ifelse(
+      is.na(Attribute_source), Evidence, Attribute_source
+    )
   ) |> 
   mutate(
     Attribute_source = case_when(
@@ -69,15 +71,15 @@ summary_source <- bp |>
       TRUE ~ Attribute_source
     )
   ) |> 
-  filter(!grepl(';', Attribute_source)) |> 
+  filter(!grepl(';', Attribute_source)) |> # remove repeated annotations for now
   count(Attribute_source) |> 
   arrange(-n) |> 
-  head(10)
+  head(10) # This is to get only the top 10 of the list
   
 # summary_source
 summary_source_p <- summary_source |> 
   ggplot(aes(reorder(Attribute_source, -n), n)) +
-  geom_col(fill = 'dodgerblue4', alpha = 0.8) +
+  geom_col() +
   labs(
     x = 'Top 10 source', y = '# Annotations'
   ) +
@@ -90,12 +92,11 @@ summary_source_p <- summary_source |>
 summary_source_p
 ```
 
-Note: These are total numbers. Would it be interesting to see these
-by physiology type with percentage?
-
 # Completeness
 
 Import data of taxa used to create the taxonomic tree:
+
+> Completeness sets must be modified. Species in "exclude_all" set + additional species.
 
 ```{r}
 base_taxa <- get_ncbi_taxids('bti') |> 
@@ -114,14 +115,15 @@ bp_original_source <- filter(bp, !is.na(Attribute_source))
 mean(bp_original_source$NCBI_ID %in% base_taxa$NCBI_ID)
 ```
 
-
 ```{r}
 ## Create sets for calculating completeness
 ## inset are all ids found in the tree structure
 ## inset_sources are all ids found in the tree structure and come from 
 ## original sources only`
 inset <- bp |> 
-  filter(NCBI_ID %in% base_taxa$NCBI_ID)
+  filter(NCBI_ID %in% base_taxa$NCBI_ID) |> 
+  select(-Attribute) |> 
+  distinct()
 inset_summary <- inset |> 
   count(Attribute_group, Rank, name = 'n_inset')
 inset_sources <- inset |> 
@@ -145,19 +147,18 @@ completeness <- base_taxa_summary |>
 ```
 
 ```{r}
-completeness <- base_taxa_summary |> 
-  left_join(inset_summary, by = c('Rank') ) |> 
-  left_join(inset_sources_summary, by = c('Attribute_group', 'Rank')) |>
-  mutate(
-    completeness_before = n_sources / n_inbase,
-    completeness_after = n_inset / n_inbase
-) |> 
-  relocate(
-    Attribute_group, Rank, completeness_before, completeness_after,
-    n_inbase, n_inset
-  )
+# completeness <- base_taxa_summary |> 
+#   left_join(inset_summary, by = c('Rank') ) |> 
+#   left_join(inset_sources_summary, by = c('Attribute_group', 'Rank')) |>
+#   mutate(
+#     completeness_before = n_sources / n_inbase,
+#     completeness_after = n_inset / n_inbase
+# ) |> 
+#   relocate(
+#     Attribute_group, Rank, completeness_before, completeness_after,
+#     n_inbase, n_inset
+#   )
 ```
-
 
 
 ```{r}
@@ -240,7 +241,7 @@ Try different tissues.
 Import bugphyzz data before propagation and before resolving conflicts, 
 agreements, and double annotations.
 
-```{r import bp spreadsheets}
+```{r import bp spreadsheets, message=FALSE}
 phys <- physiologies(remove_false = TRUE, full_source = FALSE)
 phys_ <- map(phys, ~ prepareDatForPropagation(.x, resolve = FALSE))
 ```
@@ -436,6 +437,44 @@ fig3 <- ggarrange(
 )
 fig3
 ```
+
+
+# Paragraph
+
+Some calculation for paragraphs
+
+
+```{r}
+bp_subset <- bp |> 
+  filter(
+    !(Frequency == 'unknown' & Evidence %in% c('asr', 'inh'))
+  )
+n_annotations <- nrow(bp_subset)
+n_unique_taxa <- length(unique(bp_subset$NCBI_ID))
+n_unique_attr <- length(unique(bp_subset$Attribute))
+n_unique_attr_grp <- length(unique(bp_subset$Attribute_group))
+n_annotations_sources <- bp_subset |> 
+  filter(!Evidence %in% c('asr', 'inh')) |> 
+  nrow()
+n_annotations_propagation <- bp_subset |> 
+  filter(Evidence %in% c('asr', 'inh')) |> 
+  nrow()
+n_annotations
+```
+
+> bugphyzz contains a total of 
+`r format(n_annotations, big.mark = ",", scientific = FALSE)` annotations, 
+`r format(n_unique_taxa, big.mark = ",", scientific = FALSE)` unique taxa,
+`r format(n_unique_attr, big.mark = ",", scientific = FALSE)` unique attributes, 
+and `r format(n_unique_attr_grp, big.mark = ",", scientific = FALSE)` unique attributes groups (traits).
+`r format(n_annotations_sources, big.mark = ",", scientific = FALSE)`
+(`r round((n_annotations_sources / n_annotations) * 100)` %) annotations come directly
+from `r format(n_sources, big.mark = ",", scientific = FALSE)` public sources and the remaining 
+`r format(n_annotations_propagation, big.mark = ",", scientific = FALSE)`
+(`r round((n_annotations_propagation / n_annotations) * 100)` %) were inferred with our
+taxonomic propagation approach (see the ‘taxonomic propagation’ section
+in methods), increasing our completeness from an average per taxonomic rank of
+*** to *** % (Fig. ***).
 
 # Session information
 

@@ -19,14 +19,13 @@ library(dplyr)
 library(tidyr)
 library(purrr)
 library(pROC)
+library(ggplot2)
 ```
 
 # Definition of TP, TN, FP, FN
 
 ```{r}
-## 0.5 = sometimes
-## 1 = always
-## 0 = unknown
+## Threshold: 0.5
 data <- tribble(
     ~ NCBI_ID, ~ Attribute, ~ test_score, ~ predicted_score, ~ test_value, ~ predicted_value, ~ label,
     '1', 'Aerobic', 0.5, 0.5, 1, 1, "TP",
@@ -34,184 +33,140 @@ data <- tribble(
     '1', 'Facultatibe anaerobic', 0, 0, 0, 0, "TN",
     '1', 'Aerotolerant', 0, 0.5, 0, 1, 'FP'
 )
-knitr::kable(data, caption = 'Example with a threshold of 0.5 (sometimes)')
+data
 ```
 
 Import test set
 
 ```{r, message=FALSE}
-link <- 'https://github.com/sdgamboa/bugphyzzExportsPerformance/raw/rep1/test_set.csv.bz2'
+link <- 'https://github.com/sdgamboa/taxPPro/raw/asr2-rep1/vignettes/articles/test_set.csv.bz2'
 fname <- tempfile()
 download.file(url = link, destfile = fname)
 test <- read.csv(fname)
-test$NCBI_ID <- sub('^.__', '', test$NCBI_ID)
-test_aer <- filter(test, Attribute_group == 'aerophilicity')
-knitr::kable(count(test_aer, Evidence), caption = 'Evidence of the test set')
+# test$NCBI_ID <- sub('^.__', '', test$NCBI_ID)
+# test_aer <- filter(test, Attribute_group == 'aerophilicity')
+test_aer <- test
 ```
+
 Import predicted set
 
 ```{r, message=FALSE}
-link <- 'https://github.com/sdgamboa/bugphyzzExportsPerformance/raw/rep1/full_dump_categorical.csv.bz2'
+link <- 'https://github.com/sdgamboa/taxPPro/raw/asr2-rep1/vignettes/articles/full_dump.csv.bz2'
 fname <- tempfile()
 download.file(url = link, destfile = fname)
 bp <- read.csv(fname)
-predicted_aer <- filter(bp, Attribute_group == 'aerophilicity')
-predicted_aer |> 
-  filter(NCBI_ID %in% unique(test_aer$NCBI_ID)) |> 
-  count(Evidence) |> 
-  knitr::kable(caption = 'Evidence of the predicted set')
+# predicted_aer <- filter(bp, Attribute_group == 'aerophilicity')
+predicted_aer <- bp
 ```
 
 Percentage of NCBI_IDs in the test set that were predicted
 
 ```{r}
-paste0(mean(test_aer$NCBI_ID %in% predicted_aer$NCBI_ID) * 100, "%")
+paste0(mean(unique(test_aer$NCBI_ID) %in% unique(predicted_aer$NCBI_ID)) * 100, "%")
 ```
 
-Test set:
+Combine test and predicted set
 
 ```{r}
 ## get test set
 test_set <- test_aer |> 
-    select(NCBI_ID, Attribute, Frequency) |> 
+    select(NCBI_ID, Attribute, Score) |> 
     arrange(NCBI_ID) |> 
     unique() |> 
     pivot_wider(
-        names_from = 'Attribute', values_from = 'Frequency',
-        values_fill = 'unknown'
+        names_from = 'Attribute', values_from = 'Score',
+        values_fill = 0
     ) |> 
-    mutate(aerotolerant = 'unknown') |> 
+    mutate(aerotolerant = 0) |>
     pivot_longer(
-        cols = 2:last_col(), names_to = 'Attribute', values_to = 'Frequency'
+        cols = 2:last_col(), names_to = 'Attribute', values_to = 'Score'
     ) |> 
-    rename(t_freq = Frequency)
+    rename(t_score = Score)
 
 ## get predicted set
 predicted_set <- predicted_aer |> 
-    select(NCBI_ID, Attribute, Frequency) |> 
+    select(NCBI_ID, Attribute, Score) |> 
     arrange(NCBI_ID) |> 
     unique() |> 
-    rename(p_freq = Frequency) |> 
+    rename(p_score = Score) |> 
     mutate(NCBI_ID = as.character(NCBI_ID)) |> 
     mutate(Attribute = sub('^.*:', '', Attribute)) |> 
     mutate(Attribute = sub('_', ' ', Attribute))
 
 result <- left_join(test_set, predicted_set, by = c('NCBI_ID', 'Attribute')) |> 
-    mutate(p_freq = ifelse(is.na(p_freq), 'unknown', p_freq))
+    mutate(p_score = ifelse(is.na(p_score), 0, p_score))
 ```
 
 # Thresholds
 
-## Threshold 0.5 (sometimes) and above
+```{r}
+tr <- seq(0, 1, 0.1)
+output <- vector('list', length(tr))
+names(output) <- as.character(tr)
+for (i in seq_along(output)) {
+  t_val <- ifelse(result$t_score > 0, 1, 0)
+  p_val <- ifelse(result$p_score >= tr[i], 1, 0)
+  label <- case_when(
+    t_val == 1 & p_val == 1 ~ 'TP',
+    t_val == 1 & p_val == 0 ~ 'FN',
+    t_val == 0 & p_val == 0 ~ 'TN',
+    t_val == 0 & p_val == 1 ~ 'FP'
+  )
+  output[[i]] <- data.frame(
+    t_val = t_val, p_val = p_val, label = label,
+    t_score = result$t_score, p_score = result$p_score,
+    th = as.character(tr)[i]
+  )
+}
+
+
+pred_scores <- map(output, calcPredStats)
+sensitivity <- map_dbl(pred_scores, ~ {
+  pull(filter(.x, stat == 'sensitivity (recall)'), value)
+})
+
+FPR <- map_dbl(pred_scores, ~ {
+  pull(filter(.x, stat == 'FPR'), value)
+})
+
+```
 
 ```{r}
-sometimes_freqs <- c('always', 'usually', 'sometimes')
-sometimes <- result |> 
-    mutate(
-        t_val = ifelse(t_freq %in% sometimes_freqs, 1, 0),
-        p_val = ifelse(p_freq %in% sometimes_freqs, 1, 0),
-        label = case_when(
-            t_val == 1 & p_val == 1 ~ 'TP',
-            t_val == 1 & p_val == 0 ~ 'FN',
-            t_val == 0 & p_val == 0 ~ 'TN',
-            t_val == 0 & p_val == 1 ~ 'FP'
-        )
-    )
-knitr::kable(count(sometimes, label), caption = 'Counts of TP, TN, FP, FN')
+df <- data.frame(FPR = FPR, Sensitivity = sensitivity, th = tr) |> 
+  arrange(th)
+df |> 
+  ggplot(aes(x = FPR, y = Sensitivity)) +
+  geom_point() +
+  geom_line() +
+  geom_abline(slope = 1, intercept = 0, linetype = 2) +
+  geom_label(aes(label = th)) +
+  scale_x_continuous(limits = c(0, 1)) +
+  scale_y_continuous(limits = c(0, 1)) +
+  theme_bw()
+  
 ```
-stats:
+
+
 
 ```{r}
-knitr::kable(calcPredStats(sometimes))
-```
-
-AUC:
-
-```{r, message=FALSE}
-roc(sometimes$t_val, sometimes$p_val)
-```
-
-ROC plot:
-
-```{r, message=FALSE}
-plot.roc(sometimes$t_val, sometimes$p_val)
+par(pty = 's')
+roc_obj <- roc(
+  output[[1]]$t_val, output[[1]]$p_score
+)
 ```
 
 
-## Threshold 0.8 (usually) and above
 
-```{r}
-usually_freqs <- c('always', 'usually')
-usually <- result |> 
-    mutate(
-        t_val = ifelse(t_freq %in% usually_freqs, 1, 0),
-        p_val = ifelse(p_freq %in% usually_freqs, 1, 0),
-        label = case_when(
-            t_val == 1 & p_val == 1 ~ 'TP',
-            t_val == 1 & p_val == 0 ~ 'FN',
-            t_val == 0 & p_val == 0 ~ 'TN',
-            t_val == 0 & p_val == 1 ~ 'FP'
-        )
-    )
-knitr::kable(count(usually, label), caption = 'Counts of TP, TN, FP, FN')
-```
-Calc Stats:
-
-```{r}
-knitr::kable(calcPredStats(usually))
-```
-
-AUC:
-
-```{r, message=FALSE}
-roc(usually$t_val, usually$p_val)
-```
-
-ROC plot:
-
-```{r, message=FALSE}
-plot.roc(usually$t_val, usually$p_val)
+```{r, message=FALSE, warning=FALSE}
+ggroc(list(roc_obj, roc_obj), legacy.axes = TRUE) +
+  labs(x = 'FPR', y = 'TPR') +
+  geom_abline(intercept = 0, slope = 1, linetype = 2) +
+  scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 1), expand = c(0, 0)) +
+  scale_color_discrete(name = 'Ranks') + 
+  theme_bw() 
 ```
 
 
-## Threshold 1 (always)
 
-```{r}
-always <- result |> 
-    mutate(
-        t_val = ifelse(t_freq == 'always', 1, 0),
-        p_val = ifelse(p_freq == 'always', 1, 0),
-        label = case_when(
-            t_val == 1 & p_val == 1 ~ 'TP',
-            t_val == 1 & p_val == 0 ~ 'FN',
-            t_val == 0 & p_val == 0 ~ 'TN',
-            t_val == 0 & p_val == 1 ~ 'FP'
-        )
-    )
-knitr::kable(count(always, label), caption = 'Counts of TP, TN, FP, FN')
-```
-
-Calc stats:
-
-```{r}
-knitr::kable(calcPredStats(always))
-```
-
-AUC:
-
-```{r, message=FALSE}
-roc(always$t_val, always$p_val)
-```
-
-ROC plot:
-
-```{r, message=FALSE}
-plot.roc(always$t_val, always$p_val)
-```
-
-# Session information
-
-```{r}
-sessioninfo::session_info()
-```
 
