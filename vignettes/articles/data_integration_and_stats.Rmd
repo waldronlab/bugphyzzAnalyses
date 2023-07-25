@@ -2,6 +2,7 @@
 title: "Data integration and stats"
 output:
     html_document:
+        code_folding: hide
         toc: true
 ---
 
@@ -26,12 +27,94 @@ library(taxPPro)
 library(tidyr)
 library(ComplexHeatmap)
 library(purrr)
+library(forcats)
+library(ggbreak)
+library(tibble)
 ```
 
 # Data
 
 ```{r, message=FALSE}
-bp <- importBugphyzz(version = 'devel')
+bp <- importBugphyzz(version = 'devel', force_download = TRUE)
+```
+
+# EDA
+
+Dimensions:
+
+```{r}
+map_chr(dim(bp), ~ format(.x, big.mark = ','))
+```
+
+Columns with NA in the dataset:
+
+```{r}
+df <- data.frame(
+    cols = colnames(bp),
+    n_na = unname(map_int(bp, ~ sum(is.na(.x))))
+)
+df |> 
+  ggplot(aes(cols, n_na)) +
+  geom_col() +
+  labs(
+    y = 'NA count', x = 'Column name',
+    title = 'NA count per column in the main bupphyzz import'
+  ) +
+  scale_y_continuous(labels = scales::comma) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+```{r, message=FALSE}
+bp |> 
+  count(Evidence) |> 
+  ggplot(aes(reorder(Evidence, desc(n)), n)) +
+  geom_col() +
+  labs(
+    x = 'Evidence', y = 'Annotaions count'
+  ) +
+  scale_y_continuous(limits = c(0, 2000000), labels = scales::comma) +
+  scale_y_cut(breaks = c(10000, 100000)) +
+  theme_bw() +
+  theme(
+    panel.grid.major.x = element_blank()
+  )
+```
+
+Frequency
+
+```{r}
+bp |> 
+  count(Frequency) |> 
+  mutate(Frequency = fct_relevel(Frequency, 'always', 'usually', 'sometimes', 'rarely')) |> 
+  ggplot(aes(Frequency, n)) +
+  geom_col() +
+  labs(
+    x = 'Frequency keywords', y = 'Count',
+  ) +
+  scale_y_continuous(limits = c(0, 1e6), labels = scales::comma) +
+  scale_y_cut(breaks = c(100000)) +
+  theme_bw() +
+  theme(
+    panel.grid.major.y = element_blank()
+  )
+```
+
+Histogram of scores
+
+```{r}
+bp |> 
+  ggplot(aes(Score)) +
+  geom_histogram() +
+  labs(
+    title = 'Distribution of scores in the main bugphyzz import',
+    x = 'Scores', y = 'Frequency'
+  ) +
+  scale_y_continuous(labels = scales::comma) +
+  theme_bw()
+  
 ```
 
 # Source data
@@ -52,7 +135,7 @@ n_sources <- length(unique_sources)
 n_sources
 ```
 
-## Number of annotations per source (top 10)
+# Completeness and 
 
 Here, inheritance and asr are treated as two separate and new sources.
 Note that the majority of annotations actually come from the propagation step.
@@ -66,136 +149,173 @@ summary_source <- bp |>
   ) |> 
   mutate(
     Attribute_source = case_when(
-      Attribute_source == 'inh' ~ 'Propagation (inheritance)',
-      Attribute_source == 'asr' ~ 'Propagation (ASR)',
+      Attribute_source == 'inh' ~ 'Inheritance',
+      Attribute_source == 'asr' ~ 'ASR',
       TRUE ~ Attribute_source
     )
   ) |> 
   filter(!grepl(';', Attribute_source)) |> # remove repeated annotations for now
   count(Attribute_source) |> 
   arrange(-n) |> 
-  head(10) # This is to get only the top 10 of the list
+  mutate(
+    origin = case_when(
+      Attribute_source %in% c('ASR', 'Inheritance') ~ 'Propagation',
+      TRUE ~ 'Original source'
+    )
+  )
+  # head(10) # This is to get only the top 10 of the list
   
 # summary_source
 summary_source_p <- summary_source |> 
+  mutate(origin = fct_reorder(origin, desc(n))) |> 
   ggplot(aes(reorder(Attribute_source, -n), n)) +
-  geom_col() +
+  geom_col(aes(fill = origin)) +
   labs(
-    x = 'Top 10 source', y = '# Annotations'
+    x = 'Source', y = 'Number of annotations'
   ) +
+  scale_y_continuous(limits = c(0, 1500000), labels = scales::comma) +
+  scale_y_cut(breaks = c(100, 20000)) +
+  scale_fill_discrete(name = '') +
   theme_bw() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
-    panel.grid.major.x = element_blank(),
-    panel.grid.major.y = element_line(color = 'black', linewidth = 0.2)
+    panel.grid.major.x = element_blank()
   )
 summary_source_p
 ```
 
 # Completeness
 
-Import data of taxa used to create the taxonomic tree:
-
-> Completeness sets must be modified. Species in "exclude_all" set + additional species.
+## Get reference sets
 
 ```{r}
-base_taxa <- get_ncbi_taxids('bti') |> 
-  rename(domain =  kingdom) |> 
-  mutate(Rank = ifelse(Rank == 'superkingdom', 'domain', Rank)) |> 
-  filter(Rank %in% taxRanks()) |> 
-  select(-Taxon_name, -Parent_NCBI_ID)
-base_taxa_summary <- base_taxa |> 
-  count(Rank, name = "n_inbase")
+valid_ranks <- c(
+  'superkingdom', 'phylum', 'class', 'order', 'family', 'order', 'genus',
+  'species', 'strain'
+)
+exclude_all_fname <- system.file(
+  'extdata/proc_exclude_all_07122023.txt', package = 'taxPPro', 
+  mustWork = TRUE
+)
+exclude_all <- read.table(exclude_all_fname, col.names = 'taxid')
+exclude_all$taxid <- as.character(exclude_all$taxid)
+exclude_all$rank <- taxizedb::taxid2rank(exclude_all$taxid, db = 'ncbi')
+exclude_all <- exclude_all[exclude_all$rank %in% valid_ranks,]
+
+strains_fname <- system.file(
+  'extdata/proc_strains_07122023.txt', package = 'taxPPro', mustWork = TRUE
+)
+strains <- read.table(strains_fname, col.names = 'taxid')
+strains$taxid <- as.character(strains$taxid)
+strains$rank <- taxizedb::taxid2rank(strains$taxid, db = 'ncbi')
+strains <- strains[strains$rank == 'strain',]
+
+reference_df <- rbind(exclude_all, strains)
+reference_df$rank <- ifelse(reference_df$rank == 'superkingdom', 'domain', reference_df$rank)
+reference_summary <- count(reference_df, rank)
+colnames(reference_summary) <- c('Rank', 'ref')
+reference <- split(reference_df, factor(reference_df$rank)) |> 
+  lapply(function(x) unique(x$taxid))
+lapply(reference, length)
 ```
-NCBI IDs in data structure
 
 ```{r}
-## 90% of the taxa in the original taxa can be found in the tree.
-bp_original_source <- filter(bp, !is.na(Attribute_source))
-mean(bp_original_source$NCBI_ID %in% base_taxa$NCBI_ID)
-```
-
-```{r}
-## Create sets for calculating completeness
-## inset are all ids found in the tree structure
-## inset_sources are all ids found in the tree structure and come from 
-## original sources only`
-inset <- bp |> 
-  filter(NCBI_ID %in% base_taxa$NCBI_ID) |> 
-  select(-Attribute) |> 
-  distinct()
-inset_summary <- inset |> 
-  count(Attribute_group, Rank, name = 'n_inset')
-inset_sources <- inset |> 
-  filter(!is.na(Attribute_source))
-inset_sources_summary <- inset_sources |> 
-  count(Attribute_group, Rank, name = 'n_sources')
-
-## Calculate completeness
-completeness <- base_taxa_summary |> 
-  left_join(inset_summary, by = c('Rank') ) |> 
-  left_join(inset_sources_summary, by = c('Attribute_group', 'Rank')) |>
-  mutate(
-    completeness_before = n_sources / n_inbase,
-    completeness_after = n_inset / n_inbase
-) |> 
-  relocate(
-    Attribute_group, Rank, completeness_before, completeness_after,
-    n_inbase, n_inset
+inSet <- function(x, ref) {
+  s <- split(x, x$Rank)
+  s <- lapply(s, function(x) x$NCBI_ID)
+  output <- vector('list', length(s))
+  for (i in seq_along(output)) {
+    ref_taxids <- unique(ref[[names(s)[i]]])
+    target_taxids <- unique(s[[i]])
+    output[[i]] <- sum(target_taxids %in% ref_taxids)
+    names(output)[i] <- names(s)[i]
+  }
+  data.frame(
+    Rank = names(output),
+    inset = unlist(output, use.names = FALSE)
   )
+}
 
+outSet <- function(x, ref) {
+  s <- split(x, x$Rank)
+  s <- lapply(s, function(x) x$NCBI_ID)
+  output <- vector('list', length(s))
+  for (i in seq_along(output)) {
+    ref_taxids <- unique(ref[[names(s)[i]]])
+    target_taxids <- unique(s[[i]])
+    output[[i]] <- sum(!target_taxids %in% ref_taxids)
+    names(output)[i] <- names(s)[i]
+  }
+  data.frame(
+    Rank = names(output),
+    outset = unlist(output, use.names = FALSE)
+  )
+}
+
+```
+
+
+```{r}
+## Attribute_group && Rank
+original <- bp |> 
+  filter(Evidence %in% c('tas', 'nas', 'exp', 'igc'))
+# propagation <- bp |> 
+  # filter(Evidence %in% c('asr', 'inh'))
 ```
 
 ```{r}
-# completeness <- base_taxa_summary |> 
-#   left_join(inset_summary, by = c('Rank') ) |> 
-#   left_join(inset_sources_summary, by = c('Attribute_group', 'Rank')) |>
-#   mutate(
-#     completeness_before = n_sources / n_inbase,
-#     completeness_after = n_inset / n_inbase
-# ) |> 
-#   relocate(
-#     Attribute_group, Rank, completeness_before, completeness_after,
-#     n_inbase, n_inset
-#   )
+inset_before <- original |> 
+  {\(y) split(y, factor(y$Attribute_group))}() |> 
+  map(inSet, reference) |> 
+  bind_rows(.id = 'Attribute_group')
+outset_before <- original |> 
+  {\(y) split(y, factor(y$Attribute_group))}() |> 
+  map(outSet, reference) |> 
+  bind_rows(.id = 'Attribute_group')
+completeness_before <- left_join(inset_before, outset_before, by = c('Attribute_group', 'Rank')) |> 
+  left_join(reference_summary, by = 'Rank') |> 
+  mutate(completeness = (inset / ref) * 100)
+completeness_mat_before <- completeness_before |> 
+  select(Attribute_group, Rank, completeness) |> 
+  pivot_wider(
+    names_from = Rank, values_from = completeness, values_fill = 0
+  ) |> 
+  column_to_rownames(var = 'Attribute_group') |> 
+  as.matrix()
 ```
-
 
 ```{r}
-comp_mat_bef <- completeness |> 
-  select(Attribute_group, Rank, completeness_before) |> 
-  filter(!is.na(completeness_before)) |> 
+inset_after <- bp |> 
+  {\(y) split(y, factor(y$Attribute_group))}() |> 
+  map(inSet, reference) |> 
+  bind_rows(.id = 'Attribute_group')
+outset_after <- bp |> 
+  {\(y) split(y, factor(y$Attribute_group))}() |> 
+  map(outSet, reference) |> 
+  bind_rows(.id = 'Attribute_group')
+completeness_after <- left_join(inset_after, outset_after, by = c('Attribute_group', 'Rank')) |> 
+  left_join(reference_summary, by = 'Rank') |> 
+  mutate(completeness = (inset / ref) * 100)
+completeness_mat_after <- completeness_after |> 
+  filter(Attribute_group != 'antimicrobial sensitivity') |> 
+  select(Attribute_group, Rank, completeness) |> 
   pivot_wider(
-    names_from = 'Rank', values_from = 'completeness_before',
-    values_fill = 0
+    names_from = Rank, values_from = completeness, values_fill = 0
   ) |> 
-  tibble::column_to_rownames(var = 'Attribute_group') |> 
-  select(all_of(taxRanks()[1:3])) |> 
-  as.matrix() |> 
-  round(digits = 2) 
-
-comp_mat_aft <- completeness |> 
-  select(Attribute_group, Rank, completeness_after) |> 
-  pivot_wider(
-    names_from = 'Rank', values_from = 'completeness_after',
-    values_fill = 0
-  ) |> 
-  tibble::column_to_rownames(var = 'Attribute_group') |> 
-  select(all_of(taxRanks())) |> 
-  as.matrix() |> 
-  round(digits = 2)
-comp_mat_bef <- comp_mat_bef[rownames(comp_mat_aft),]
+  column_to_rownames(var = 'Attribute_group') |> 
+  as.matrix()
 ```
+
 
 Create heatmaps
 
 ```{r}
 color_fun <- circlize::colorRamp2(
-  breaks = c(0, 1), colors = c('white', 'dodgerblue4')
+  breaks = c(0, 100), colors = c('white', 'dodgerblue4')
 )
 lgd <- Legend(col_fun = color_fun, title = "completeness")
 ht_b <- Heatmap(
-  matrix = comp_mat_bef,
+  matrix = completeness_mat_before,
   cluster_rows = FALSE, cluster_columns = FALSE,
   row_names_side = 'left',
   show_heatmap_legend = FALSE,
@@ -206,12 +326,12 @@ ht_b <- Heatmap(
   }
 )
 ht_a <- Heatmap(
-  matrix = comp_mat_aft,
+  matrix = completeness_mat_after,
   cluster_rows = FALSE, cluster_columns = FALSE,
   row_names_side = 'left',
   name = 'completeness',
   heatmap_legend_param = list(
-    at = c(0, 0.5, 1)
+    at = c(0, 50, 100)
   ),
   col = color_fun,
   cell_fun = function(j, i, x, y, width, height, fill) {
@@ -226,6 +346,41 @@ ht <- draw(
 )
 ```
 
+
+
+
+```{r}
+cols <- c('Attribute_group', 'Rank', 'completeness')
+x <- completeness_before |> 
+  select(all_of(cols)) |> 
+  rename(comp_bef = completeness) |> 
+  complete(Attribute_group, Rank, fill = list(comp_bef = 0))
+y <- completeness_after |> 
+  select(all_of(cols)) |> 
+  rename(comp_aft = completeness)
+
+z <- left_join(x, y, by = c('Attribute_group', 'Rank')) |> 
+  mutate(ratio = log((comp_aft + 1) / (comp_bef + 1)))
+  
+  # mutate_at(.vars = c('comp_bef', 'comp_aft'), .funs =  ~ {
+  #   ifelse(is.na(.x), 0, .x)
+  # }) |> 
+  # mutate(ratio = comp_bef / comp_aft)
+p <- z |> 
+    ggplot(aes(Attribute_group, ratio)) +
+    geom_point(aes(size = comp_bef), shape = 21, fill = 'orange', alpha = 0.5) +
+    facet_wrap(~Rank, nrow = 1) +
+    labs(
+        x = 'Attribute group',
+        y = 'log2(completeness after propagation + 1 / completeness before propagation + 1)'
+    ) +
+    scale_size(name = 'Completeness \nbefore propagation') +
+    theme_bw() +
+    coord_flip()
+p
+```
+
+
 Add confidence of annotations for this figure.
 Discuss the meaning of the inference.
 Hold out validation. Choose random annotations (10% ~30-100x). Cross-validation.
@@ -235,28 +390,14 @@ Look for a citation for method implemented for validation.
 Check Mathews Correlation coefficient for balanced/unbalanced prediction. Matthews correlation coefficient
 Try different tissues.
 
-
 # Dispersion of sources
 
 Import bugphyzz data before propagation and before resolving conflicts, 
 agreements, and double annotations.
 
-```{r import bp spreadsheets, message=FALSE}
-phys <- physiologies(remove_false = TRUE, full_source = FALSE)
-phys_ <- map(phys, ~ prepareDatForPropagation(.x, resolve = FALSE))
-```
-
-
-
-```{r source summaries (s) by rank and physiologie}
-attr_grps <- whichAttrGrp(bp)
-data <- phys_ |> 
-  map(~ count(.x, Attribute_source, Rank)) |> 
-  bind_rows(.id = 'Attribute_group') |> 
-  drop_na() |> 
-  filter(Attribute_source != '') |> 
-  filter(Attribute_group %in% attr_grps) |> 
-  filter(!grepl('BacDive;', Attribute_source)) |> 
+```{r}
+data <- original |> 
+  count(Attribute_group, Attribute_source, Rank) |> 
   mutate(new_column = paste0(Attribute_group, '|', Rank)) |>
   select(new_column, Attribute_source, n) |> 
   pivot_wider(
@@ -265,10 +406,8 @@ data <- phys_ |>
   arrange(new_column) |> 
   tibble::column_to_rownames(var = 'new_column') |> 
   as.matrix()
-```
 
 
-```{r, fig.width=6, fig.height=6}
 bar_vct <- sub('^.*\\|', '', rownames(data))
 split_vct <- sub('\\|.*$', '', rownames(data))
 bar_color <- viridis::viridis(n = 3, option = 'C')
@@ -297,6 +436,8 @@ ht_sources <- Heatmap(
 )
 ht_sources
 ```
+
+
 
 
 # Number of taxa

@@ -47,7 +47,9 @@ Suggests:
     DT,
     limma,
     pROC,
-    knitr
+    knitr,
+    ggbreak,
+    scales
 Remotes:
     sdgamboa/taxPPro,
     waldronlab/bugphyzz,
