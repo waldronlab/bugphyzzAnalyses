@@ -10,10 +10,12 @@ output:
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  message = FALSE
+  message = FALSE,
+  warning = FALSE
 )
 ```
 
+Load packages and import data
 
 ```{r setup, message=FALSE}
 library(bugphyzzAnalyses)
@@ -32,21 +34,13 @@ library(ggbreak)
 library(tibble)
 ```
 
-# Data
-
 ```{r, message=FALSE}
-bp <- importBugphyzz(version = 'devel', force_download = TRUE)
+bp <- importBugphyzz()
 ```
 
-# EDA
+# Basic exploratory stats
 
-Dimensions:
-
-```{r}
-map_chr(dim(bp), ~ format(.x, big.mark = ','))
-```
-
-Columns with NA in the dataset:
+## Columns with NAs
 
 ```{r}
 df <- data.frame(
@@ -67,6 +61,8 @@ df |>
   )
 ```
 
+## Evidence
+
 ```{r, message=FALSE}
 bp |> 
   count(Evidence) |> 
@@ -83,7 +79,7 @@ bp |>
   )
 ```
 
-Frequency
+## Frequency
 
 ```{r}
 bp |> 
@@ -102,7 +98,7 @@ bp |>
   )
 ```
 
-Histogram of scores
+## Histogram of scores
 
 ```{r}
 bp |> 
@@ -117,11 +113,98 @@ bp |>
   
 ```
 
-# Source data
+# Number of annoataions by attribute group
 
-## Number of original sources
+# By attribute group and rank
 
 ```{r}
+dims <- map_chr(dim(bp), ~ format(.x, big.mark = ','))
+total_annotations <- paste0('Total annotations: ', dims[[1]])
+valid_ranks <- c(
+  'domain', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'strain'
+)
+bp |> 
+  mutate(Rank = factor(Rank, levels = valid_ranks, ordered = FALSE)) |> 
+  count(Attribute_group, Rank) |> 
+  group_by(Attribute_group) |> 
+  mutate(total = sum(n)) |> 
+  ungroup() |> 
+  ggplot(aes(reorder(Attribute_group, desc(total)), n)) +
+  geom_col(aes(fill = Rank)) +
+  labs(
+    x = 'Attribute group', y = 'Number of annotations'
+  ) +
+  # scale_y_continuous(limits = c(0, 130000), labels = scales::comma) +
+  scale_y_continuous(labels = scales::comma) +
+  scale_fill_brewer(type = 'qual', palette = 'Set2', direction = -1) +
+  annotate("label", x = 25, y = 100000, label = total_annotations) +
+  # scale_y_cut(breaks = 1000) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+## By attribute group and evidence
+
+```{r}
+evidence_code <- c('asr', 'inh', 'tas', 'nas', 'igc', 'exp')
+bp |> 
+  mutate(Evidence = factor(Evidence, levels = evidence_code, ordered = FALSE)) |> 
+  count(Attribute_group, Evidence) |> 
+  group_by(Attribute_group) |> 
+  mutate(total = sum(n)) |> 
+  ungroup() |> 
+  ggplot(aes(reorder(Attribute_group, desc(total)), n)) +
+  geom_col(aes(fill = Evidence)) +
+  labs(
+    x = 'Attribute group', y = 'Number of annotations'
+  ) +
+  # scale_y_continuous(limits = c(0, 130000), labels = scales::comma) +
+  scale_y_continuous(labels = scales::comma) +
+  scale_fill_brewer(type = 'qual', palette = 'Set2', direction = 1) +
+  annotate("label", x = 25, y = 100000, label = total_annotations) +
+  # scale_y_cut(breaks = 1000) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+## By attribute group and frequency
+
+```{r}
+freq_code <- c('always', 'usually', 'sometimes', 'rarely')
+bp |> 
+  mutate(Frequency = factor(Frequency, levels = freq_code, ordered = FALSE)) |> 
+  count(Attribute_group, Frequency) |> 
+  group_by(Attribute_group) |> 
+  mutate(total = sum(n)) |> 
+  ungroup() |> 
+  ggplot(aes(reorder(Attribute_group, desc(total)), n)) +
+  geom_col(aes(fill = Frequency)) +
+  annotate("label", x = 25, y = 100000, label = total_annotations) +
+  labs(
+    x = 'Attribute group', y = 'Number of annotations'
+  ) +
+  # scale_y_continuous(limits = c(0, 130000), labels = scales::comma) +
+  scale_y_continuous(labels = scales::comma) +
+  scale_fill_brewer(type = 'qual', palette = 'Set2', direction = 1) +
+  # scale_y_cut(breaks = 1000) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+# Number of annotations per bug
+
+TODO
+
+
+# Source and propagation
+
+```{r number of original sources}
 bp_source <- filter(bp, !is.na(Attribute_source))
 unique_sources <- bp_source |> 
     filter(Evidence  %in% c('exp', 'igc', 'tas', 'nas')) |> 
@@ -134,6 +217,8 @@ unique_sources <- bp_source |>
 n_sources <- length(unique_sources)
 n_sources
 ```
+
+## Source sparsity
 
 # Completeness and 
 
@@ -619,7 +704,7 @@ in methods), increasing our completeness from an average per taxonomic rank of
 
 # Session information
 
-```{r}
+```{r class.soruce = 'fold-show'}
 sessioninfo::session_info()
 ```
 
