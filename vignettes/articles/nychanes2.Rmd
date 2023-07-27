@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 
 ```{r setup, message=FALSE}
 library(bugphyzzAnalyses)
-library(bugphyzz)
+# library(bugphyzz)
 library(mia)
 library(dplyr)
 library(EnrichmentBrowser)

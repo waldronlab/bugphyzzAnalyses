@@ -20,6 +20,7 @@ library(bugphyzz)
 library(mia)
 library(dplyr)
 library(EnrichmentBrowser)
+library(purrr)
 ```
 
 # Expected results
@@ -230,6 +231,54 @@ ora_down <- sbea(
 ora_down_res <- as.data.frame(ora_down$res.tbl)
 myDT(ora_down_res)
 ```
+
+
+```{r}
+biosis <- importBiosis() |> 
+  {\(y) split(y, factor(y$Attribute))}() |> 
+  lapply(function(x) unique(x$Genus))
+```
+
+
+```{r}
+taxa_names <- rownames(tse_gn)
+df1 <- map_dbl(biosis, function(x) mean(taxa_names %in% x) * 100) |> 
+  as.data.frame() |> 
+  tibble::rownames_to_column() |> 
+  set_names(c('Attribute', 'n'))
+df2 <- map_dbl(gn_sigs, function(x) mean(taxa_names %in% x) * 100) |> 
+  as.data.frame() |> 
+  tibble::rownames_to_column() |> 
+  set_names(c('Attribute', 'n'))
+df <- rbind(df1, df2)
+df
+```
+
+```{r}
+## Annotated
+x <- map(biosis, function(x) taxa_names[which(taxa_names %in% x)])
+y <- map(gn_sigs, function(x) taxa_names[which(taxa_names %in% x)])
+
+z <- map2(x, y, ~ {
+  inboth <- intersect(.x, .y)
+  inbio <- setdiff(.x, .y)
+  inbp <- setdiff(.y, .x)
+  return(
+    list(both = inboth, bp = inbp, bio = inbio)
+  )
+})
+
+## just in biosis
+justInBio <- map(z, ~ .x$bio)
+
+
+```
+
+#> Differentes due to irregular names
+#> Mislabelled attributes
+
+
+
 
 # Session information
 
