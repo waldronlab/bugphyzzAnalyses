@@ -352,6 +352,7 @@ summary_source <- bp |>
   
 # summary_source
 summary_source_p <- summary_source |> 
+  mutate(origin = ifelse(origin == 'Original source', 'Source', origin)) |>
   mutate(origin = fct_reorder(origin, desc(n))) |> 
   ggplot(aes(reorder(Attribute_source, -n), n)) +
   geom_col(aes(fill = origin)) +
@@ -480,6 +481,12 @@ DT::datatable(completeness_after)
 ### Completenes heatmaps
 
 ```{r}
+ordered_rownames <- bp |> 
+  filter(Attribute_group != 'antimicrobial resistance') |> 
+  count(Attribute_group) |> 
+  arrange(-n) |> 
+  pull(Attribute_group)
+
 ## Create matrices
 completeness_mat_before <- completeness_before |>
   select(Attribute_group, Rank, completeness) |>
@@ -491,7 +498,8 @@ completeness_mat_before <- completeness_before |>
   as.matrix()
 
 completeness_mat_after <- completeness_after |> 
-  filter(Attribute_group != 'antimicrobial sensitivity') |> 
+  # filter(Attribute_group != 'antimicrobial sensitivity') |> 
+  filter(Attribute_group != 'antimicrobial resistance') |> 
   select(Attribute_group, Rank, completeness) |> 
   pivot_wider(
     names_from = Rank, values_from = completeness, values_fill = 0
@@ -509,12 +517,16 @@ color_fun <- circlize::colorRamp2(
 )
 lgd <- Legend(col_fun = color_fun, title = "Completeness")
 ht_b <- Heatmap(
-  matrix = completeness_mat_before,
+  matrix = completeness_mat_before[ordered_rownames,],
   cluster_rows = FALSE, cluster_columns = FALSE,
   row_names_side = 'left',
   show_heatmap_legend = FALSE,
   col = color_fun,
-  column_title = "BP"
+  column_title = "BP",
+  row_names_max_width = max_text_width(
+    rownames(completeness_mat_before), 
+    gp = gpar(fontsize = 12)
+  )
   # cell_fun = function(j, i, x, y, width, height, fill) {
   #       grid.rect(x = x, y = y, width = width, height = height,
   #           gp = gpar(col = "black", fill = NA))
@@ -522,7 +534,7 @@ ht_b <- Heatmap(
 )
 
 ht_a <- Heatmap(
-  matrix = completeness_mat_after,
+  matrix = completeness_mat_after[ordered_rownames,],
   cluster_rows = FALSE, cluster_columns = FALSE,
   row_names_side = 'left',
   name = 'Completeness',
@@ -530,7 +542,12 @@ ht_a <- Heatmap(
     at = c(0, 50, 100)
   ),
   col = color_fun,
-  column_title = "AP"
+  column_title = "AP",
+  row_names_max_width = max_text_width(
+    rownames(completeness_mat_after), 
+    gp = gpar(fontsize = 12)
+  )
+
   # cell_fun = function(j, i, x, y, width, height, fill) {
   #       grid.rect(x = x, y = y, width = width, height = height,
   #           gp = gpar(col = "black", fill = NA))

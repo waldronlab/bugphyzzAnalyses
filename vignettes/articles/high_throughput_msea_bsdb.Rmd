@@ -29,13 +29,15 @@ library(ggbreak)
 + Use only signatures with differential abundance results in BugSigDB
 ('Abundance in group 1' columns).
 + Some terms in BugSigDB referring to body site were merged.
++ Some terms in BugSigDB referring to disease/condition were merged.
 + We'll use [TypicalMicrobiomeSignatures](https://zenodo.org/record/7622129) 
 to create background sets.
 + For this analysis, only ORA (Fishers' exact test) was used.
++ Maybe use Fisher's exact test here.
 
 # Data
 
-## TypicalMicrobiomeSignatures sets
+## Background sets
 
 Use [TypicalMicrobiomeSignatures](https://zenodo.org/record/7622129) to create
 background sets. Use a cutoff of 0.01 prevalence for filtering.
@@ -45,8 +47,8 @@ tms <- importTidyTMS(prevalence_threshold = 0.01) |>
   mutate(
     body_site = case_when(
       body_site == 'feces' ~ 'stool',
-      body_site == 'nasalcavity' ~ 'nasal_cavity',
-      body_site == 'oralcavity' ~ 'oral_cavity',
+      body_site == 'nasalcavity' ~ 'nose',
+      body_site == 'oralcavity' ~ 'mouth',
       TRUE ~ body_site
     )
   )
@@ -57,7 +59,7 @@ Create sets for tms at the genus and species ranks for each of the body sites
 (skin, vagina, oralcavity, nasalcavity, stool):
 
 ```{r tms sets}
-body_sites <- c('skin', 'vagina', 'oral_cavity', 'nasal_cavity', 'stool')
+body_sites <- c('skin', 'vagina', 'mouth', 'nose', 'stool')
 ranks <- c('genus', 'species')
 l <- length(body_sites) * length(ranks)
 tms_sets <- vector('list', l)
@@ -85,48 +87,24 @@ I need five body sites, skin, vagina, oral cavity, stool, and nasal cavity,
 because these would match TypicalMicrobiomeSignatures to create a background
 dataset.
 
-```{r import bsdb, message=FALSE}
-oral_terms <- c(
-  "buccal mucosa", "buccal mucosa,lower lip", "dental plaque",
-  "dental plaque,internal cheek pouch,saliva", "gingiva", 
-  "internal cheek pouch", "mouth", 
-  "mouth,skin of cheek,tongue,gingiva,oropharynx", "oral cavity",
-  "oral opening", "saliva", "skin of cheek", "subgingival dental plaque",
-  "superior surface of tongue", "supragingival dental plaque", "tongue"
-)
-stool_terms <- c(
-  'feces', 'feces,mucosa of small intestine', 
-  'feces,stomach,caecum,small intestine,colon'
-)
-bsdb <- importBugSigDB() |> 
-  as_tibble() |> 
-  filter(`Abundance in Group 1` %in% c('increased', 'decreased')) |> 
-  filter(`Host species` == 'Homo sapiens') |> 
-  mutate(`Body site` = tolower(`Body site`)) |> 
-  mutate(`Body site` = case_when(
-    grepl('vagina', `Body site`) ~ 'vagina',
-    `Body site` %in% oral_terms ~ 'oral_cavity',
-    grepl('^skin', `Body site`) ~ 'skin',
-    `Body site` %in% stool_terms ~ 'stool',
-    `Body site` == 'nasal cavity' ~ 'nasal_cavity',
-    TRUE ~ `Body site`
-    )
-  ) |> 
-  filter(
-    `Body site` %in% c('vagina', 'oral_cavity', 'skin', 'stool', 'nasal_cavity')
-  )
-# glimpse(bsdb, width = 70)
-dim(bsdb)
-```
 
 ```{r bsdb sets}
+body_sites <- c(
+  mouth = 'mouth', vagina = 'vagina',  stool = 'feces', 
+  nose = 'nose', skin = 'skin of body'
+)
+bsdb <- importBugSigDB() |> 
+  filter(`Abundance in Group 1` %in% c('increased', 'decreased')) |> 
+  filter(`Host species` == 'Homo sapiens')
+ub <- getOntology(onto = 'uberon')  
 bsdb_sets <- vector('list', l)
 n <- 1
 for (i in seq_along(body_sites)) {
   for (j in seq_along(ranks)) {
-  sub_bsdb <- bsdb |> 
-      filter(`Body site` == body_sites[i])
-  names(bsdb_sets)[n] <- paste0(body_sites[i], '__', ranks[j])
+    sub_bsdb <- subsetByOntology(
+      df = bsdb, column = 'Body site', term = body_sites[i], ontology = ub
+    )
+  names(bsdb_sets)[n] <- paste0(names(body_sites)[i], '__', ranks[j])
   sig <- bugsigdbr::getSignatures(
       df = sub_bsdb, tax.id.type = 'ncbi', tax.level = ranks[j], min.size = 5
   )
@@ -137,6 +115,7 @@ for (i in seq_along(body_sites)) {
   }
 }
 bsdb_sets <- discard(bsdb_sets, is.null)
+map(bsdb_sets, length)
 ```
 
 ## Background sets
@@ -152,7 +131,7 @@ for (i in seq_along(background_sets)) {
       }
     )
 }
-map(background_sets, length)
+map(background_sets, length) # length should be the same as bsdb_sets
 ```
 ## bugphyzz sets
 
