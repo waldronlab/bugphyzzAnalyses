@@ -259,7 +259,7 @@ Get bsdb signatures
 
 ```{r get bsdb signatures}
 bsdb_sets_ <- bsdb |> 
-    filter(`Body site` == 'stool', `Host species` == 'Homo sapiens') |> 
+    filter(`Body site` == 'feces', `Host species` == 'Homo sapiens') |> 
     bugsigdbr::getSignatures(
       tax.id.type = 'ncbi', tax.level = 'genus', min.size = 5
     ) 
