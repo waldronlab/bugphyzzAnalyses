@@ -113,7 +113,8 @@ sets</h1>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/waldronlab/bugsigdbr" class="external-link">bugsigdbr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sdgamboa/taxPPro" class="external-link">taxPPro</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/YuLab-SMU/ggbreak" class="external-link">ggbreak</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/YuLab-SMU/ggbreak" class="external-link">ggbreak</a></span><span class="op">)</span></span>
+<span><span class="co">## add a comment</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="some-considerations">Some considerations<a class="anchor" aria-label="anchor" href="#some-considerations"></a>
 </h2>
@@ -121,16 +122,19 @@ sets</h1>
 <li>Use only signatures with differential abundance results in BugSigDB
 (‘Abundance in group 1’ columns).</li>
 <li>Some terms in BugSigDB referring to body site were merged.</li>
+<li>Some terms in BugSigDB referring to disease/condition were
+merged.</li>
 <li>We’ll use <a href="https://zenodo.org/record/7622129" class="external-link">TypicalMicrobiomeSignatures</a>
 to create background sets.</li>
 <li>For this analysis, only ORA (Fishers’ exact test) was used.</li>
+<li>Maybe use Fisher’s exact test here.</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
 </h2>
 <div class="section level3">
-<h3 id="typicalmicrobiomesignatures-sets">TypicalMicrobiomeSignatures sets<a class="anchor" aria-label="anchor" href="#typicalmicrobiomesignatures-sets"></a>
+<h3 id="background-sets">Background sets<a class="anchor" aria-label="anchor" href="#background-sets"></a>
 </h3>
 <p>Use <a href="https://zenodo.org/record/7622129" class="external-link">TypicalMicrobiomeSignatures</a>
 to create background sets. Use a cutoff of 0.01 prevalence for
@@ -140,8 +144,8 @@ filtering.</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    body_site <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
 <span>      <span class="va">body_site</span> <span class="op">==</span> <span class="st">'feces'</span> <span class="op">~</span> <span class="st">'stool'</span>,</span>
-<span>      <span class="va">body_site</span> <span class="op">==</span> <span class="st">'nasalcavity'</span> <span class="op">~</span> <span class="st">'nasal_cavity'</span>,</span>
-<span>      <span class="va">body_site</span> <span class="op">==</span> <span class="st">'oralcavity'</span> <span class="op">~</span> <span class="st">'oral_cavity'</span>,</span>
+<span>      <span class="va">body_site</span> <span class="op">==</span> <span class="st">'nasalcavity'</span> <span class="op">~</span> <span class="st">'nose'</span>,</span>
+<span>      <span class="va">body_site</span> <span class="op">==</span> <span class="st">'oralcavity'</span> <span class="op">~</span> <span class="st">'mouth'</span>,</span>
 <span>      <span class="cn">TRUE</span> <span class="op">~</span> <span class="va">body_site</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
@@ -150,14 +154,14 @@ filtering.</p>
 <span><span class="co">#&gt; Columns: 6</span></span>
 <span><span class="co">#&gt; $ taxid      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1279, 1279, 1279, 1279, 1279, 1912216, 1912216, 1…</span></span>
 <span><span class="co">#&gt; $ taxon_name <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Staphylococcus", "Staphylococcus", "Staphylococc…</span></span>
-<span><span class="co">#&gt; $ body_site  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "skin", "vagina", "oral_cavity", "nasal_cavity", …</span></span>
+<span><span class="co">#&gt; $ body_site  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "skin", "vagina", "mouth", "nose", "stool", "skin…</span></span>
 <span><span class="co">#&gt; $ rank       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "genus", "genus", "genus", "genus", "genus", "gen…</span></span>
 <span><span class="co">#&gt; $ prevalence <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.99, 0.06, 0.04, 0.87, 0.02, 0.96, 0.06, 0.30, 0…</span></span>
 <span><span class="co">#&gt; $ age_range  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "adult", "adult", "adult", "adult", "adult", "adu…</span></span></code></pre></div>
 <p>Create sets for tms at the genus and species ranks for each of the
 body sites (skin, vagina, oralcavity, nasalcavity, stool):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">body_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'skin'</span>, <span class="st">'vagina'</span>, <span class="st">'oral_cavity'</span>, <span class="st">'nasal_cavity'</span>, <span class="st">'stool'</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">body_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'skin'</span>, <span class="st">'vagina'</span>, <span class="st">'mouth'</span>, <span class="st">'nose'</span>, <span class="st">'stool'</span><span class="op">)</span></span>
 <span><span class="va">ranks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'genus'</span>, <span class="st">'species'</span><span class="op">)</span></span>
 <span><span class="va">l</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">ranks</span><span class="op">)</span></span>
 <span><span class="va">tms_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">'list'</span>, <span class="va">l</span><span class="op">)</span></span>
@@ -185,16 +189,16 @@ body sites (skin, vagina, oralcavity, nasalcavity, stool):</p>
 <span><span class="co">#&gt; $vagina__species</span></span>
 <span><span class="co">#&gt; [1]  1747  1282 76775 29388 33011  1290</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $oral_cavity__genus</span></span>
+<span><span class="co">#&gt; $mouth__genus</span></span>
 <span><span class="co">#&gt; [1]    1279 1912216   55193    1716    1301    1269</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $oral_cavity__species</span></span>
+<span><span class="co">#&gt; $mouth__species</span></span>
 <span><span class="co">#&gt; [1]  1747  1282 76775 28037  1270 34062</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $nasal_cavity__genus</span></span>
+<span><span class="co">#&gt; $nose__genus</span></span>
 <span><span class="co">#&gt; [1]    1279 1912216   55193    1716    1301    1269</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $nasal_cavity__species</span></span>
+<span><span class="co">#&gt; $nose__species</span></span>
 <span><span class="co">#&gt; [1]  1747  1282 76775 29388 33011 76773</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stool__genus</span></span>
@@ -213,46 +217,26 @@ with differential abundance results.</p>
 cavity, because these would match TypicalMicrobiomeSignatures to create
 a background dataset.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">oral_terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="st">"buccal mucosa"</span>, <span class="st">"buccal mucosa,lower lip"</span>, <span class="st">"dental plaque"</span>,</span>
-<span>  <span class="st">"dental plaque,internal cheek pouch,saliva"</span>, <span class="st">"gingiva"</span>, </span>
-<span>  <span class="st">"internal cheek pouch"</span>, <span class="st">"mouth"</span>, </span>
-<span>  <span class="st">"mouth,skin of cheek,tongue,gingiva,oropharynx"</span>, <span class="st">"oral cavity"</span>,</span>
-<span>  <span class="st">"oral opening"</span>, <span class="st">"saliva"</span>, <span class="st">"skin of cheek"</span>, <span class="st">"subgingival dental plaque"</span>,</span>
-<span>  <span class="st">"superior surface of tongue"</span>, <span class="st">"supragingival dental plaque"</span>, <span class="st">"tongue"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">stool_terms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="st">'feces'</span>, <span class="st">'feces,mucosa of small intestine'</span>, </span>
-<span>  <span class="st">'feces,stomach,caecum,small intestine,colon'</span></span>
+<code class="sourceCode R"><span><span class="va">body_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  mouth <span class="op">=</span> <span class="st">'mouth'</span>, vagina <span class="op">=</span> <span class="st">'vagina'</span>,  stool <span class="op">=</span> <span class="st">'feces'</span>, </span>
+<span>  nose <span class="op">=</span> <span class="st">'nose'</span>, skin <span class="op">=</span> <span class="st">'skin of body'</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">bsdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/importBugSigDB.html" class="external-link">importBugSigDB</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Abundance in Group 1`</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'increased'</span>, <span class="st">'decreased'</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Host species`</span> <span class="op">==</span> <span class="st">'Homo sapiens'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>`Body site` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/chartr.html" class="external-link">tolower</a></span><span class="op">(</span><span class="va">`Body site`</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>`Body site` <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html" class="external-link">case_when</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">'vagina'</span>, <span class="va">`Body site`</span><span class="op">)</span> <span class="op">~</span> <span class="st">'vagina'</span>,</span>
-<span>    <span class="va">`Body site`</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">oral_terms</span> <span class="op">~</span> <span class="st">'oral_cavity'</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">'^skin'</span>, <span class="va">`Body site`</span><span class="op">)</span> <span class="op">~</span> <span class="st">'skin'</span>,</span>
-<span>    <span class="va">`Body site`</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">stool_terms</span> <span class="op">~</span> <span class="st">'stool'</span>,</span>
-<span>    <span class="va">`Body site`</span> <span class="op">==</span> <span class="st">'nasal cavity'</span> <span class="op">~</span> <span class="st">'nasal_cavity'</span>,</span>
-<span>    <span class="cn">TRUE</span> <span class="op">~</span> <span class="va">`Body site`</span></span>
-<span>    <span class="op">)</span></span>
-<span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>    <span class="va">`Body site`</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'vagina'</span>, <span class="st">'oral_cavity'</span>, <span class="st">'skin'</span>, <span class="st">'stool'</span>, <span class="st">'nasal_cavity'</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="co"># glimpse(bsdb, width = 70)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">bsdb</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1609   48</span></span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bsdb_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">'list'</span>, <span class="va">l</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Host species`</span> <span class="op">==</span> <span class="st">'Homo sapiens'</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Registered S3 method overwritten by 'httr':</span></span>
+<span><span class="co">#&gt;   method           from  </span></span>
+<span><span class="co">#&gt;   print.cache_info hoardr</span></span>
+<span><span class="va">ub</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/getOntology.html" class="external-link">getOntology</a></span><span class="op">(</span>onto <span class="op">=</span> <span class="st">'uberon'</span><span class="op">)</span>  </span>
+<span><span class="co">#&gt; Loading required namespace: ontologyIndex</span></span>
+<span><span class="va">bsdb_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">'list'</span>, <span class="va">l</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">ranks</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">sub_bsdb</span> <span class="op">&lt;-</span> <span class="va">bsdb</span> <span class="op">|&gt;</span> </span>
-<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Body site`</span> <span class="op">==</span> <span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">'__'</span>, <span class="va">ranks</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="va">sub_bsdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/subsetByOntology.html" class="external-link">subsetByOntology</a></span><span class="op">(</span></span>
+<span>      df <span class="op">=</span> <span class="va">bsdb</span>, column <span class="op">=</span> <span class="st">'Body site'</span>, term <span class="op">=</span> <span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, ontology <span class="op">=</span> <span class="va">ub</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">'__'</span>, <span class="va">ranks</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">)</span></span>
 <span>  <span class="va">sig</span> <span class="op">&lt;-</span> <span class="fu">bugsigdbr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/getSignatures.html" class="external-link">getSignatures</a></span><span class="op">(</span></span>
 <span>      df <span class="op">=</span> <span class="va">sub_bsdb</span>, tax.id.type <span class="op">=</span> <span class="st">'ncbi'</span>, tax.level <span class="op">=</span> <span class="va">ranks</span><span class="op">[</span><span class="va">j</span><span class="op">]</span>, min.size <span class="op">=</span> <span class="fl">5</span></span>
 <span>  <span class="op">)</span></span>
@@ -262,12 +246,42 @@ a background dataset.</p>
 <span>  <span class="va">n</span> <span class="op">&lt;-</span> <span class="va">n</span> <span class="op">+</span> <span class="fl">1</span></span>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span>
-<span><span class="va">bsdb_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/keep.html" class="external-link">discard</a></span><span class="op">(</span><span class="va">bsdb_sets</span>, <span class="va">is.null</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">bsdb_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/keep.html" class="external-link">discard</a></span><span class="op">(</span><span class="va">bsdb_sets</span>, <span class="va">is.null</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">bsdb_sets</span>, <span class="va">length</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $mouth__genus</span></span>
+<span><span class="co">#&gt; [1] 49</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $mouth__species</span></span>
+<span><span class="co">#&gt; [1] 37</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $vagina__genus</span></span>
+<span><span class="co">#&gt; [1] 30</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $vagina__species</span></span>
+<span><span class="co">#&gt; [1] 14</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $stool__genus</span></span>
+<span><span class="co">#&gt; [1] 260</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $stool__species</span></span>
+<span><span class="co">#&gt; [1] 126</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $nose__genus</span></span>
+<span><span class="co">#&gt; [1] 7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $nose__species</span></span>
+<span><span class="co">#&gt; [1] 3</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $skin__genus</span></span>
+<span><span class="co">#&gt; [1] 10</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $skin__species</span></span>
+<span><span class="co">#&gt; [1] 5</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="background-sets">Background sets<a class="anchor" aria-label="anchor" href="#background-sets"></a>
+<h3 id="background-sets-1">Background sets<a class="anchor" aria-label="anchor" href="#background-sets-1"></a>
 </h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tms_sets</span> <span class="op">&lt;-</span> <span class="va">tms_sets</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">background_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">'list'</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">background_sets</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -278,38 +292,41 @@ a background dataset.</p>
 <span>      <span class="op">}</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">background_sets</span>, <span class="va">length</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $skin__genus</span></span>
-<span><span class="co">#&gt; [1] 8</span></span>
+<span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">background_sets</span>, <span class="va">length</span><span class="op">)</span> <span class="co"># length should be the same as bsdb_sets</span></span>
+<span><span class="co">#&gt; $mouth__genus</span></span>
+<span><span class="co">#&gt; [1] 49</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $skin__species</span></span>
-<span><span class="co">#&gt; [1] 2</span></span>
+<span><span class="co">#&gt; $mouth__species</span></span>
+<span><span class="co">#&gt; [1] 37</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $vagina__genus</span></span>
-<span><span class="co">#&gt; [1] 31</span></span>
+<span><span class="co">#&gt; [1] 30</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $vagina__species</span></span>
-<span><span class="co">#&gt; [1] 15</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $oral_cavity__genus</span></span>
-<span><span class="co">#&gt; [1] 55</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $oral_cavity__species</span></span>
-<span><span class="co">#&gt; [1] 44</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $nasal_cavity__genus</span></span>
-<span><span class="co">#&gt; [1] 4</span></span>
+<span><span class="co">#&gt; [1] 14</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stool__genus</span></span>
-<span><span class="co">#&gt; [1] 247</span></span>
+<span><span class="co">#&gt; [1] 260</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stool__species</span></span>
-<span><span class="co">#&gt; [1] 124</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 126</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $nose__genus</span></span>
+<span><span class="co">#&gt; [1] 7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $nose__species</span></span>
+<span><span class="co">#&gt; [1] 3</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $skin__genus</span></span>
+<span><span class="co">#&gt; [1] 10</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $skin__species</span></span>
+<span><span class="co">#&gt; [1] 5</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="bugphyzz-sets">bugphyzz sets<a class="anchor" aria-label="anchor" href="#bugphyzz-sets"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/importBugphyzz.html" class="external-link">importBugphyzz</a></span><span class="op">(</span>version <span class="op">=</span> <span class="st">'devel'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">bp</span>, width <span class="op">=</span> <span class="fl">70</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: 1,599,662</span></span>
@@ -331,7 +348,7 @@ a background dataset.</p>
 <span><span class="co">#&gt; $ BacDive_ID             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, N…</span></span>
 <span><span class="co">#&gt; $ Type_strain            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, N…</span></span></code></pre></div>
 <p>Genus signatures</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp_sigs_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getBugphyzzSignatures.html" class="external-link">getBugphyzzSignatures</a></span><span class="op">(</span></span>
 <span>  df <span class="op">=</span> <span class="va">bp</span>, tax.id.type <span class="op">=</span> <span class="st">'NCBI_ID'</span>, tax.level <span class="op">=</span> <span class="st">'genus'</span>, min.size <span class="op">=</span> <span class="fl">10</span></span>
 <span><span class="op">)</span></span>
@@ -354,7 +371,7 @@ a background dataset.</p>
 <span><span class="co">#&gt; $`bp:animal pathogen|animal pathogen--TRUE|g`</span></span>
 <span><span class="co">#&gt; [1] "773"     "1017183" "28209"   "1033"    "357"     "182269"</span></span></code></pre></div>
 <p>Species signatures</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp_sigs_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getBugphyzzSignatures.html" class="external-link">getBugphyzzSignatures</a></span><span class="op">(</span></span>
 <span>  df <span class="op">=</span> <span class="va">bp</span>, tax.id.type <span class="op">=</span> <span class="st">'NCBI_ID'</span>, tax.level <span class="op">=</span> <span class="st">'species'</span>, min.size <span class="op">=</span> <span class="fl">10</span></span>
 <span><span class="op">)</span></span>
@@ -381,7 +398,7 @@ a background dataset.</p>
 <div class="section level2">
 <h2 id="enrichment-analysis">Enrichment analysis<a class="anchor" aria-label="anchor" href="#enrichment-analysis"></a>
 </h2>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="st">'BSDB ID'</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">bsdb</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">bsdb</span> <span class="op">&lt;-</span> <span class="va">bsdb</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
@@ -420,8 +437,11 @@ a background dataset.</p>
 <span><span class="op">}</span></span>
 <span><span class="va">enrichment_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/keep.html" class="external-link">discard</a></span><span class="op">(</span><span class="va">enrichment_res</span>, <span class="op">~</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">enrichment_res</span>, <span class="va">nrow</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $skin__genus</span></span>
-<span><span class="co">#&gt; [1] 3</span></span>
+<span><span class="co">#&gt; $mouth__genus</span></span>
+<span><span class="co">#&gt; [1] 23</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $mouth__species</span></span>
+<span><span class="co">#&gt; [1] 35</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $vagina__genus</span></span>
 <span><span class="co">#&gt; [1] 20</span></span>
@@ -429,22 +449,19 @@ a background dataset.</p>
 <span><span class="co">#&gt; $vagina__species</span></span>
 <span><span class="co">#&gt; [1] 5</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $oral_cavity__genus</span></span>
-<span><span class="co">#&gt; [1] 41</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $oral_cavity__species</span></span>
-<span><span class="co">#&gt; [1] 36</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $nasal_cavity__genus</span></span>
-<span><span class="co">#&gt; [1] 1</span></span>
-<span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stool__genus</span></span>
-<span><span class="co">#&gt; [1] 191</span></span>
+<span><span class="co">#&gt; [1] 301</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stool__species</span></span>
-<span><span class="co">#&gt; [1] 407</span></span>
+<span><span class="co">#&gt; [1] 409</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $nose__genus</span></span>
+<span><span class="co">#&gt; [1] 1</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $skin__genus</span></span>
+<span><span class="co">#&gt; [1] 6</span></span>
 <span><span class="co">## top hits by odds ratio</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">enrichment_res</span>, .id <span class="op">=</span> <span class="st">'comb'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/separate.html" class="external-link">separate</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">'comb'</span>, into <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'body_site'</span>, <span class="st">'rank'</span><span class="op">)</span>, sep <span class="op">=</span> <span class="st">'__'</span><span class="op">)</span></span>
 <span></span>
@@ -476,7 +493,7 @@ a background dataset.</p>
 <span>    axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span>  </span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">'list'</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">enrichment_res</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">plots</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'^(.*)__.*$'</span>, <span class="st">'\\1'</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">enrichment_res</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
@@ -489,15 +506,15 @@ a background dataset.</p>
 <h2 id="a-single-case-step-by-step">A single case (step by step)<a class="anchor" aria-label="anchor" href="#a-single-case-step-by-step"></a>
 </h2>
 <p>Get bsdb signatures</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bsdb_sets_</span> <span class="op">&lt;-</span> <span class="va">bsdb</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Body site`</span> <span class="op">==</span> <span class="st">'stool'</span>, <span class="va">`Host species`</span> <span class="op">==</span> <span class="st">'Homo sapiens'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Body site`</span> <span class="op">==</span> <span class="st">'feces'</span>, <span class="va">`Host species`</span> <span class="op">==</span> <span class="st">'Homo sapiens'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu">bugsigdbr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/getSignatures.html" class="external-link">getSignatures</a></span><span class="op">(</span></span>
 <span>      tax.id.type <span class="op">=</span> <span class="st">'ncbi'</span>, tax.level <span class="op">=</span> <span class="st">'genus'</span>, min.size <span class="op">=</span> <span class="fl">5</span></span>
 <span>    <span class="op">)</span> </span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">bsdb_sets_</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 247</span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">bsdb_sets_</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span>, <span class="va">head</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $`bsdb:1/1/1_adenoma:conventional-adenoma-cases_vs_controls_UP`</span></span>
 <span><span class="co">#&gt; [1] "1654"   "1716"   "1301"   "162289" "189330" "33024" </span></span>
@@ -508,22 +525,22 @@ a background dataset.</p>
 <span><span class="co">#&gt; $`bsdb:1/6/1_adenoma:Non-advanced-conventional-adenoma-cases_vs_controls_UP`</span></span>
 <span><span class="co">#&gt; [1] "1654"   "283168" "1301"   "189330" "40544"  "33024"</span></span></code></pre></div>
 <p>Create background sets</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">typical_set_</span> <span class="op">&lt;-</span> <span class="va">tms</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">body_site</span> <span class="op">==</span> <span class="st">'stool'</span>, <span class="va">rank</span> <span class="op">==</span> <span class="st">'genus'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">taxid</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">typical_set_</span><span class="op">)</span> </span>
 <span><span class="co">#&gt; [1] 197</span></span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">typical_set_</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1]    1279 1912216    1716    1301  150022   32207</span></span></code></pre></div>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">background_sets_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">bsdb_sets_</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">typical_set_</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">background_sets_</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 247</span></span></code></pre></div>
 <p>Create contingency tables</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">taxa_name_</span> <span class="op">&lt;-</span> <span class="st">'bsdb:237/1/1_chronic-hepatitis-C-virus-infection:cirrhosis-patients_vs_healthy-controls_UP'</span></span>
 <span><span class="va">ct</span> <span class="op">&lt;-</span> <span class="fu">bugphyzzAnalyses</span><span class="fu">:::</span><span class="fu">.contingencyTable</span><span class="op">(</span></span>
 <span>    set <span class="op">=</span> <span class="va">bsdb_sets_</span><span class="op">[[</span><span class="va">taxa_name_</span><span class="op">]</span><span class="op">]</span>,</span>
@@ -536,7 +553,7 @@ a background dataset.</p>
 <span><span class="co">#&gt;   inSet        0       10</span></span>
 <span><span class="co">#&gt;   notInSet     0      189</span></span></code></pre></div>
 <p>Enrichment</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p_value_</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/fisher.test.html" class="external-link">fisher.test</a></span><span class="op">(</span><span class="va">ct</span>, alternative <span class="op">=</span> <span class="st">'g'</span><span class="op">)</span><span class="op">$</span><span class="va">p.value</span></span>
 <span><span class="va">p_value_</span></span>
 <span><span class="co">#&gt; [1] 1</span></span></code></pre></div>
@@ -544,7 +561,7 @@ a background dataset.</p>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/sessioninfo/reference/session_info.html" class="external-link">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Session info ───────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">setting </span> <span style="color: #555555; font-style: italic;">value</span></span></span>
@@ -556,7 +573,7 @@ a background dataset.</p>
 <span><span class="co">#&gt;  collate  en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  ctype    en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  tz       Etc/UTC</span></span>
-<span><span class="co">#&gt;  date     2023-07-28</span></span>
+<span><span class="co">#&gt;  date     2023-08-08</span></span>
 <span><span class="co">#&gt;  pandoc   2.19.2 @ /usr/local/bin/ (via rmarkdown)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Packages ───────────────────────────────────────────────────────────────────</span></span></span>
@@ -568,9 +585,9 @@ a background dataset.</p>
 <span><span class="co">#&gt;  blob               1.2.4    <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  bold               1.3.0    <span style="color: #555555;">2023-05-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  bslib              0.5.0    <span style="color: #555555;">2023-06-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  bugphyzz         * 0.0.1.3  <span style="color: #555555;">2023-07-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@3ad61e6)</span></span></span>
-<span><span class="co">#&gt;  bugphyzzAnalyses * 0.1.0    <span style="color: #555555;">2023-07-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
-<span><span class="co">#&gt;  bugsigdbr        * 1.6.3    <span style="color: #555555;">2023-07-10</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
+<span><span class="co">#&gt;  bugphyzz         * 0.0.1.3  <span style="color: #555555;">2023-08-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@3ad61e6)</span></span></span>
+<span><span class="co">#&gt;  bugphyzzAnalyses * 0.1.0    <span style="color: #555555;">2023-08-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
+<span><span class="co">#&gt;  bugsigdbr        * 1.6.4    <span style="color: #555555;">2023-07-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  cachem             1.0.8    <span style="color: #555555;">2023-05-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  cli                3.6.1    <span style="color: #555555;">2023-03-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  colorspace         2.1-0    <span style="color: #555555;">2023-01-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
@@ -612,6 +629,7 @@ a background dataset.</p>
 <span><span class="co">#&gt;  memoise            2.0.1    <span style="color: #555555;">2021-11-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  mgsub              1.7.3    <span style="color: #555555;">2021-07-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  munsell            0.5.0    <span style="color: #555555;">2018-06-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  ontologyIndex      2.11     <span style="color: #555555;">2023-05-30</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  patchwork          1.1.2    <span style="color: #555555;">2022-08-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  pillar             1.9.0    <span style="color: #555555;">2023-03-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  pkgconfig          2.0.3    <span style="color: #555555;">2019-09-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
@@ -631,9 +649,9 @@ a background dataset.</p>
 <span><span class="co">#&gt;  stringr            1.5.0    <span style="color: #555555;">2022-12-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  systemfonts        1.0.4    <span style="color: #555555;">2022-02-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  taxa               0.4.2    <span style="color: #555555;">2022-04-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  taxize             1.0      <span style="color: #555555;">2023-07-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
+<span><span class="co">#&gt;  taxize             1.0      <span style="color: #555555;">2023-08-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
 <span><span class="co">#&gt;  taxizedb           0.3.1    <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  taxPPro          * 0.1.0    <span style="color: #555555;">2023-07-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (sdgamboa/taxPPro@d2b4c6f)</span></span></span>
+<span><span class="co">#&gt;  taxPPro          * 0.1.0    <span style="color: #555555;">2023-08-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (sdgamboa/taxPPro@d2b4c6f)</span></span></span>
 <span><span class="co">#&gt;  textshaping        0.3.6    <span style="color: #555555;">2021-10-13</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  tibble             3.2.1    <span style="color: #555555;">2023-03-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  tidyr            * 1.3.0    <span style="color: #555555;">2023-01-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
