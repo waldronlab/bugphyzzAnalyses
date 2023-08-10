@@ -156,7 +156,7 @@ head(names(bp_sigs_gn))
 
 Create signatures at the species level:
 
-```{r bugphyzz gn sigs}
+```{r bugphyzz sp sigs}
 bp_sigs_sp <- getBugphyzzSignatures(
   df = bp, tax.id.type = 'NCBI_ID', tax.level = 'species', min.size = 10
 )
@@ -228,6 +228,9 @@ attr_grp_nms <- unique(summary1$Attribute_group)
 ```
 
 
+```{r}
+
+```
 
 
 
