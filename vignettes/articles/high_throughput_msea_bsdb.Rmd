@@ -245,7 +245,7 @@ attr_grp_nms <- unique(summary1$Attribute_group)
 
 
 
-```{r}
+```{r, eval=FALSE}
 bp1 <- df |> 
   select(body_site, rank, bugsigdb_sig) |> 
   unique() |> 
@@ -276,7 +276,7 @@ myPlot <- left_join(bp1, bp2, by = c('body_site', 'rank')) |>
 
 
 
-```{r create plots, warning=FALSE}
+```{r create plots, warning=FALSE, eval=FALSE}
 plots <- vector('list', length(enrichment_res))
 for (i in seq_along(plots)) {
   b <- sub('^(.*)__.*$', '\\1', names(enrichment_res)[i])
