@@ -114,6 +114,8 @@ sets</h1>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sdgamboa/taxPPro" class="external-link">taxPPro</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/YuLab-SMU/ggbreak" class="external-link">ggbreak</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Bioconductor/BiocParallel" class="external-link">BiocParallel</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://forcats.tidyverse.org/" class="external-link">forcats</a></span><span class="op">)</span></span>
 <span><span class="co">## add a comment</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="some-considerations">Some considerations<a class="anchor" aria-label="anchor" href="#some-considerations"></a>
@@ -131,14 +133,14 @@ to create background sets.</li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="data">Data<a class="anchor" aria-label="anchor" href="#data"></a>
+<h2 id="data-bug-sets">Data (bug sets)<a class="anchor" aria-label="anchor" href="#data-bug-sets"></a>
 </h2>
 <div class="section level3">
-<h3 id="background-sets">Background sets<a class="anchor" aria-label="anchor" href="#background-sets"></a>
+<h3 id="tms-sets">TMS sets<a class="anchor" aria-label="anchor" href="#tms-sets"></a>
 </h3>
 <p>Use <a href="https://zenodo.org/record/7622129" class="external-link">TypicalMicrobiomeSignatures</a>
 to create background sets. Use a cutoff of 0.01 prevalence for
-filtering.</p>
+filtering:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tms</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/importTidyTMS.html">importTidyTMS</a></span><span class="op">(</span>prevalence_threshold <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
@@ -148,86 +150,53 @@ filtering.</p>
 <span>      <span class="va">body_site</span> <span class="op">==</span> <span class="st">'oralcavity'</span> <span class="op">~</span> <span class="st">'mouth'</span>,</span>
 <span>      <span class="cn">TRUE</span> <span class="op">~</span> <span class="va">body_site</span></span>
 <span>    <span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">tms</span>, width <span class="op">=</span> <span class="fl">70</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 3,938</span></span>
-<span><span class="co">#&gt; Columns: 6</span></span>
-<span><span class="co">#&gt; $ taxid      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> 1279, 1279, 1279, 1279, 1279, 1912216, 1912216, 1…</span></span>
-<span><span class="co">#&gt; $ taxon_name <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Staphylococcus", "Staphylococcus", "Staphylococc…</span></span>
-<span><span class="co">#&gt; $ body_site  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "skin", "vagina", "mouth", "nose", "stool", "skin…</span></span>
-<span><span class="co">#&gt; $ rank       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "genus", "genus", "genus", "genus", "genus", "gen…</span></span>
-<span><span class="co">#&gt; $ prevalence <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 0.99, 0.06, 0.04, 0.87, 0.02, 0.96, 0.06, 0.30, 0…</span></span>
-<span><span class="co">#&gt; $ age_range  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "adult", "adult", "adult", "adult", "adult", "adu…</span></span></code></pre></div>
-<p>Create sets for tms at the genus and species ranks for each of the
-body sites (skin, vagina, oralcavity, nasalcavity, stool):</p>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p>Create sets at the genus and species ranks for each of the body sites
+(skin, vagina, oralcavity, nasalcavity, stool):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">body_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'skin'</span>, <span class="st">'vagina'</span>, <span class="st">'mouth'</span>, <span class="st">'nose'</span>, <span class="st">'stool'</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">body_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  mouth <span class="op">=</span> <span class="st">'mouth'</span>, vagina <span class="op">=</span> <span class="st">'vagina'</span>,  stool <span class="op">=</span> <span class="st">'feces'</span>, </span>
+<span>  nose <span class="op">=</span> <span class="st">'nose'</span>, skin <span class="op">=</span> <span class="st">'skin of body'</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">ranks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'genus'</span>, <span class="st">'species'</span><span class="op">)</span></span>
 <span><span class="va">l</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">ranks</span><span class="op">)</span></span>
 <span><span class="va">tms_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">'list'</span>, <span class="va">l</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">ranks</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tms_sets</span><span class="op">)</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">'__'</span>, <span class="va">ranks</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tms_sets</span><span class="op">)</span><span class="op">[</span><span class="va">n</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">'__'</span>, <span class="va">ranks</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">)</span></span>
 <span>    <span class="va">tms_sets</span><span class="op">[[</span><span class="va">n</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">tms</span> <span class="op">|&gt;</span> </span>
-<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">body_site</span> <span class="op">==</span> <span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="va">rank</span> <span class="op">==</span> <span class="va">ranks</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">body_site</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="va">rank</span> <span class="op">==</span> <span class="va">ranks</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>      <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">taxid</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="op">)</span></span>
 <span>    <span class="va">n</span> <span class="op">&lt;-</span> <span class="va">n</span> <span class="op">+</span> <span class="fl">1</span></span>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span>
-<span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">tms_sets</span>, <span class="va">head</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $skin__genus</span></span>
-<span><span class="co">#&gt; [1]    1279 1912216   55193    1716    1301    1269</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $skin__species</span></span>
-<span><span class="co">#&gt; [1]  1747  1282 76775 29388 33011 76773</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $vagina__genus</span></span>
-<span><span class="co">#&gt; [1]    1279 1912216   55193    1716    1301  150022</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $vagina__species</span></span>
-<span><span class="co">#&gt; [1]  1747  1282 76775 29388 33011  1290</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $mouth__genus</span></span>
-<span><span class="co">#&gt; [1]    1279 1912216   55193    1716    1301    1269</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $mouth__species</span></span>
-<span><span class="co">#&gt; [1]  1747  1282 76775 28037  1270 34062</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $nose__genus</span></span>
-<span><span class="co">#&gt; [1]    1279 1912216   55193    1716    1301    1269</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $nose__species</span></span>
-<span><span class="co">#&gt; [1]  1747  1282 76775 29388 33011 76773</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $stool__genus</span></span>
-<span><span class="co">#&gt; [1]    1279 1912216    1716    1301  150022   32207</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $stool__species</span></span>
-<span><span class="co">#&gt; [1]  1747  1282 28037  1260  1303 43675</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tms_sets</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "mouth__genus"    "mouth__species"  "vagina__genus"   "vagina__species"</span></span>
+<span><span class="co">#&gt;  [5] "stool__genus"    "stool__species"  "nose__genus"     "nose__species"  </span></span>
+<span><span class="co">#&gt;  [9] "skin__genus"     "skin__species"</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="bugsigdb-sets">BugSigDB sets<a class="anchor" aria-label="anchor" href="#bugsigdb-sets"></a>
 </h3>
-<p>Just consider signatures with ‘decreased’ or ‘increased’ values in
-the ‘Abundance in Group 1’ column, i.e., signatures from experiments
-with differential abundance results.</p>
-<p>I need five body sites, skin, vagina, oral cavity, stool, and nasal
-cavity, because these would match TypicalMicrobiomeSignatures to create
-a background dataset.</p>
+<p>Only use signatures with ‘decreased’ or ‘increased’ values in the
+‘Abundance in Group 1’ column, i.e., signatures from experiments with
+differential abundance results.</p>
+<p>Five body sites: skin, vagina, oral cavity, stool, and nasal
+cavity.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">body_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  mouth <span class="op">=</span> <span class="st">'mouth'</span>, vagina <span class="op">=</span> <span class="st">'vagina'</span>,  stool <span class="op">=</span> <span class="st">'feces'</span>, </span>
 <span>  nose <span class="op">=</span> <span class="st">'nose'</span>, skin <span class="op">=</span> <span class="st">'skin of body'</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">bsdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/importBugSigDB.html" class="external-link">importBugSigDB</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">bsdb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/importBugSigDB.html" class="external-link">importBugSigDB</a></span><span class="op">(</span>version <span class="op">=</span> <span class="st">'devel'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Abundance in Group 1`</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'increased'</span>, <span class="st">'decreased'</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Host species`</span> <span class="op">==</span> <span class="st">'Homo sapiens'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Registered S3 method overwritten by 'httr':</span></span>
 <span><span class="co">#&gt;   method           from  </span></span>
 <span><span class="co">#&gt;   print.cache_info hoardr</span></span>
-<span><span class="va">ub</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/getOntology.html" class="external-link">getOntology</a></span><span class="op">(</span>onto <span class="op">=</span> <span class="st">'uberon'</span><span class="op">)</span>  </span>
+<span><span class="va">ub</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/getOntology.html" class="external-link">getOntology</a></span><span class="op">(</span><span class="st">'uberon'</span><span class="op">)</span>  </span>
 <span><span class="co">#&gt; Loading required namespace: ontologyIndex</span></span>
 <span><span class="va">bsdb_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">'list'</span>, <span class="va">l</span><span class="op">)</span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
@@ -247,39 +216,13 @@ a background dataset.</p>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">bsdb_sets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/keep.html" class="external-link">discard</a></span><span class="op">(</span><span class="va">bsdb_sets</span>, <span class="va">is.null</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">bsdb_sets</span>, <span class="va">length</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $mouth__genus</span></span>
-<span><span class="co">#&gt; [1] 49</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $mouth__species</span></span>
-<span><span class="co">#&gt; [1] 37</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $vagina__genus</span></span>
-<span><span class="co">#&gt; [1] 30</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $vagina__species</span></span>
-<span><span class="co">#&gt; [1] 14</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $stool__genus</span></span>
-<span><span class="co">#&gt; [1] 260</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $stool__species</span></span>
-<span><span class="co">#&gt; [1] 126</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $nose__genus</span></span>
-<span><span class="co">#&gt; [1] 7</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $nose__species</span></span>
-<span><span class="co">#&gt; [1] 3</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $skin__genus</span></span>
-<span><span class="co">#&gt; [1] 10</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $skin__species</span></span>
-<span><span class="co">#&gt; [1] 5</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "mouth__genus"    "mouth__species"  "vagina__genus"   "vagina__species"</span></span>
+<span><span class="co">#&gt;  [5] "stool__genus"    "stool__species"  "nose__genus"     "nose__species"  </span></span>
+<span><span class="co">#&gt;  [9] "skin__genus"     "skin__species"</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="background-sets-1">Background sets<a class="anchor" aria-label="anchor" href="#background-sets-1"></a>
+<h3 id="background-sets">Background sets<a class="anchor" aria-label="anchor" href="#background-sets"></a>
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tms_sets</span> <span class="op">&lt;-</span> <span class="va">tms_sets</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">]</span></span>
@@ -292,182 +235,117 @@ a background dataset.</p>
 <span>      <span class="op">}</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">background_sets</span>, <span class="va">length</span><span class="op">)</span> <span class="co"># length should be the same as bsdb_sets</span></span>
-<span><span class="co">#&gt; $mouth__genus</span></span>
-<span><span class="co">#&gt; [1] 49</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $mouth__species</span></span>
-<span><span class="co">#&gt; [1] 37</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $vagina__genus</span></span>
-<span><span class="co">#&gt; [1] 30</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $vagina__species</span></span>
-<span><span class="co">#&gt; [1] 14</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $stool__genus</span></span>
-<span><span class="co">#&gt; [1] 260</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $stool__species</span></span>
-<span><span class="co">#&gt; [1] 126</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $nose__genus</span></span>
-<span><span class="co">#&gt; [1] 7</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $nose__species</span></span>
-<span><span class="co">#&gt; [1] 3</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $skin__genus</span></span>
-<span><span class="co">#&gt; [1] 10</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $skin__species</span></span>
-<span><span class="co">#&gt; [1] 5</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">background_sets</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "mouth__genus"    "mouth__species"  "vagina__genus"   "vagina__species"</span></span>
+<span><span class="co">#&gt;  [5] "stool__genus"    "stool__species"  "nose__genus"     "nose__species"  </span></span>
+<span><span class="co">#&gt;  [9] "skin__genus"     "skin__species"</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="bugphyzz-sets">bugphyzz sets<a class="anchor" aria-label="anchor" href="#bugphyzz-sets"></a>
 </h3>
+<p>Import data:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/importBugphyzz.html" class="external-link">importBugphyzz</a></span><span class="op">(</span>version <span class="op">=</span> <span class="st">'devel'</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">bp</span>, width <span class="op">=</span> <span class="fl">70</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rows: 1,599,662</span></span>
-<span><span class="co">#&gt; Columns: 16</span></span>
-<span><span class="co">#&gt; $ NCBI_ID                <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "207244", "105841", "1229621", "20254…</span></span>
-<span><span class="co">#&gt; $ Taxon_name             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "Anaerostipes", "Anaerostipes caccae"…</span></span>
-<span><span class="co">#&gt; $ Rank                   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "genus", "species", "species", "speci…</span></span>
-<span><span class="co">#&gt; $ Attribute              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "acetate producing--TRUE", "acetate p…</span></span>
-<span><span class="co">#&gt; $ Attribute_group        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "acetate producing", "acetate produci…</span></span>
-<span><span class="co">#&gt; $ Attribute_source       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, N…</span></span>
-<span><span class="co">#&gt; $ Evidence               <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "asr", "asr", "inh", "inh", "inh", "i…</span></span>
-<span><span class="co">#&gt; $ Frequency              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "always", "always", "always", "always…</span></span>
-<span><span class="co">#&gt; $ Score                  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…</span></span>
-<span><span class="co">#&gt; $ Unit                   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, N…</span></span>
-<span><span class="co">#&gt; $ Attribute_range        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, N…</span></span>
-<span><span class="co">#&gt; $ Note                   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, N…</span></span>
-<span><span class="co">#&gt; $ Confidence_in_curation <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, N…</span></span>
-<span><span class="co">#&gt; $ Attribute_type         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "logical", "logical", "logical", "log…</span></span>
-<span><span class="co">#&gt; $ BacDive_ID             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, N…</span></span>
-<span><span class="co">#&gt; $ Type_strain            <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> NA, NA, NA, NA, NA, NA, NA, NA, NA, N…</span></span></code></pre></div>
-<p>Genus signatures</p>
+<span><span class="co">#&gt; Using data downloaded on 2023-08-10 21:28:58.</span></span></code></pre></div>
+<p>Create signatures at the genus level:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp_sigs_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getBugphyzzSignatures.html" class="external-link">getBugphyzzSignatures</a></span><span class="op">(</span></span>
 <span>  df <span class="op">=</span> <span class="va">bp</span>, tax.id.type <span class="op">=</span> <span class="st">'NCBI_ID'</span>, tax.level <span class="op">=</span> <span class="st">'genus'</span>, min.size <span class="op">=</span> <span class="fl">10</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">bp_sigs_gn</span>, <span class="va">head</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $`bp:aerophilicity|aerobic|g`</span></span>
-<span><span class="co">#&gt; [1] "204476"  "45402"   "556257"  "773"     "186650"  "1649484"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`bp:aerophilicity|aerotolerant|g`</span></span>
-<span><span class="co">#&gt; [1] "1494427" "2834353" "2683678" "1930791" "1924101" "1935206"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`bp:aerophilicity|anaerobic|g`</span></span>
-<span><span class="co">#&gt; [1] "1123951" "1594166" "274591"  "1759400" "1931196" "2911176"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`bp:aerophilicity|facultatively anaerobic|g`</span></span>
-<span><span class="co">#&gt; [1] "204476"  "1123951" "1594166" "1759400" "1931196" "2911176"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`bp:animal pathogen|animal pathogen--FALSE|g`</span></span>
-<span><span class="co">#&gt; [1] "773"    "245876" "274591" "93368"  "1033"   "374"   </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`bp:animal pathogen|animal pathogen--TRUE|g`</span></span>
-<span><span class="co">#&gt; [1] "773"     "1017183" "28209"   "1033"    "357"     "182269"</span></span></code></pre></div>
-<p>Species signatures</p>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bp_sigs_gn</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "bp:aerophilicity|aerobic|g"                 </span></span>
+<span><span class="co">#&gt; [2] "bp:aerophilicity|aerotolerant|g"            </span></span>
+<span><span class="co">#&gt; [3] "bp:aerophilicity|anaerobic|g"               </span></span>
+<span><span class="co">#&gt; [4] "bp:aerophilicity|facultatively anaerobic|g" </span></span>
+<span><span class="co">#&gt; [5] "bp:animal pathogen|animal pathogen--FALSE|g"</span></span>
+<span><span class="co">#&gt; [6] "bp:animal pathogen|animal pathogen--TRUE|g"</span></span></code></pre></div>
+<p>Create signatures at the species level:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp_sigs_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getBugphyzzSignatures.html" class="external-link">getBugphyzzSignatures</a></span><span class="op">(</span></span>
 <span>  df <span class="op">=</span> <span class="va">bp</span>, tax.id.type <span class="op">=</span> <span class="st">'NCBI_ID'</span>, tax.level <span class="op">=</span> <span class="st">'species'</span>, min.size <span class="op">=</span> <span class="fl">10</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">bp_sigs_sp</span>, <span class="va">head</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $`bp:acetate producing|acetate producing--TRUE|s`</span></span>
-<span><span class="co">#&gt; [1] "105841"  "1229621" "2025494" "2738446" "2838461" "2838462"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`bp:aerophilicity|aerobic|s`</span></span>
-<span><span class="co">#&gt; [1] "100"     "1282440" "1745854" "1937790" "2579970" "2579975"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`bp:aerophilicity|aerotolerant|s`</span></span>
-<span><span class="co">#&gt; [1] "1454184" "1806172" "1398745" "1433543" "1508390" "1522315"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`bp:aerophilicity|anaerobic|s`</span></span>
-<span><span class="co">#&gt; [1] "225625"  "2528964" "2607286" "47492"   "60216"   "640133" </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`bp:aerophilicity|facultatively anaerobic|s`</span></span>
-<span><span class="co">#&gt; [1] "1233475" "217067"  "400769"  "425677"  "1123952" "2584524"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`bp:animal pathogen|animal pathogen--FALSE|s`</span></span>
-<span><span class="co">#&gt; [1] "1002233" "1318743" "1443937" "1457016" "1457020" "1468418"</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bp_sigs_sp</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "bp:acetate producing|acetate producing--TRUE|s"</span></span>
+<span><span class="co">#&gt; [2] "bp:aerophilicity|aerobic|s"                    </span></span>
+<span><span class="co">#&gt; [3] "bp:aerophilicity|aerotolerant|s"               </span></span>
+<span><span class="co">#&gt; [4] "bp:aerophilicity|anaerobic|s"                  </span></span>
+<span><span class="co">#&gt; [5] "bp:aerophilicity|facultatively anaerobic|s"    </span></span>
+<span><span class="co">#&gt; [6] "bp:animal pathogen|animal pathogen--FALSE|s"</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="enrichment-analysis">Enrichment analysis<a class="anchor" aria-label="anchor" href="#enrichment-analysis"></a>
 </h2>
+<p>#&gt; top signatures by odds ratio</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="st">'BSDB ID'</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">bsdb</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">bsdb</span> <span class="op">&lt;-</span> <span class="va">bsdb</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>      `BSDB ID`  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span></span>
-<span>        <span class="st">'bsdb:'</span>,</span>
-<span>        <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'^.* '</span>, <span class="st">''</span>, <span class="va">Study</span><span class="op">)</span>, <span class="st">'/'</span>, </span>
-<span>        <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'^.* '</span>, <span class="st">''</span>, <span class="va">Experiment</span><span class="op">)</span>, <span class="st">'/'</span>, </span>
-<span>        <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'^.* '</span>, <span class="st">''</span>, <span class="va">`Signature page name`</span><span class="op">)</span></span>
-<span>      <span class="op">)</span></span>
-<span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/relocate.html" class="external-link">relocate</a></span><span class="op">(</span><span class="va">`BSDB ID`</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="va">enrichment_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">'list'</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">'Running enrichment for bsdb '</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">'.'</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">enrichment_res</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">'genus'</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runEnrichment.html">runEnrichment</a></span><span class="op">(</span></span>
-<span>      bsdb_sets <span class="op">=</span> <span class="va">bsdb_sets</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>      background_sets <span class="op">=</span> <span class="va">background_sets</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>      bp_sigs <span class="op">=</span> <span class="va">bp_sigs_gn</span>,</span>
-<span>      bsdb <span class="op">=</span> <span class="va">bsdb</span>, </span>
-<span>      fdr_ths <span class="op">=</span> <span class="fl">0.1</span></span>
-<span>    <span class="op">)</span></span>
-<span>  <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">'species'</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runEnrichment.html">runEnrichment</a></span><span class="op">(</span></span>
-<span>      bsdb_sets <span class="op">=</span> <span class="va">bsdb_sets</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>      background_sets <span class="op">=</span> <span class="va">background_sets</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>      bp_sigs <span class="op">=</span> <span class="va">bp_sigs_sp</span>,</span>
-<span>      bsdb <span class="op">=</span> <span class="va">bsdb</span>, </span>
-<span>      fdr_ths <span class="op">=</span> <span class="fl">0.1</span></span>
-<span>    <span class="op">)</span></span>
-<span>  <span class="op">}</span></span>
-<span>  <span class="va">enrichment_res</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">res</span></span>
-<span><span class="op">}</span></span>
-<span><span class="va">enrichment_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/keep.html" class="external-link">discard</a></span><span class="op">(</span><span class="va">enrichment_res</span>, <span class="op">~</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">enrichment_res</span>, <span class="va">nrow</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $mouth__genus</span></span>
-<span><span class="co">#&gt; [1] 23</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $mouth__species</span></span>
-<span><span class="co">#&gt; [1] 35</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $vagina__genus</span></span>
-<span><span class="co">#&gt; [1] 20</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $vagina__species</span></span>
-<span><span class="co">#&gt; [1] 5</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $stool__genus</span></span>
-<span><span class="co">#&gt; [1] 301</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $stool__species</span></span>
-<span><span class="co">#&gt; [1] 409</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $nose__genus</span></span>
-<span><span class="co">#&gt; [1] 1</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $skin__genus</span></span>
-<span><span class="co">#&gt; [1] 6</span></span>
-<span><span class="co">## top hits by odds ratio</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">nworkers</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">enrichment_res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/bplapply.html" class="external-link">bplapply</a></span><span class="op">(</span></span>
+<span>    X <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span>, </span>
+<span>    BPPARAM <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/MulticoreParam-class.html" class="external-link">MulticoreParam</a></span><span class="op">(</span>workers <span class="op">=</span> <span class="va">nworkers</span><span class="op">)</span>, </span>
+<span>    FUN <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">'genus'</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>            <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runEnrichment.html">runEnrichment</a></span><span class="op">(</span></span>
+<span>                bsdb_sets <span class="op">=</span> <span class="va">bsdb_sets</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>                background_sets <span class="op">=</span> <span class="va">background_sets</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>                bp_sigs <span class="op">=</span> <span class="va">bp_sigs_gn</span>,</span>
+<span>                bsdb <span class="op">=</span> <span class="va">bsdb</span>, </span>
+<span>                fdr_ths <span class="op">=</span> <span class="fl">0.1</span></span>
+<span>            <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>                <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>comb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span>        <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">'species'</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>            <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/runEnrichment.html">runEnrichment</a></span><span class="op">(</span></span>
+<span>                bsdb_sets <span class="op">=</span> <span class="va">bsdb_sets</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>                background_sets <span class="op">=</span> <span class="va">background_sets</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>                bp_sigs <span class="op">=</span> <span class="va">bp_sigs_sp</span>,</span>
+<span>                bsdb <span class="op">=</span> <span class="va">bsdb</span>, </span>
+<span>                fdr_ths <span class="op">=</span> <span class="fl">0.1</span></span>
+<span>            <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>                <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>comb <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sets</span><span class="op">)</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span>        <span class="op">}</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/keep.html" class="external-link">discard</a></span><span class="op">(</span><span class="op">~</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">enrichDF</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">enrichment_res</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tidyr.tidyverse.org/reference/separate.html" class="external-link">separate</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">'comb'</span>, into <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'body_site'</span>, <span class="st">'rank'</span><span class="op">)</span>, sep <span class="op">=</span> <span class="st">'__'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Attribute_group <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'^bp:(.*)\\|.*\\|\\w$'</span>, <span class="st">'\\1'</span>, <span class="va">bp_sig</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">enrichDF</span>, <span class="va">body_site</span>, <span class="va">rank</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 8 × 3</span></span></span>
+<span><span class="co">#&gt;   body_site rank        n</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> mouth     genus      33</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> mouth     species    43</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> skin      genus       6</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> skin      species    33</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> stool     genus     401</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> stool     species   594</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> vagina    genus      21</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> vagina    species     5</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="plot-frequency-of-signatures">Plot frequency of signatures<a class="anchor" aria-label="anchor" href="#plot-frequency-of-signatures"></a>
+</h3>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">enrichment_res</span>, .id <span class="op">=</span> <span class="st">'comb'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/separate.html" class="external-link">separate</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">'comb'</span>, into <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'body_site'</span>, <span class="st">'rank'</span><span class="op">)</span>, sep <span class="op">=</span> <span class="st">'__'</span><span class="op">)</span></span>
-<span></span>
-<span></span>
-<span></span>
-<span><span class="va">bp1</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op">|&gt;</span> </span>
+<code class="sourceCode R"><span><span class="va">summary1</span> <span class="op">&lt;-</span> <span class="va">enrichDF</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">Attribute_group</span>, <span class="va">rank</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">Attribute_group</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>total_n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">total_n</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Attribute_group <span class="op">=</span> <span class="fu"><a href="https://forcats.tidyverse.org/reference/fct_inorder.html" class="external-link">fct_inorder</a></span><span class="op">(</span><span class="va">Attribute_group</span><span class="op">)</span><span class="op">)</span> </span>
+<span><span class="va">plot1</span> <span class="op">&lt;-</span> <span class="va">summary1</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">Attribute_group</span>, <span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">rank</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_colour_discrete.html" class="external-link">scale_fill_discrete</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">'Rank'</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>        x <span class="op">=</span> <span class="st">'Attribute group'</span>, y <span class="op">=</span> <span class="st">'Frequency'</span></span>
+<span>    <span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/coord_flip.html" class="external-link">coord_flip</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">plot1</span></span></code></pre></div>
+<p><img src="high_throughput_msea_bsdb_files/figure-html/unnamed-chunk-2-1.png" width="700"></p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">attr_grp_nms</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">summary1</span><span class="op">$</span><span class="va">Attribute_group</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bp1</span> <span class="op">&lt;-</span> <span class="va">df</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">body_site</span>, <span class="va">rank</span>, <span class="va">bugsigdb_sig</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">body_site</span>, <span class="va">rank</span>, name <span class="op">=</span> <span class="st">'bugsigdb'</span><span class="op">)</span></span>
@@ -491,9 +369,8 @@ a background dataset.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
 <span>    axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span>  </span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<span>  <span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plots</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">'list'</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">enrichment_res</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">plots</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'^(.*)__.*$'</span>, <span class="st">'\\1'</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">enrichment_res</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span></span>
@@ -502,66 +379,11 @@ a background dataset.</p>
 <span>  <span class="va">plots</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plotEnrichmentRes.html">plotEnrichmentRes</a></span><span class="op">(</span><span class="va">enrichment_res</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, <span class="va">b</span>, <span class="va">r</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="a-single-case-step-by-step">A single case (step by step)<a class="anchor" aria-label="anchor" href="#a-single-case-step-by-step"></a>
-</h2>
-<p>Get bsdb signatures</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bsdb_sets_</span> <span class="op">&lt;-</span> <span class="va">bsdb</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Body site`</span> <span class="op">==</span> <span class="st">'feces'</span>, <span class="va">`Host species`</span> <span class="op">==</span> <span class="st">'Homo sapiens'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu">bugsigdbr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/bugsigdbr/man/getSignatures.html" class="external-link">getSignatures</a></span><span class="op">(</span></span>
-<span>      tax.id.type <span class="op">=</span> <span class="st">'ncbi'</span>, tax.level <span class="op">=</span> <span class="st">'genus'</span>, min.size <span class="op">=</span> <span class="fl">5</span></span>
-<span>    <span class="op">)</span> </span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">bsdb_sets_</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 247</span></span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">bsdb_sets_</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span>, <span class="va">head</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $`bsdb:1/1/1_adenoma:conventional-adenoma-cases_vs_controls_UP`</span></span>
-<span><span class="co">#&gt; [1] "1654"   "1716"   "1301"   "162289" "189330" "33024" </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`bsdb:1/4/1_adenoma:Proximal-conventional-adenoma-cases_vs_controls_UP`</span></span>
-<span><span class="co">#&gt; [1] "1654"   "1716"   "1485"   "836"    "162289" "1301"  </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $`bsdb:1/6/1_adenoma:Non-advanced-conventional-adenoma-cases_vs_controls_UP`</span></span>
-<span><span class="co">#&gt; [1] "1654"   "283168" "1301"   "189330" "40544"  "33024"</span></span></code></pre></div>
-<p>Create background sets</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">typical_set_</span> <span class="op">&lt;-</span> <span class="va">tms</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">body_site</span> <span class="op">==</span> <span class="st">'stool'</span>, <span class="va">rank</span> <span class="op">==</span> <span class="st">'genus'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">taxid</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">typical_set_</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; [1] 197</span></span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">typical_set_</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1]    1279 1912216    1716    1301  150022   32207</span></span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">background_sets_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">bsdb_sets_</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">typical_set_</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">background_sets_</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 247</span></span></code></pre></div>
-<p>Create contingency tables</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">taxa_name_</span> <span class="op">&lt;-</span> <span class="st">'bsdb:237/1/1_chronic-hepatitis-C-virus-infection:cirrhosis-patients_vs_healthy-controls_UP'</span></span>
-<span><span class="va">ct</span> <span class="op">&lt;-</span> <span class="fu">bugphyzzAnalyses</span><span class="fu">:::</span><span class="fu">.contingencyTable</span><span class="op">(</span></span>
-<span>    set <span class="op">=</span> <span class="va">bsdb_sets_</span><span class="op">[[</span><span class="va">taxa_name_</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>    reference <span class="op">=</span> <span class="va">background_sets_</span><span class="op">[[</span><span class="va">taxa_name_</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>    sig <span class="op">=</span> <span class="va">bp_sigs_gn</span><span class="op">$</span><span class="va">`aerophilicity:aerobic`</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">ct</span></span>
-<span><span class="co">#&gt;           sig</span></span>
-<span><span class="co">#&gt; set        inSig notInSig</span></span>
-<span><span class="co">#&gt;   inSet        0       10</span></span>
-<span><span class="co">#&gt;   notInSet     0      189</span></span></code></pre></div>
-<p>Enrichment</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p_value_</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/fisher.test.html" class="external-link">fisher.test</a></span><span class="op">(</span><span class="va">ct</span>, alternative <span class="op">=</span> <span class="st">'g'</span><span class="op">)</span><span class="op">$</span><span class="va">p.value</span></span>
-<span><span class="va">p_value_</span></span>
-<span><span class="co">#&gt; [1] 1</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/sessioninfo/reference/session_info.html" class="external-link">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Session info ───────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">setting </span> <span style="color: #555555; font-style: italic;">value</span></span></span>
@@ -573,100 +395,102 @@ a background dataset.</p>
 <span><span class="co">#&gt;  collate  en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  ctype    en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  tz       Etc/UTC</span></span>
-<span><span class="co">#&gt;  date     2023-08-08</span></span>
+<span><span class="co">#&gt;  date     2023-08-10</span></span>
 <span><span class="co">#&gt;  pandoc   2.19.2 @ /usr/local/bin/ (via rmarkdown)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Packages ───────────────────────────────────────────────────────────────────</span></span></span>
-<span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">package         </span> <span style="color: #555555; font-style: italic;">*</span> <span style="color: #555555; font-style: italic;">version </span> <span style="color: #555555; font-style: italic;">date (UTC)</span> <span style="color: #555555; font-style: italic;">lib</span> <span style="color: #555555; font-style: italic;">source</span></span></span>
-<span><span class="co">#&gt;  aplot              0.1.10   <span style="color: #555555;">2023-03-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  BiocFileCache      2.8.0    <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
-<span><span class="co">#&gt;  bit                4.0.5    <span style="color: #555555;">2022-11-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  bit64              4.0.5    <span style="color: #555555;">2020-08-30</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  blob               1.2.4    <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  bold               1.3.0    <span style="color: #555555;">2023-05-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  bslib              0.5.0    <span style="color: #555555;">2023-06-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  bugphyzz         * 0.0.1.3  <span style="color: #555555;">2023-08-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@3ad61e6)</span></span></span>
-<span><span class="co">#&gt;  bugphyzzAnalyses * 0.1.0    <span style="color: #555555;">2023-08-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
-<span><span class="co">#&gt;  bugsigdbr        * 1.6.4    <span style="color: #555555;">2023-07-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
-<span><span class="co">#&gt;  cachem             1.0.8    <span style="color: #555555;">2023-05-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  cli                3.6.1    <span style="color: #555555;">2023-03-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  colorspace         2.1-0    <span style="color: #555555;">2023-01-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  conditionz         0.1.0    <span style="color: #555555;">2019-04-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  crayon             1.5.2    <span style="color: #555555;">2022-09-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  crul               1.4.0    <span style="color: #555555;">2023-05-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  curl               5.0.1    <span style="color: #555555;">2023-06-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  data.table         1.14.8   <span style="color: #555555;">2023-02-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  DBI                1.1.3    <span style="color: #555555;">2022-06-18</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  dbplyr             2.3.3    <span style="color: #555555;">2023-07-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  desc               1.4.2    <span style="color: #555555;">2022-09-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  digest             0.6.33   <span style="color: #555555;">2023-07-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  dplyr            * 1.1.2    <span style="color: #555555;">2023-04-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  epitools           0.5-10.1 <span style="color: #555555;">2020-03-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  evaluate           0.21     <span style="color: #555555;">2023-05-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  fansi              1.0.4    <span style="color: #555555;">2023-01-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  farver             2.1.1    <span style="color: #555555;">2022-07-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  fastmap            1.1.1    <span style="color: #555555;">2023-02-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  filelock           1.0.2    <span style="color: #555555;">2018-10-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  forcats            1.0.0    <span style="color: #555555;">2023-01-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  fs                 1.6.3    <span style="color: #555555;">2023-07-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  generics           0.1.3    <span style="color: #555555;">2022-07-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  ggbreak          * 0.1.2    <span style="color: #555555;">2023-06-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  ggfun              0.1.1    <span style="color: #555555;">2023-06-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  ggplot2          * 3.4.2    <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  ggplotify          0.1.1    <span style="color: #555555;">2023-06-27</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  glue               1.6.2    <span style="color: #555555;">2022-02-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  gridGraphics       0.5-1    <span style="color: #555555;">2020-12-13</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  gtable             0.3.3    <span style="color: #555555;">2023-03-21</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  hoardr             0.5.3    <span style="color: #555555;">2023-01-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  htmltools          0.5.5    <span style="color: #555555;">2023-03-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  httpcode           0.3.0    <span style="color: #555555;">2020-04-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  httr               1.4.6    <span style="color: #555555;">2023-05-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  jquerylib          0.1.4    <span style="color: #555555;">2021-04-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  jsonlite           1.8.7    <span style="color: #555555;">2023-06-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  knitr              1.43     <span style="color: #555555;">2023-05-25</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  lifecycle          1.0.3    <span style="color: #555555;">2022-10-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  magrittr           2.0.3    <span style="color: #555555;">2022-03-30</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  memoise            2.0.1    <span style="color: #555555;">2021-11-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  mgsub              1.7.3    <span style="color: #555555;">2021-07-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  munsell            0.5.0    <span style="color: #555555;">2018-06-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  ontologyIndex      2.11     <span style="color: #555555;">2023-05-30</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  patchwork          1.1.2    <span style="color: #555555;">2022-08-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  pillar             1.9.0    <span style="color: #555555;">2023-03-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  pkgconfig          2.0.3    <span style="color: #555555;">2019-09-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  pkgdown            2.0.7    <span style="color: #555555;">2022-12-14</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  purrr            * 1.0.1    <span style="color: #555555;">2023-01-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  R6                 2.5.1    <span style="color: #555555;">2021-08-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  ragg               1.2.5    <span style="color: #555555;">2023-01-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  rappdirs           0.3.3    <span style="color: #555555;">2021-01-31</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  rlang              1.1.1    <span style="color: #555555;">2023-04-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  rmarkdown          2.23     <span style="color: #555555;">2023-07-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  rprojroot          2.0.3    <span style="color: #555555;">2022-04-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  RSQLite            2.3.1    <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  sass               0.4.7    <span style="color: #555555;">2023-07-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  scales             1.2.1    <span style="color: #555555;">2022-08-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  sessioninfo        1.2.2    <span style="color: #555555;">2021-12-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  stringi            1.7.12   <span style="color: #555555;">2023-01-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  stringr            1.5.0    <span style="color: #555555;">2022-12-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  systemfonts        1.0.4    <span style="color: #555555;">2022-02-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  taxa               0.4.2    <span style="color: #555555;">2022-04-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  taxize             1.0      <span style="color: #555555;">2023-08-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
-<span><span class="co">#&gt;  taxizedb           0.3.1    <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  taxPPro          * 0.1.0    <span style="color: #555555;">2023-08-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (sdgamboa/taxPPro@d2b4c6f)</span></span></span>
-<span><span class="co">#&gt;  textshaping        0.3.6    <span style="color: #555555;">2021-10-13</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  tibble             3.2.1    <span style="color: #555555;">2023-03-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  tidyr            * 1.3.0    <span style="color: #555555;">2023-01-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  tidyselect         1.2.0    <span style="color: #555555;">2022-10-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  tzdb               0.4.0    <span style="color: #555555;">2023-05-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  utf8               1.2.3    <span style="color: #555555;">2023-01-31</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  uuid               1.1-0    <span style="color: #555555;">2022-04-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  vctrs              0.6.3    <span style="color: #555555;">2023-06-14</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  viridisLite        0.4.2    <span style="color: #555555;">2023-05-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  vroom              1.6.3    <span style="color: #555555;">2023-04-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  withr              2.5.0    <span style="color: #555555;">2022-03-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  xfun               0.39     <span style="color: #555555;">2023-04-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  xml2               1.3.5    <span style="color: #555555;">2023-07-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  yaml               2.3.7    <span style="color: #555555;">2023-01-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  yulab.utils        0.0.6    <span style="color: #555555;">2022-12-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">package         </span> <span style="color: #555555; font-style: italic;">*</span> <span style="color: #555555; font-style: italic;">version</span> <span style="color: #555555; font-style: italic;">date (UTC)</span> <span style="color: #555555; font-style: italic;">lib</span> <span style="color: #555555; font-style: italic;">source</span></span></span>
+<span><span class="co">#&gt;  aplot              0.2.0   <span style="color: #555555;">2023-08-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  BiocFileCache      2.8.0   <span style="color: #555555;">2023-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
+<span><span class="co">#&gt;  BiocParallel     * 1.34.2  <span style="color: #555555;">2023-05-22</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
+<span><span class="co">#&gt;  bit                4.0.5   <span style="color: #555555;">2022-11-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  bit64              4.0.5   <span style="color: #555555;">2020-08-30</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  blob               1.2.4   <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  bold               1.3.0   <span style="color: #555555;">2023-05-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  bslib              0.5.0   <span style="color: #555555;">2023-06-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  bugphyzz         * 0.0.1.3 <span style="color: #555555;">2023-08-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@3ad61e6)</span></span></span>
+<span><span class="co">#&gt;  bugphyzzAnalyses * 0.1.0   <span style="color: #555555;">2023-08-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
+<span><span class="co">#&gt;  bugsigdbr        * 1.6.4   <span style="color: #555555;">2023-07-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
+<span><span class="co">#&gt;  cachem             1.0.8   <span style="color: #555555;">2023-05-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  cli                3.6.1   <span style="color: #555555;">2023-03-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  codetools          0.2-19  <span style="color: #555555;">2023-02-01</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  colorspace         2.1-0   <span style="color: #555555;">2023-01-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  conditionz         0.1.0   <span style="color: #555555;">2019-04-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  crayon             1.5.2   <span style="color: #555555;">2022-09-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  crul               1.4.0   <span style="color: #555555;">2023-05-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  curl               5.0.1   <span style="color: #555555;">2023-06-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  data.table         1.14.8  <span style="color: #555555;">2023-02-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  DBI                1.1.3   <span style="color: #555555;">2022-06-18</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  dbplyr             2.3.3   <span style="color: #555555;">2023-07-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  desc               1.4.2   <span style="color: #555555;">2022-09-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  digest             0.6.33  <span style="color: #555555;">2023-07-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  dplyr            * 1.1.2   <span style="color: #555555;">2023-04-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  evaluate           0.21    <span style="color: #555555;">2023-05-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  fansi              1.0.4   <span style="color: #555555;">2023-01-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  farver             2.1.1   <span style="color: #555555;">2022-07-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  fastmap            1.1.1   <span style="color: #555555;">2023-02-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  filelock           1.0.2   <span style="color: #555555;">2018-10-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  forcats          * 1.0.0   <span style="color: #555555;">2023-01-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  fs                 1.6.3   <span style="color: #555555;">2023-07-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  generics           0.1.3   <span style="color: #555555;">2022-07-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  ggbreak          * 0.1.2   <span style="color: #555555;">2023-06-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  ggfun              0.1.2   <span style="color: #555555;">2023-08-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  ggplot2          * 3.4.2   <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  ggplotify          0.1.2   <span style="color: #555555;">2023-08-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  glue               1.6.2   <span style="color: #555555;">2022-02-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  gridGraphics       0.5-1   <span style="color: #555555;">2020-12-13</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  gtable             0.3.3   <span style="color: #555555;">2023-03-21</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  highr              0.10    <span style="color: #555555;">2022-12-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  hoardr             0.5.3   <span style="color: #555555;">2023-01-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  htmltools          0.5.5   <span style="color: #555555;">2023-03-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  httpcode           0.3.0   <span style="color: #555555;">2020-04-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  httr               1.4.6   <span style="color: #555555;">2023-05-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  jquerylib          0.1.4   <span style="color: #555555;">2021-04-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  jsonlite           1.8.7   <span style="color: #555555;">2023-06-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  knitr              1.43    <span style="color: #555555;">2023-05-25</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  labeling           0.4.2   <span style="color: #555555;">2020-10-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  lifecycle          1.0.3   <span style="color: #555555;">2022-10-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  magrittr           2.0.3   <span style="color: #555555;">2022-03-30</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  memoise            2.0.1   <span style="color: #555555;">2021-11-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  mgsub              1.7.3   <span style="color: #555555;">2021-07-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  munsell            0.5.0   <span style="color: #555555;">2018-06-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  ontologyIndex      2.11    <span style="color: #555555;">2023-05-30</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  patchwork          1.1.2   <span style="color: #555555;">2022-08-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  pillar             1.9.0   <span style="color: #555555;">2023-03-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  pkgconfig          2.0.3   <span style="color: #555555;">2019-09-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  pkgdown            2.0.7   <span style="color: #555555;">2022-12-14</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  purrr            * 1.0.1   <span style="color: #555555;">2023-01-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  R6                 2.5.1   <span style="color: #555555;">2021-08-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  ragg               1.2.5   <span style="color: #555555;">2023-01-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  rappdirs           0.3.3   <span style="color: #555555;">2021-01-31</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  rlang              1.1.1   <span style="color: #555555;">2023-04-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  rmarkdown          2.23    <span style="color: #555555;">2023-07-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  rprojroot          2.0.3   <span style="color: #555555;">2022-04-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  RSQLite            2.3.1   <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  sass               0.4.7   <span style="color: #555555;">2023-07-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  scales             1.2.1   <span style="color: #555555;">2022-08-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  sessioninfo        1.2.2   <span style="color: #555555;">2021-12-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  stringi            1.7.12  <span style="color: #555555;">2023-01-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  stringr            1.5.0   <span style="color: #555555;">2022-12-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  systemfonts        1.0.4   <span style="color: #555555;">2022-02-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  taxa               0.4.2   <span style="color: #555555;">2022-04-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  taxize             1.0     <span style="color: #555555;">2023-08-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (ropensci/taxize@bcff2a6)</span></span></span>
+<span><span class="co">#&gt;  taxizedb           0.3.1   <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  taxPPro          * 0.1.0   <span style="color: #555555;">2023-08-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (sdgamboa/taxPPro@d2b4c6f)</span></span></span>
+<span><span class="co">#&gt;  textshaping        0.3.6   <span style="color: #555555;">2021-10-13</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  tibble             3.2.1   <span style="color: #555555;">2023-03-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  tidyr            * 1.3.0   <span style="color: #555555;">2023-01-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  tidyselect         1.2.0   <span style="color: #555555;">2022-10-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  tzdb               0.4.0   <span style="color: #555555;">2023-05-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  utf8               1.2.3   <span style="color: #555555;">2023-01-31</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  uuid               1.1-0   <span style="color: #555555;">2022-04-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  vctrs              0.6.3   <span style="color: #555555;">2023-06-14</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  vroom              1.6.3   <span style="color: #555555;">2023-04-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  withr              2.5.0   <span style="color: #555555;">2022-03-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  xfun               0.40    <span style="color: #555555;">2023-08-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  xml2               1.3.5   <span style="color: #555555;">2023-07-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  yaml               2.3.7   <span style="color: #555555;">2023-01-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
+<span><span class="co">#&gt;  yulab.utils        0.0.7   <span style="color: #555555;">2023-08-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #555555;"> [1] /usr/local/lib/R/site-library</span></span></span>
 <span><span class="co">#&gt; <span style="color: #555555;"> [2] /usr/local/lib/R/library</span></span></span>
