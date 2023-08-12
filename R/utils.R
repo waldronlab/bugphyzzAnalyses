@@ -88,18 +88,8 @@ createDT <- function(x){
 #' @export
 #'
 importTidyTMS <- function(prevalence_threshold = 0.01) {
-    temp_dir <- paste0(tempdir(), '/TypicalMicrobiomeSignatures')
-    if (dir.exists(temp_dir)) {
-        unlink(paste0(temp_dir, '/*'), recursive = TRUE, force = TRUE)
-    }
-    dir.create(temp_dir, showWarnings = FALSE)
-    dest_file <- paste0(temp_dir, '/TypicalMicrobiomeSignaturesExports-v1.0.0.zip')
-    # doi <- doi
-    # zen4R::download_zenodo(doi = doi, path = temp_dir, quiet = TRUE)
-    url <- 'https://zenodo.org/record/7544550/files/waldronlab/TypicalMicrobiomeSignaturesExports-v1.0.0.zip?download=1'
-    download.file(url = url, destfile = dest_file)
-    zip_file <- list.files(temp_dir, full.names = TRUE)
-    base_dir <- sub('\\.zip', '', zip_file)
+    base_dir <- tools::R_user_dir('bugphyzzAnalyses', which = 'cache')
+    zip_file <- .downloadTMSZip()
     unzip(zip_file, exdir = base_dir)
     extracted_dir <- paste0(base_dir, '/', list.files(base_dir))
     fnames <- grep(
@@ -290,6 +280,19 @@ calcPredStats <- function(df) {
 
 }
 
+.get_cache <- function() {
+    cache <- tools::R_user_dir("bugphyzzAnalyses", which="cache")
+    BiocFileCache::BiocFileCache(cache)
+}
 
-
-
+.downloadTMSZip <- function(verbose = FALSE) {
+    fileURL <- 'https://zenodo.org/record/7544550/files/waldronlab/TypicalMicrobiomeSignaturesExports-v1.0.0.zip?download=1'
+    bfc <- .get_cache()
+    rid <- BiocFileCache::bfcquery(bfc, "TypicalMicrobiomeSignatures.zip", "rname")$rid
+    if (!length(rid)) {
+        if( verbose )
+            message( "Downloading GENE file" )
+            rid <- names(BiocFileCache::bfcadd(bfc, "TypicalMicrobiomeSignatures.zip", fileURL))
+    }
+    BiocFileCache::bfcrpath(bfc, rids = rid)
+}
