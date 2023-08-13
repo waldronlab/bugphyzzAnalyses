@@ -560,7 +560,6 @@ ht <- grid.grabExpr(
 )
 ```
 
-
 ### Combined plot
 
 ```{r, fig.width=6.15, fig.height=9.68}
@@ -574,12 +573,7 @@ p2 <- plot_grid(
 p2
 ```
 
-
-
-
-
 ### Relationship between initial ammount of annotations and magnitude of propagation
-
 
 ```{r, fig.width=9.4, fig.height= 6.1}
 cols <- c('Attribute_group', 'Rank', 'completeness')
@@ -686,8 +680,6 @@ ht_sources <- Heatmap(
 
 ht_sources
 ```
-
-
 
 # Paragraph
 
