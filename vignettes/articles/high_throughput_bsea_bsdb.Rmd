@@ -1,5 +1,5 @@
 ---
-title: "High-througput MSEA of BugSigDB and bugphyzz sets"
+title: "High-througput BSEA of BugSigDB and bugphyzz sets"
 output:
   html_document:
     toc: true
@@ -18,7 +18,7 @@ library(bugphyzzAnalyses)
 library(bugphyzz)
 library(purrr)
 library(tidyr)
-library(dplyr)
+library(dplyr)f
 library(bugsigdbr)
 library(taxPPro)
 library(ggplot2)
@@ -273,8 +273,6 @@ myPlot <- left_join(bp1, bp2, by = c('body_site', 'rank')) |>
   )
 
 ```
-
-
 
 ```{r create plots, warning=FALSE, eval=FALSE}
 plots <- vector('list', length(enrichment_res))
