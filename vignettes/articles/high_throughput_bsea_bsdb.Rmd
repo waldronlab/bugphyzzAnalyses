@@ -18,7 +18,7 @@ library(bugphyzzAnalyses)
 library(bugphyzz)
 library(purrr)
 library(tidyr)
-library(dplyr)f
+library(dplyr)
 library(bugsigdbr)
 library(taxPPro)
 library(ggplot2)
@@ -223,69 +223,25 @@ plot1 <- summary1 |>
 plot1
 ```
 
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
 ```{r}
 attr_grp_nms <- unique(summary1$Attribute_group)
 ```
 
 
-```{r}
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```{r, eval=FALSE}
-bp1 <- df |> 
-  select(body_site, rank, bugsigdb_sig) |> 
-  unique() |> 
-  count(body_site, rank, name = 'bugsigdb')
-
-bp2 <- df |> 
-  select(body_site, rank, bp_sig) |> 
-  count(body_site, rank, name = 'bp')
-
-myPlot <- left_join(bp1, bp2, by = c('body_site', 'rank')) |> 
-  pivot_longer(
-    names_to = 'type_sig', values_to = 'n', cols = c(bugsigdb, bp)
-  ) |> 
-  ggplot(aes(body_site, n)) +
-  geom_col(aes(fill = type_sig), position = 'dodge') +
-  scale_fill_discrete(name = 'sig. source') +
-  scale_y_cut(breaks = c(10)) +
-  facet_wrap(~rank, ncol = 2) +
-  labs(
-    x = 'Body site', y = '# signatures'
-  ) +
-  theme_bw() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  )
-
-```
-
-```{r create plots, warning=FALSE, eval=FALSE}
-plots <- vector('list', length(enrichment_res))
-for (i in seq_along(plots)) {
-  b <- sub('^(.*)__.*$', '\\1', names(enrichment_res)[i])
-  r <- sub('^.*__(.*)$', '\\1', names(enrichment_res)[i])
-  names(plots)[i] <- names(enrichment_res)[i]
-  plots[[i]] <- plotEnrichmentRes(enrichment_res[[i]], b, r)
-}
-```
-
-# Session information
-
 ```{r session info}
 sessioninfo::session_info()
 ```
+
