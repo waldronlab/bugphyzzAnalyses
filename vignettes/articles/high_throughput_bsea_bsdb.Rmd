@@ -171,8 +171,9 @@ head(names(bp_sigs_sp))
 nworkers <- parallel::detectCores()
 enrichment_res <- bplapply(
     X = seq_along(bsdb_sets), 
-    BPPARAM = MulticoreParam(workers = nworkers), 
+    BPPARAM = SnowParam(workers = nworkers), 
     FUN = function(i) {
+        return(names(bsdb_sets))
         if (grepl('genus', names(bsdb_sets)[i])) {
             res <- runEnrichment(
                 bsdb_sets = bsdb_sets[[i]],
@@ -193,7 +194,7 @@ enrichment_res <- bplapply(
                 mutate(comb = names(bsdb_sets)[[i]])
         }
     return(res)
-}) |> 
+}) 
     discard(~ !nrow(.x))
 enrichDF <- bind_rows(enrichment_res) |> 
     separate(col = 'comb', into = c('body_site', 'rank'), sep = '__') |> 

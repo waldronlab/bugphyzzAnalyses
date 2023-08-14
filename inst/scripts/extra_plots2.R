@@ -1,9 +1,46 @@
 
 library(ComplexHeatmap)
+library(bugphyzzAnalyses)
+library(stringr)
+library(dplyr)
+library(bugsigdbr)
 
+bsdb <- importBugSigDB()
+bsdb$Condition <- tolower(bsdb$Condition)
 
 url <- 'https://raw.githubusercontent.com/waldronlab/BugSigDBPaper/main/inst/extdata/condition2category.txt'
-cond <- read.csv(url, header = FALSE, col.names = c('Condition', 'cat'))
+cond_cat_paper <- read.csv(url, header = FALSE, col.names = c('Condition', 'Category'))
+cond_cat_paper$Condition <- tolower(str_squish(cond_cat_paper$Condition))
+
+url2 <- system.file('extdata', 'condition2category.tsv',  package = 'bugphyzzAnalyses', mustWork = TRUE)
+cond_cat_ba <- read.table(url2, sep = '\t', header = TRUE)
+cond_cat_ba$Condition <- tolower(str_squish(cond_cat_ba$Condition))
+
+conditions_bsdb <- unique(tolower(str_squish(bsdb$Condition)))
+
+
+mean(conditions_bsdb %in% unique(cond_cat_paper$Condition))
+conditions_bsdb[!conditions_bsdb %in% unique(cond_cat_ba$Condition)]
+
+
+
+
+paper_conditions <- unique(cond_cat_paper$Condition)
+bsdb_current_new_conditions <- bsdb |>
+    mutate(Condition = tolower(str_squish(Condition))) |>
+    filter(!is.na(Condition)) |>
+    filter(!Condition %in% paper_conditions) |>
+    pull(Condition) |>
+    unique()
+
+
+
+
+
+
+
+
+
 df <- bind_rows(enrichment_res, .id = 'comb') |>
     separate(col = 'comb', into = c('body_site', 'rank'), sep = '__')
 df <- left_join(df, cond, by = 'Condition') |>
