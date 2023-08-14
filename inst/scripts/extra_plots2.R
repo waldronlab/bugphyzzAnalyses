@@ -121,10 +121,6 @@ ht2 <- Heatmap(
         rownames(myDat),
         gp = gpar(fontsize = 12)
     )
-    # cell_fun = function(j, i, x, y, width, height, fill) {
-    #       grid.rect(x = x, y = y, width = width, height = height,
-    #           gp = gpar(col = "black", fill = NA))
-    # }
 )
 
 draw(ht1 + ht2, ht_gap = unit(0.4, "cm"))
@@ -139,4 +135,54 @@ dev.off()
 
 
 ## Attribute x body site
+
+x <- summary1 |>
+    select(-total_n) |>
+    pivot_wider(
+        names_from = 'rank', values_from = 'n', values_fill = 0
+    ) |>
+    tibble::column_to_rownames(var = 'Attribute_group') |>
+    as.matrix()
+
+anno_width <- unit(3, 'cm')
+rank_col <- c(species = 'blue', genus = 'cyan')
+row_anno <- rowAnnotation("Frequency" = anno_barplot(x[attr_grp_nms,], bar_width = 1, gp = gpar(fill = rank_col),
+                                        width = anno_width), show_annotation_name = FALSE)
+ht1 + row_anno
+
+
+
+
+cond_names <- colnames(summary_condition_mat)
+
+
+
+col_anno <- columnAnnotation(
+    "x" = anno_barplot(bsdb_summary_cat_matrix[cond_names,], bar_height = 1, gp = gpar(fill = 'green'),
+                                        height = anno_width), show_annotation_name = FALSE)
+
+columnAnnotation(
+    conditions = anno_barplot()
+)
+
+
+ht1 + row_anno
+
+
+
+ht1 + col_anno
+
+HeatmapAnnotation(df = bsdb_summary_cat_matrix[,cond_names,]
+
+
+
+
+col_anno <- HeatmapAnnotation(
+    df = bsdb_summary_cat_matrix[cond_names,], which = 'column'
+)
+
+ht1 + col_anno
+
+
+
 

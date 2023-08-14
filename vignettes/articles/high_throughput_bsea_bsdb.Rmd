@@ -25,6 +25,8 @@ library(ggplot2)
 library(ggbreak)
 library(BiocParallel)
 library(forcats)
+library(stringr)
+library(ComplexHeatmap)
 ## add a comment
 ```
 
@@ -165,15 +167,12 @@ head(names(bp_sigs_sp))
 
 # Enrichment analysis
 
-#> top signatures by odds ratio
-
 ```{r run enrichment, message=FALSE}
 nworkers <- parallel::detectCores()
 enrichment_res <- bplapply(
     X = seq_along(bsdb_sets), 
-    BPPARAM = SnowParam(workers = nworkers), 
+    BPPARAM = MulticoreParam(workers = nworkers), 
     FUN = function(i) {
-        return(names(bsdb_sets))
         if (grepl('genus', names(bsdb_sets)[i])) {
             res <- runEnrichment(
                 bsdb_sets = bsdb_sets[[i]],
@@ -194,55 +193,199 @@ enrichment_res <- bplapply(
                 mutate(comb = names(bsdb_sets)[[i]])
         }
     return(res)
-}) 
+}) |> 
     discard(~ !nrow(.x))
 enrichDF <- bind_rows(enrichment_res) |> 
     separate(col = 'comb', into = c('body_site', 'rank'), sep = '__') |> 
-    mutate(Attribute_group = sub('^bp:(.*)\\|.*\\|\\w$', '\\1', bp_sig))
+    mutate(Attribute_group = sub('^bp:(.*)\\|.*\\|\\w$', '\\1', bp_sig)) |> 
+    mutate(Condition = str_to_lower(str_squish(Condition)))
 count(enrichDF, body_site, rank)
 ```
+# Enrichment plots
 
-## Plot frequency of signatures
+Prepare data about category:
 
 ```{r}
-summary1 <- enrichDF |> 
+## Create another bsdb data.frame with body_site and condition category info
+fname <- system.file(
+    'extdata', 'condition2category.tsv', package = 'bugphyzzAnalyses',
+    mustWork = TRUE
+)
+cond2cat <- read.table(fname, header = TRUE, sep = '\t')
+bsdb2 <- map(body_sites, ~ {
+    subsetByOntology(
+        df = bsdb, column = 'Body site', term = .x, ontology = ub
+    )
+    }) |> 
+    bind_rows(.id = 'body_site') |> 
+    mutate(Condition = str_to_lower(str_squish(Condition))) |> 
+    left_join(cond2cat, by = 'Condition') |> 
+    rename(category = Category)
+
+## Summary for top column barplot annotations -- condition category
+summary_category_bsdb <- bsdb2 |> 
+    filter(!is.na(category)) |> 
+    count(category, name = 'category_total') |> 
+    arrange(-category_total)
+    # tibble::column_to_rownames(var = 'category')
+
+## Summary for top column barplot annotations -- body site
+summary_bodysite_bsdb <- bsdb2 |> 
+    filter(!is.na(body_site)) |> 
+    count(body_site, name = 'bodysite_total')
+    # tibble::column_to_rownames(var = 'body_site')
+
+## Frequency for row annotations -- frequency of enriched physiologies (attrbute_group) by genus
+summary_physiolgy_freqs_enrichDF <- enrichDF |>
     count(Attribute_group, rank) |> 
-    group_by(Attribute_group) |> 
-    mutate(total_n = sum(n)) |> 
-    ungroup() |> 
-    arrange(total_n) |> 
-    mutate(Attribute_group = fct_inorder(Attribute_group)) 
-plot1 <- summary1 |> 
-    ggplot(aes(Attribute_group, n)) +
-    geom_col(aes(fill = rank)) +
-    scale_fill_discrete(name = 'Rank') +
-    labs(
-        x = 'Attribute group', y = 'Frequency'
-    ) +
-    theme_bw() +
-    coord_flip()
-plot1
+    pivot_wider(
+        names_from = 'rank', values_from = 'n', values_fill = 0
+    ) |> 
+    mutate(freq = genus + species) |> 
+    arrange(-freq) |> 
+    mutate(Attribute_group = fct_inorder(Attribute_group)) |> 
+    tibble::column_to_rownames(var = 'Attribute_group') |>
+    select(-freq)
+
+## Create first matrix with condition categories
+mat_condition <- enrichDF |> 
+    left_join(cond2cat, by = 'Condition') |> 
+    filter(!is.na(Category)) |> 
+    select(Attribute_group, Category) |> 
+    unique() |>  # so I wont' have a single sig twice becouse of rank (species and genus)
+    count(Attribute_group, Category, name = 'n_enrich') |> 
+    left_join(summary_category, by = c('Category' = 'category')) |> 
+    mutate(per = round((n_enrich / category_total) * 100)) |> 
+    select(-n_enrich, -category_total) |> 
+    pivot_wider(
+        names_from = 'Category', values_from = 'per', values_fill = 0
+    ) |> 
+    as.data.frame() |> 
+    tibble::column_to_rownames(var = 'Attribute_group') |> 
+    as.matrix()
+## Create second matrix with body sites
+mat_bodysite <- enrichDF |> 
+    left_join(cond2cat, by = 'Condition') |> 
+    filter(!is.na(Category)) |> 
+    select(Attribute_group, body_site) |> 
+    unique() |>  # so I wont' have a single sig twice becouse of rank (species and genus)
+    count(Attribute_group, body_site, name = 'n_enrich') |> 
+    left_join(summary_bodysite, by = 'body_site') |> 
+    mutate(per = round((n_enrich / bodysite_total) * 100)) |> 
+    select(-n_enrich, -bodysite_total) |> 
+    pivot_wider(
+        names_from = 'body_site', values_from = 'per', values_fill = 0
+    ) |> 
+    as.data.frame() |> 
+    tibble::column_to_rownames(var = 'Attribute_group') |> 
+    as.matrix()
 ```
+
+Some variables for both heatmaps
+
+```{r}
+rownames_order <- rownames(summary_physiolgy_freqs_enrichDF)
+colnames_order_category <- 
+colnames_order_bodysite
+
+
+
+```
+
+
+
+
+
+
 
 
 ```{r}
+max_n <- max(max(mat_condition), max(mat_bodysite))
+color_fun <- circlize::colorRamp2(
+    breaks = c(0, max_n), colors = c('white', 'brown')
+)
+lgd <- Legend(col_fun = color_fun, title = "%")
 
+ht1 <- Heatmap(
+    matrix = mat_condition,
+    cluster_rows = FALSE, cluster_columns = FALSE,
+    row_names_side = 'left',
+    show_heatmap_legend = FALSE,
+    col = color_fun,
+    column_names_rot = 45,
+    column_title = "Disease/condition category",
+    row_names_max_width = max_text_width(
+        rownames(summary_condition_mat),
+        gp = gpar(fontsize = 12)
+    ),
+    top_annotation = col_anno
+)
 ```
-
-
-
-
-
-
-
-
 
 ```{r}
-attr_grp_nms <- unique(summary1$Attribute_group)
+bsdb_summary_bodysite <- bsdb |> 
+    count(`Body site`)
+enrichDF_summary_bodysite <- enrichDF |> 
+    filter(!is.na(body_site)) |> 
+    count(Attribute_group, body_site, name = 'n_enrich')
+
+bsdb_sets
+
+
+
+
+
+
+summary_condition_mat <- left_join(
+    enrichDF_summary_category, bsdb_summary_category,
+    by = 'Category'
+) |> 
+    mutate(per = round((n_enrich / n_total) * 100)) |> 
+    select(-n_enrich, -n_total) |> 
+    pivot_wider(
+        names_from = 'Category', values_from = 'per', values_fill = 0
+    ) |> 
+    as.data.frame() |> 
+    tibble::column_to_rownames(var = 'Attribute_group') |> 
+    as.matrix()
+
+dim(summary_condition_mat)
+
+
+
 ```
+
+
+
 
 
 ```{r session info}
 sessioninfo::session_info()
 ```
 
+#> Below there are some chunks of code that might be or were useful at some
+#> point.
+
+```{r, eval=FALSE, echo=FALSE, include=FALSE}
+# summary1 <- enrichDF |> 
+#     count(Attribute_group, rank) |> 
+#     group_by(Attribute_group) |> 
+#     mutate(total_n = sum(n)) |> 
+#     ungroup() |> 
+#     arrange(total_n) |> 
+#     mutate(Attribute_group = fct_inorder(Attribute_group)) 
+# attr_grp_nms <- levels(summary1$Attribute_group) |> 
+#     {\(y) y[length(y):1]}()
+# plot1 <- summary1 |> 
+#     ggplot(aes(Attribute_group, n)) +
+#     geom_col(aes(fill = rank)) +
+#     scale_fill_discrete(name = 'Rank') +
+#     labs(
+#         x = 'Attribute group', y = 'Frequency'
+#     ) +
+#     theme_bw() +
+#     coord_flip()
+# plot1
+```
+
+#> top signatures by odds ratio
