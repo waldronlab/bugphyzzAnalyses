@@ -252,7 +252,7 @@ summary_physiolgy_freqs_enrichDF <- enrichDF |>
 mat_condition <- enrichDF |> 
     left_join(cond2cat, by = 'Condition') |> 
     filter(!is.na(Category)) |> 
-    select(Attribute_group, Category) |> 
+    select(Attribute_group, Category, `BSDB ID`) |> 
     unique() |>  # so I wont' have a single sig twice becouse of rank (species and genus)
     count(Attribute_group, Category, name = 'n_enrich') |> 
     left_join(summary_category_bsdb, by = c('Category' = 'category')) |> 
@@ -268,13 +268,15 @@ mat_condition <- enrichDF |>
 mat_bodysite <- enrichDF |> 
     left_join(cond2cat, by = 'Condition') |> 
     filter(!is.na(Category)) |> 
-    select(Attribute_group, body_site) |> 
-    unique() |>  # so I wont' have a single sig twice becouse of rank (species and genus)
+    select(Attribute_group, body_site, `BSDB ID`) |> 
+    unique() |>
     count(Attribute_group, body_site, name = 'n_enrich') |> 
     left_join(summary_bodysite_bsdb, by = 'body_site') |> 
-    mutate(per = round((n_enrich / bodysite_total) * 100)) |> 
-    select(-n_enrich, -bodysite_total) |> 
+    mutate(per = round((n_enrich / bodysite_total) * 100)) |>
+    select(-n_enrich, -bodysite_total) |>
+    # select(-bodysite_total) |>
     pivot_wider(
+        # names_from = 'body_site', values_from = 'n_enrich', values_fill = 0
         names_from = 'body_site', values_from = 'per', values_fill = 0
     ) |> 
     as.data.frame() |> 
@@ -301,20 +303,21 @@ mat_bodysite <- mat_bodysite[rownames_order, colnames_order_bodysite]
 ```{r}
 max_n <- max(max(mat_condition), max(mat_bodysite))
 color_fun <- circlize::colorRamp2(
-    breaks = c(0, max_n), colors = c('white', 'brown')
+    breaks = c(0, max_n), colors = c('white', 'gray20')
 )
 lgd <- Legend(col_fun = color_fun, title = "%")
 anno_width = unit(2, 'cm')
 col_anno_category <- columnAnnotation(
-    "cat" = anno_barplot(
-        summary_category_bsdb, bar_height = 1, gp = gpar(fill = 'green'),
+    "# bsdb sigs" = anno_barplot(
+        summary_category_bsdb, bar_width = 1, gp = gpar(fill = '#40B0A6'),
         height = anno_width),
-    show_annotation_name = FALSE
+    show_annotation_name = TRUE,
+    annotation_name_side = "left"
 )
 
 col_anno_bodysite <- columnAnnotation(
     "bs" = anno_barplot(
-        summary_bodysite_bsdb, bar_height = 1, gp = gpar(fill = 'green'),
+        summary_bodysite_bsdb, bar_width = 1, gp = gpar(fill = '#40B0A6'),
         height = anno_width),
     show_annotation_name = FALSE
 )
@@ -327,7 +330,7 @@ ht1 <- Heatmap(
     show_heatmap_legend = FALSE,
     col = color_fun,
     column_names_rot = 45,
-    column_title = "Disease/condition category",
+    column_title = "Condition category",
     row_names_max_width = max_text_width(
         rownames(mat_condition),
         gp = gpar(fontsize = 12)
@@ -351,53 +354,45 @@ ht2 <- Heatmap(
     top_annotation = col_anno_bodysite
 )
 
-rank_col <- c('blue', 'cyan')
+rank_col <- c('#0C7BDC', '#FFC20A')
 row_anno <- rowAnnotation(
-    "Frequency" = anno_barplot(
+    "# bp sigs" = anno_barplot(
         summary_physiolgy_freqs_enrichDF, bar_width = 1,
         gp = gpar(fill = rank_col), width = unit(3, 'cm')),
-    show_annotation_name = FALSE
+    show_annotation_name = TRUE 
 )
 
 ht_list <- ht1 + ht2 + row_anno
 
-draw(ht_list, ht_gap = unit(c(1, 0.1), "cm"))
+lgd_list <- list(
+    Legend(labels = c('genus', 'species'), title = "Rank", 
+        legend_gp = gpar(fill = rank_col))
+)
 
-
-```
-
-```{r}
-bsdb_summary_bodysite <- bsdb |> 
-    count(`Body site`)
-enrichDF_summary_bodysite <- enrichDF |> 
-    filter(!is.na(body_site)) |> 
-    count(Attribute_group, body_site, name = 'n_enrich')
-
-bsdb_sets
-
-
-
-
-
-
-summary_condition_mat <- left_join(
-    enrichDF_summary_category, bsdb_summary_category,
-    by = 'Category'
-) |> 
-    mutate(per = round((n_enrich / n_total) * 100)) |> 
-    select(-n_enrich, -n_total) |> 
-    pivot_wider(
-        names_from = 'Category', values_from = 'per', values_fill = 0
-    ) |> 
-    as.data.frame() |> 
-    tibble::column_to_rownames(var = 'Attribute_group') |> 
-    as.matrix()
-
-dim(summary_condition_mat)
-
-
+draw(
+    ht_list, ht_gap = unit(c(1, 0.1), "cm"),
+    heatmap_legend_side = 'right',
+    heatmap_legend_list = lgd_list
+)
 
 ```
+
+
+Draw heatmap
+
+```{r, echo=FALSE, eval=FALSE, include=FALSE}
+png(
+    filename = 'attr_bs_dt.png', width = 806, height = 904, units = 'px',
+    res = 300, bg = 'white'
+)
+draw(
+    ht_list, ht_gap = unit(c(1, 0.1), "cm"),
+    heatmap_legend_side = 'right',
+    heatmap_legend_list = lgd_list
+)
+dev.off()
+```
+
 
 
 
@@ -405,31 +400,6 @@ dim(summary_condition_mat)
 
 ```{r session info}
 sessioninfo::session_info()
-```
-
-#> Below there are some chunks of code that might be or were useful at some
-#> point.
-
-```{r, eval=FALSE, echo=FALSE, include=FALSE}
-# summary1 <- enrichDF |> 
-#     count(Attribute_group, rank) |> 
-#     group_by(Attribute_group) |> 
-#     mutate(total_n = sum(n)) |> 
-#     ungroup() |> 
-#     arrange(total_n) |> 
-#     mutate(Attribute_group = fct_inorder(Attribute_group)) 
-# attr_grp_nms <- levels(summary1$Attribute_group) |> 
-#     {\(y) y[length(y):1]}()
-# plot1 <- summary1 |> 
-#     ggplot(aes(Attribute_group, n)) +
-#     geom_col(aes(fill = rank)) +
-#     scale_fill_discrete(name = 'Rank') +
-#     labs(
-#         x = 'Attribute group', y = 'Frequency'
-#     ) +
-#     theme_bw() +
-#     coord_flip()
-# plot1
 ```
 
 #> top signatures by odds ratio
