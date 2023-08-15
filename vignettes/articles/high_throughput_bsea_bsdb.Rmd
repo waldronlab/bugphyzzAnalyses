@@ -382,8 +382,8 @@ Draw heatmap
 
 ```{r, echo=FALSE, eval=FALSE, include=FALSE}
 png(
-    filename = 'attr_bs_dt.png', width = 806, height = 904, units = 'px',
-    res = 300, bg = 'white'
+    filename = 'attr_bs_dt.png', width = 650, height = 800, units = 'px',
+    bg = 'white'
 )
 draw(
     ht_list, ht_gap = unit(c(1, 0.1), "cm"),
