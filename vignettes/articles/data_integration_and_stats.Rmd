@@ -43,62 +43,69 @@ bp <- importBugphyzz()
 
 # Basic exploratory stats
 
-## Columns with NAs
+## Completness
+Percentage of non-NA values for each column
 
 ```{r}
-df <- data.frame(
-    cols = colnames(bp),
-    n_na = unname(map_int(bp, ~ sum(is.na(.x))))
-)
+df <- stack(round(colSums(!is.na(bp))/nrow(bp)*100, 2))
+df$counts <- colSums(!is.na(bp))
+df <- df[order(df$values, decreasing = TRUE),]
+
 df |> 
-  ggplot(aes(cols, n_na)) +
-  geom_col() +
-  labs(
-    y = 'NA count', x = 'Column name',
-    title = 'NA count per column in the main bupphyzz import'
-  ) +
-  scale_y_continuous(labels = scales::comma) +
-  theme_bw() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  )
+    ggplot(aes(x = fct_rev(fct_reorder(ind, values)), 
+               y = counts)) +
+    geom_col() +
+    scale_y_continuous(
+        # Features of the first axis
+        name = "# of Records",
+        # Add a second axis and specify its features
+        sec.axis = sec_axis(trans = ~ round(./nrow(bp)*100, 2), 
+                            name = "Completeness (%)")) +
+    labs(x = "Attribute/Column Names",
+         title = "Completenss of Curated Attributes/Columns") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ## Evidence
 
 ```{r, message=FALSE}
-bp |> 
-  count(Evidence) |> 
-  ggplot(aes(reorder(Evidence, desc(n)), n)) +
-  geom_col() +
-  labs(
-    x = 'Evidence', y = 'Annotaions count'
-  ) +
-  scale_y_continuous(limits = c(0, 2000000), labels = scales::comma) +
-  scale_y_cut(breaks = c(10000, 100000)) +
-  theme_bw() +
-  theme(
-    panel.grid.major.x = element_blank()
-  )
+df <- stack(table(bp$Evidence, useNA = "ifany"))
+df$prop <- round(df$values/sum(df$values)*100, 2)
+
+df |> 
+    ggplot(aes(x = fct_rev(fct_reorder(ind, values)),
+               y = values)) +
+    geom_col() +
+    theme_bw() +
+    scale_y_continuous(name = "# of Annotations",
+                       sec.axis = sec_axis(trans = ~ round(./sum(df$values)*100, 2),
+                                           name = "Percentage")) +
+    labs(x = "Evidence",
+         title = "Evidence Types for Annotations") +
+    geom_text(aes(label = prop), vjust = -0.2) +
+    theme(axis.text.x = element_text(size = 12, face = "italic"))
 ```
 
 ## Frequency
 
 ```{r Frequency, message=FALSE}
-bp |> 
-  count(Frequency) |> 
-  mutate(Frequency = fct_relevel(Frequency, 'always', 'usually', 'sometimes', 'rarely')) |> 
-  ggplot(aes(Frequency, n)) +
-  geom_col() +
-  labs(
-    x = 'Frequency keywords', y = 'Count',
-  ) +
-  scale_y_continuous(limits = c(0, 1e6), labels = scales::comma) +
-  scale_y_cut(breaks = c(100000)) +
-  theme_bw() +
-  theme(
-    panel.grid.major.y = element_blank()
-  )
+df <- stack(table(bp$Frequency, useNA = "ifany"))
+df$ind <- fct_relevel(df$ind, 'always', 'usually', 'sometimes', 'rarely')
+df$prop <- round(df$values/sum(df$values)*100, 2)
+
+df |> 
+    ggplot(aes(x = fct_rev(fct_reorder(ind, values)),
+               y = values)) +
+    geom_col() +
+    theme_bw() +
+    scale_y_continuous(name = "# of Annotations",
+                       sec.axis = sec_axis(trans = ~ round(./sum(df$values)*100, 2),
+                                           name = "Percentage")) +
+    labs(x = "Frequency",
+         title = "Frequency for Annotations") +
+    geom_text(aes(label = prop), vjust = -0.2) +
+    theme(axis.text.x = element_text(size = 12, face = "italic"))
 ```
 
 ## Histogram of scores
