@@ -104,7 +104,7 @@ bp |>
 ## Histogram of scores
 
 ```{r score histogram}
-bp |> 
+bp |>
   ggplot(aes(Score)) +
   geom_histogram(binwidth = 0.05) +
   labs(
@@ -123,7 +123,7 @@ bp |>
 dims <- map_chr(dim(bp), ~ format(.x, big.mark = ','))
 total_annotations <- paste0('Total annotations: ', dims[[1]])
 valid_ranks <- c(
-  'domain', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'strain'
+  'kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'strain'
 )
 attr_gp_rk_p <- bp |> 
   mutate(Rank = factor(Rank, levels = valid_ranks, ordered = FALSE)) |> 
@@ -395,7 +395,7 @@ strains$rank <- taxizedb::taxid2rank(strains$taxid, db = 'ncbi')
 strains <- strains[strains$rank == 'strain',]
 
 reference_df <- rbind(exclude_all, strains)
-reference_df$rank <- ifelse(reference_df$rank == 'superkingdom', 'domain', reference_df$rank)
+reference_df$rank <- ifelse(reference_df$rank == 'superkingdom', 'kingdom', reference_df$rank)
 reference_summary <- count(reference_df, rank)
 colnames(reference_summary) <- c('Rank', 'ref')
 reference <- split(reference_df, factor(reference_df$rank)) |> 
@@ -506,7 +506,7 @@ completeness_mat_after <- completeness_after |>
   ) |> 
   column_to_rownames(var = 'Attribute_group') |> 
   relocate(
-    strain, species, genus, family, order, class, phylum, domain
+    strain, species, genus, family, order, class, phylum, kingdom
   ) |> 
   as.matrix()
 

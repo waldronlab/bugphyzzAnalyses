@@ -296,8 +296,14 @@ summary_bodysite_bsdb <- summary_bodysite_bsdb |>
     tibble::column_to_rownames(var = 'body_site')
 colnames_order_category <- rownames(summary_category_bsdb)
 colnames_order_bodysite <- rownames(summary_bodysite_bsdb)
-mat_condition <-  mat_condition[rownames_order, colnames_order_category]
-mat_bodysite <- mat_bodysite[rownames_order, colnames_order_bodysite]
+
+xrownames <- intersect(rownames(mat_condition), rownames(mat_bodysite))
+xrownames <- xrownames[na.omit(match(rownames_order, xrownames))]
+mat_condition <- mat_condition[xrownames, colnames_order_category]
+mat_bodysite <- mat_bodysite[xrownames, colnames_order_bodysite]
+
+# mat_condition <-  mat_condition[rownames_order, colnames_order_category]
+# mat_bodysite <- mat_bodysite[rownames_order, colnames_order_bodysite]
 ```
 
 ```{r}
