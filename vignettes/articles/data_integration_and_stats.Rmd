@@ -37,9 +37,44 @@ library(grid)
 library(cowplot)
 ```
 
+
 ```{r, message=FALSE}
 bp <- importBugphyzz()
 ```
+
+## Basic stats
+
+Number of taxa, annotations, attribute groups (physiologies), attributes
+
+```{r}
+## Totals
+n_taxa <- length(unique(bp$NCBI_ID))
+n_attr_grps <- length(unique(bp$Attribute_group))
+n_attr <- length(unique(bp$Attribute))
+n_annotations <- nrow(bp)
+n_annotations_pred <- bp |> 
+    filter(is.na(Attribute_source)) |> 
+    nrow()
+n_annotations_source <- bp |> 
+    filter(!is.na(Attribute_source)) |> 
+    nrow()
+n_source <- bp |> 
+    filter(!is.na(Attribute_source)) |> 
+    pull(Attribute_source) |> 
+    unique() |> 
+    length()
+```
+
+We got totals of `r format(n_annotations, big.mark = ",", scientific = FALSE)`
+annotations, `r format(n_taxa, big.mark = ",", scientific = FALSE)` taxa,
+`r n_attr_grps` attribute groups (physiologies), and `r n_attr` attributes;
+`r format(n_annotations_source, big.mark = ",", scientific = FALSE)`
+annotations come from sources and 
+`r format(n_annotations_pred, big.mark = ",", scientific = FALSE)` annotations
+were imputed/predicted we our propagation method. 
+
+
+
 
 # Basic exploratory stats
 
@@ -681,42 +716,7 @@ ht_sources <- Heatmap(
 ht_sources
 ```
 
-# Paragraph
 
-Some calculation for paragraphs
-
-
-```{r}
-bp_subset <- bp |> 
-  filter(
-    !(Frequency == 'unknown' & Evidence %in% c('asr', 'inh'))
-  )
-n_annotations <- nrow(bp_subset)
-n_unique_taxa <- length(unique(bp_subset$NCBI_ID))
-n_unique_attr <- length(unique(bp_subset$Attribute))
-n_unique_attr_grp <- length(unique(bp_subset$Attribute_group))
-n_annotations_sources <- bp_subset |> 
-  filter(!Evidence %in% c('asr', 'inh')) |> 
-  nrow()
-n_annotations_propagation <- bp_subset |> 
-  filter(Evidence %in% c('asr', 'inh')) |> 
-  nrow()
-n_annotations
-```
-
-> bugphyzz contains a total of 
-`r format(n_annotations, big.mark = ",", scientific = FALSE)` annotations, 
-`r format(n_unique_taxa, big.mark = ",", scientific = FALSE)` unique taxa,
-`r format(n_unique_attr, big.mark = ",", scientific = FALSE)` unique attributes, 
-and `r format(n_unique_attr_grp, big.mark = ",", scientific = FALSE)` unique attributes groups (traits).
-`r format(n_annotations_sources, big.mark = ",", scientific = FALSE)`
-(`r round((n_annotations_sources / n_annotations) * 100)` %) annotations come directly
-from `r format(n_sources, big.mark = ",", scientific = FALSE)` public sources and the remaining 
-`r format(n_annotations_propagation, big.mark = ",", scientific = FALSE)`
-(`r round((n_annotations_propagation / n_annotations) * 100)` %) were inferred with our
-taxonomic propagation approach (see the ‘taxonomic propagation’ section
-in methods), increasing our completeness from an average per taxonomic rank of
-*** to *** % (Fig. ***).
 
 # Session information
 
