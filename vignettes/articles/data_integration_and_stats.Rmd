@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-Load packages and import data
+## Load packages and import data
 
 ```{r setup, message=FALSE}
 library(bugphyzzAnalyses)
@@ -37,17 +37,16 @@ library(grid)
 library(cowplot)
 ```
 
-
-```{r, message=FALSE}
+```{r import bp}
 bp <- importBugphyzz()
 ```
 
 ## Basic stats
 
-Number of taxa, annotations, attribute groups (physiologies), attributes
+Number of taxa, annotations, sources, attribute groups (physiologies),
+and attributes:
 
-```{r}
-## Totals
+```{r totals}
 n_taxa <- length(unique(bp$NCBI_ID))
 n_attr_grps <- length(unique(bp$Attribute_group))
 n_attr <- length(unique(bp$Attribute))
@@ -71,9 +70,14 @@ annotations, `r format(n_taxa, big.mark = ",", scientific = FALSE)` taxa,
 `r format(n_annotations_source, big.mark = ",", scientific = FALSE)`
 annotations come from sources and 
 `r format(n_annotations_pred, big.mark = ",", scientific = FALSE)` annotations
-were imputed/predicted we our propagation method. 
+were imputed/predicted we our propagation method. Total sources were 
+`r n_source`.
 
-# Histograms of scores
+## Histograms of scores
+
+Annotations with a score of 0 were removed from the final export to keep the
+size of the text file smaller. This also reduces the time it takes to import
+the main csv text file into R.
 
 ```{r scores hist}
 scores_hist <- bp |> 
@@ -87,8 +91,34 @@ scores_hist <- bp |>
 scores_hist
 ```
 
-# Basic exploratory stats
+## Frequency keywords
 
+This reflects the histogram above. See this code for reference: https://github.com/waldronlab/taxPPro/blob/0607575c1bc408b6bdf49d3cad77857851f11f6d/R/utils.R#L23-L42
+
+#> TODO We should have a lot more of usually rather than always, I'll write
+#> a temporary fix in the bugphyzz import code, but this should be fix in the
+#> propagation workflow.
+
+```{r Frequency, message=FALSE}
+bp |> 
+  count(Frequency) |> 
+  mutate(
+    Frequency = fct_relevel(
+      Frequency, 'rarely', 'sometimes', 'usually', 'always'
+    )
+  ) |> 
+  ggplot(aes(Frequency, n)) +
+  geom_col(fill = 'gray80', color = 'black', linewidth = 0.2) +
+  labs(
+    x = 'Frequency keywords', y = 'Number of annotations',
+  ) +
+  scale_y_continuous(limits = c(0, 1.5e6), labels = scales::comma) +
+  scale_y_cut(breaks = c(400000)) +
+  theme_bw() +
+  theme(
+    panel.grid.major.y = element_blank()
+  )
+```
 
 ## Evidence
 
@@ -100,32 +130,15 @@ bp |>
   labs(
     x = 'Evidence', y = 'Number of annotations'
   ) +
-  scale_y_continuous(limits = c(0, 2000000), labels = scales::comma) +
-  scale_y_cut(breaks = c(10000, 100000)) +
+  scale_y_continuous(limits = c(0, 1.5e6), labels = scales::comma) +
+  scale_y_cut(breaks = c(5000, 100000)) +
   theme_bw() +
   theme(
     panel.grid.major.x = element_blank()
   )
 ```
 
-## Frequency keywords
 
-```{r Frequency, message=FALSE}
-bp |> 
-  count(Frequency) |> 
-  mutate(Frequency = fct_relevel(Frequency, 'always', 'usually', 'sometimes', 'rarely')) |> 
-  ggplot(aes(Frequency, n)) +
-  geom_col() +
-  labs(
-    x = 'Frequency keywords', y = 'Number of annotations',
-  ) +
-  scale_y_continuous(limits = c(0, 1.5e6), labels = scales::comma) +
-  scale_y_cut(breaks = c(100000)) +
-  theme_bw() +
-  theme(
-    panel.grid.major.y = element_blank()
-  )
-```
 
 # Number of annotations by attribute group (physiology)
 
