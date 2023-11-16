@@ -218,7 +218,7 @@ atr_gp_fr_p
 
 ### Supplementary Figure
 
-```{r, fig.width=9.4, fig.height=7.85}
+```{r, fig.width=19, fig.height=6}
 supp1 <- atr_gp_ev_p / atr_gp_fr_p + plot_layout(ncol = 2) +
     plot_annotation(tag_levels = 'a')
 ggsave(
