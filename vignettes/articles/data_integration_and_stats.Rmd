@@ -93,11 +93,13 @@ scores_hist
 
 ## Frequency keywords
 
-This reflects the histogram above. See this code for reference: https://github.com/waldronlab/taxPPro/blob/0607575c1bc408b6bdf49d3cad77857851f11f6d/R/utils.R#L23-L42
+This reflects the histogram above.
+See this code for reference: https://github.com/waldronlab/taxPPro/blob/0607575c1bc408b6bdf49d3cad77857851f11f6d/R/utils.R#L23-L42
 
 #> TODO We should have a lot more of usually rather than always, I'll write
 #> a temporary fix in the bugphyzz import code, but this should be fix in the
-#> propagation workflow.
+#> propagation workflow. I applied this temporary fix but it should be addressed
+#> in the propagation workflow.
 
 ```{r Frequency, message=FALSE}
 bp |> 
@@ -113,13 +115,12 @@ bp |>
     x = 'Frequency keywords', y = 'Number of annotations',
   ) +
   scale_y_continuous(limits = c(0, 1.5e6), labels = scales::comma) +
-  scale_y_cut(breaks = c(400000)) +
+  scale_y_cut(breaks = c(600000)) +
   theme_bw() +
   theme(
     panel.grid.major.y = element_blank()
   )
 ```
-
 ## Evidence
 
 ```{r, message=FALSE}
@@ -137,12 +138,9 @@ bp |>
     panel.grid.major.x = element_blank()
   )
 ```
+## Number of annotations by attribute group (physiology)
 
-
-
-# Number of annotations by attribute group (physiology)
-
-# By attribute group and rank
+### By attribute group and rank
 
 ```{r n attr per attr grp and rank}
 dims <- map_chr(dim(bp), ~ format(.x, big.mark = ','))
@@ -161,7 +159,7 @@ attr_gp_rk_p <- bp |>
   labs(x = 'Attribute group', y = 'Number of annotations') +
   scale_y_continuous(labels = scales::comma) +
   scale_fill_brewer(type = 'qual', palette = 'Set2', direction = -1, name = '') +
-  scale_y_cut(breaks = c(100, 120000)) +
+  # scale_y_cut(breaks = c(100, 30000, 120000)) +
   theme_bw() +
   theme(
     axis.text.x = element_text(angle = 90, hjust = 1)
@@ -185,7 +183,7 @@ atr_gp_ev_p <- bp |>
   labs(x = 'Attribute group', y = 'Number of annotations') +
   scale_y_continuous(labels = scales::comma) +
   scale_fill_brewer(type = 'qual', palette = 'Set2', direction = 1, name = '') +
-  scale_y_cut(breaks = c(100, 120000)) +
+  # scale_y_cut(breaks = c(100, 120000)) +
   theme_bw() +
   theme(
     axis.text.x = element_text(angle = 90, hjust = 1),
@@ -194,7 +192,7 @@ atr_gp_ev_p <- bp |>
 atr_gp_ev_p
 ```
 
-## By attribute group and frequency
+### By attribute group and frequency
 
 ```{r n attr per attr grp and freq}
 freq_code <- c('always', 'usually', 'sometimes', 'rarely')
@@ -209,7 +207,7 @@ atr_gp_fr_p <- bp |>
   labs(x = 'Attribute group', y = 'Number of annotations') +
   scale_y_continuous(labels = scales::comma) +
   scale_fill_brewer(type = 'qual', palette = 'Set2', direction = 1, name = '') +
-  scale_y_cut(breaks = c(100, 120000)) +
+  # scale_y_cut(breaks = c(100, 120000)) +
   theme_bw() +
   theme(
     axis.text.x = element_text(angle = 90, hjust = 1),
