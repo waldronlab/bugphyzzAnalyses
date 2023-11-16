@@ -216,9 +216,11 @@ atr_gp_fr_p <- bp |>
 atr_gp_fr_p
 ```
 
-### Supplementary Figure
+## supplementary Figure
 
-```{r, fig.width=19, fig.height=6}
+This plot could be used for the supplementary figure:
+
+```{r supplementaru fig, fig.width=19, fig.height=6}
 supp1 <- atr_gp_ev_p / atr_gp_fr_p + plot_layout(ncol = 2) +
     plot_annotation(tag_levels = 'a')
 ggsave(
