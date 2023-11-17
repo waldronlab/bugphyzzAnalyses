@@ -40,6 +40,30 @@ library(cowplot)
 ```{r import bp}
 bp <- importBugphyzz()
 ```
+# Basic exploratory stats
+
+## Completeness
+Percentage of non-NA values for each column
+
+```{r}
+df <- stack(round(colSums(!is.na(bp))/nrow(bp)*100, 2))
+df$counts <- colSums(!is.na(bp))
+df <- df[order(df$values, decreasing = TRUE),]
+
+df |> 
+    ggplot(aes(x = fct_rev(fct_reorder(ind, values)), 
+               y = counts)) +
+    geom_col() +
+    scale_y_continuous(
+        # Features of the first axis
+        name = "# of Records",
+        # Add a second axis and specify its features
+        sec.axis = sec_axis(trans = ~ round(./nrow(bp)*100, 2), 
+                            name = "Completeness (%)")) +
+    labs(x = "Attribute/Column Names",
+         title = "Completenss of Curated Attributes/Columns") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ## Basic stats
 
@@ -93,6 +117,24 @@ scores_hist
 
 ## Frequency keywords
 
+```{r, message=FALSE}
+df <- stack(table(bp$Evidence, useNA = "ifany"))
+df$prop <- round(df$values/sum(df$values)*100, 2)
+
+df |> 
+    ggplot(aes(x = fct_rev(fct_reorder(ind, values)),
+               y = values)) +
+    geom_col() +
+    theme_bw() +
+    scale_y_continuous(name = "# of Annotations",
+                       sec.axis = sec_axis(trans = ~ round(./sum(df$values)*100, 2),
+                                           name = "Percentage")) +
+    labs(x = "Evidence",
+         title = "Evidence Types for Annotations") +
+    geom_text(aes(label = prop), vjust = -0.2) +
+    theme(axis.text.x = element_text(size = 12, face = "italic"))
+```
+
 This reflects the histogram above.
 See this code for reference: https://github.com/waldronlab/taxPPro/blob/0607575c1bc408b6bdf49d3cad77857851f11f6d/R/utils.R#L23-L42
 
@@ -102,6 +144,24 @@ See this code for reference: https://github.com/waldronlab/taxPPro/blob/0607575c
 #> in the propagation workflow.
 
 ```{r Frequency, message=FALSE}
+
+df <- stack(table(bp$Frequency, useNA = "ifany"))
+df$ind <- fct_relevel(df$ind, 'always', 'usually', 'sometimes', 'rarely')
+df$prop <- round(df$values/sum(df$values)*100, 2)
+
+df |> 
+    ggplot(aes(x = fct_rev(fct_reorder(ind, values)),
+               y = values)) +
+    geom_col() +
+    theme_bw() +
+    scale_y_continuous(name = "# of Annotations",
+                       sec.axis = sec_axis(trans = ~ round(./sum(df$values)*100, 2),
+                                           name = "Percentage")) +
+    labs(x = "Frequency",
+         title = "Frequency for Annotations") +
+    geom_text(aes(label = prop), vjust = -0.2) +
+    theme(axis.text.x = element_text(size = 12, face = "italic"))
+
 bp |> 
   count(Frequency) |> 
   mutate(
@@ -121,6 +181,7 @@ bp |>
     panel.grid.major.y = element_blank()
   )
 ```
+
 ## Evidence
 
 ```{r, message=FALSE}
