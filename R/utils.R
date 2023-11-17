@@ -286,7 +286,7 @@ calcPredStats <- function(df) {
 }
 
 .downloadTMSZip <- function(verbose = FALSE) {
-    fileURL <- 'https://zenodo.org/record/7544550/files/waldronlab/TypicalMicrobiomeSignaturesExports-v1.0.0.zip?download=1'
+    fileURL <- 'https://zenodo.org/records/7544550/files/waldronlab/TypicalMicrobiomeSignaturesExports-v1.0.0.zip?download=1'
     bfc <- .get_cache()
     rid <- BiocFileCache::bfcquery(bfc, "TypicalMicrobiomeSignatures.zip", "rname")$rid
     if (!length(rid)) {
