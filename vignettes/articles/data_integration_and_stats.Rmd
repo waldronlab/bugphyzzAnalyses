@@ -48,10 +48,10 @@ bp <- importBugphyzz()
 Percentage of non-NA values for each column:
 
 ```{r}
-df <- stack(round(colSums(!is.na(bp))/nrow(bp)*100, 2))
-df$counts <- colSums(!is.na(bp))
-df <- df[order(df$values, decreasing = TRUE),]
-na_plot <- df |> 
+na_df <- stack(round(colSums(!is.na(bp))/nrow(bp)*100, 2))
+na_df$counts <- colSums(!is.na(bp))
+na_df <- na_df[order(na_df$values, decreasing = TRUE),]
+na_plot <- na_df |> 
     ggplot(aes(x = fct_rev(fct_reorder(ind, values)), 
                y = counts)) +
     geom_col(fill = 'gray80', color = 'black', linewidth = 0.2) +
@@ -89,9 +89,6 @@ n_source <- bp |>
     pull(Attribute_source) |> 
     unique() |> 
     length()
-
-
-
 ```
 
 We got totals of `r format(n_annotations, big.mark = ",", scientific = FALSE)`
@@ -123,24 +120,6 @@ scores_hist
 
 ## Frequency keywords
 
-```{r, message=FALSE}
-df <- stack(table(bp$Evidence, useNA = "ifany"))
-df$prop <- round(df$values/sum(df$values)*100, 2)
-
-df |> 
-    ggplot(aes(x = fct_rev(fct_reorder(ind, values)),
-               y = values)) +
-    geom_col() +
-    theme_bw() +
-    scale_y_continuous(name = "# of Annotations",
-                       sec.axis = sec_axis(trans = ~ round(./sum(df$values)*100, 2),
-                                           name = "Percentage")) +
-    labs(x = "Evidence",
-         title = "Evidence Types for Annotations") +
-    geom_text(aes(label = prop), vjust = -0.2) +
-    theme(axis.text.x = element_text(size = 12, face = "italic"))
-```
-
 This reflects the histogram above.
 See this code for reference: https://github.com/waldronlab/taxPPro/blob/0607575c1bc408b6bdf49d3cad77857851f11f6d/R/utils.R#L23-L42
 
@@ -150,15 +129,13 @@ See this code for reference: https://github.com/waldronlab/taxPPro/blob/0607575c
 #> in the propagation workflow.
 
 ```{r Frequency, message=FALSE}
-
-df <- stack(table(bp$Frequency, useNA = "ifany"))
-df$ind <- fct_relevel(df$ind, 'always', 'usually', 'sometimes', 'rarely')
-df$prop <- round(df$values/sum(df$values)*100, 2)
-
-df |> 
+freq_df <- stack(table(bp$Frequency, useNA = "ifany"))
+freq_df$ind <- fct_relevel(freq_df$ind, 'always', 'usually', 'sometimes', 'rarely')
+freq_df$prop <- round(freq_df$values/sum(freq_df$values)*100, 2)
+freq_plot <- freq_df |> 
     ggplot(aes(x = fct_rev(fct_reorder(ind, values)),
                y = values)) +
-    geom_col() +
+    geom_col(fill = 'gray80', color = 'black', linewidth = 0.2) +
     theme_bw() +
     scale_y_continuous(name = "# of Annotations",
                        sec.axis = sec_axis(trans = ~ round(./sum(df$values)*100, 2),
@@ -167,44 +144,32 @@ df |>
          title = "Frequency for Annotations") +
     geom_text(aes(label = prop), vjust = -0.2) +
     theme(axis.text.x = element_text(size = 12, face = "italic"))
-
-bp |> 
-  count(Frequency) |> 
-  mutate(
-    Frequency = fct_relevel(
-      Frequency, 'rarely', 'sometimes', 'usually', 'always'
-    )
-  ) |> 
-  ggplot(aes(Frequency, n)) +
-  geom_col(fill = 'gray80', color = 'black', linewidth = 0.2) +
-  labs(
-    x = 'Frequency keywords', y = 'Number of annotations',
-  ) +
-  scale_y_continuous(limits = c(0, 1.5e6), labels = scales::comma) +
-  scale_y_cut(breaks = c(600000)) +
-  theme_bw() +
-  theme(
-    panel.grid.major.y = element_blank()
-  )
+freq_plot
 ```
+
+>In the plot above, so many are usually becose of the penalty of the
+inheritance algorithm.
 
 ## Evidence
 
 ```{r, message=FALSE}
-bp |> 
-  count(Evidence) |> 
-  ggplot(aes(reorder(Evidence, desc(n)), n)) +
-  geom_col(color = 'black', fill = 'gray80', linewidth = 0.2) +
-  labs(
-    x = 'Evidence', y = 'Number of annotations'
-  ) +
-  scale_y_continuous(limits = c(0, 1.5e6), labels = scales::comma) +
-  scale_y_cut(breaks = c(5000, 100000)) +
-  theme_bw() +
-  theme(
-    panel.grid.major.x = element_blank()
-  )
+ev_df <- stack(table(bp$Evidence, useNA = "ifany"))
+ev_df$prop <- round(ev_df$values/sum(ev_df$values)*100, 2)
+ev_plot <- ev_df |> 
+    ggplot(aes(x = fct_rev(fct_reorder(ind, values)),
+               y = values)) +
+    geom_col(fill = 'gray80', linewidth = 0.2, color = 'black') +
+    theme_bw() +
+    scale_y_continuous(name = "# of Annotations",
+                       sec.axis = sec_axis(trans = ~ round(./sum(df$values)*100, 2),
+                                           name = "Percentage")) +
+    labs(x = "Evidence",
+         title = "Evidence Types for Annotations") +
+    geom_text(aes(label = prop), vjust = -0.2) +
+    theme(axis.text.x = element_text(size = 12, face = "italic"))
+ev_plot
 ```
+
 ## Number of annotations by attribute group (physiology)
 
 ### By attribute group and rank
