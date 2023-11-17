@@ -185,7 +185,7 @@ ev_plot
 
 ## Number of annotations by attribute group (physiology)
 
-### By attribute group and rank
+### Attribute group and rank
 
 ```{r n attr per attr grp and rank}
 dims <- map_chr(dim(bp), ~ format(.x, big.mark = ','))
@@ -213,7 +213,7 @@ attr_gp_rk_p <- bp |>
 attr_gp_rk_p
 ```
 
-## By attribute group and evidence
+## Attribute group and evidence
 
 ```{r n attr per attr grp and evidence}
 evidence_code <- c('asr', 'tax', 'inh', 'inh2', 'tas', 'nas', 'igc', 'exp')
@@ -237,7 +237,7 @@ atr_gp_ev_p <- bp |>
 atr_gp_ev_p
 ```
 
-### By attribute group and frequency
+### Attribute group and frequency
 
 ```{r n attr per attr grp and freq}
 freq_code <- c('always', 'usually', 'sometimes', 'rarely')
@@ -260,6 +260,29 @@ atr_gp_fr_p <- bp |>
   )
 atr_gp_fr_p
 ```
+
+## Evidence and frequency
+
+```{r}
+bp |> 
+    count(Evidence, Frequency ) |> 
+    group_by(Evidence) |> 
+    mutate(total = sum(n)) |> 
+    ungroup() |> 
+    ggplot(aes(reorder(Evidence, desc(total)), n)) +
+    labs(
+        x = 'Evidence', y = 'Number of annotations'
+    ) +
+    geom_col(aes(fill = Frequency)) +
+    theme_bw()
+```
+
+
+
+
+
+
+
 
 ## supplementary Figure
 
