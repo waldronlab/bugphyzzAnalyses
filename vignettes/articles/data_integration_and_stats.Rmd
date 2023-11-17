@@ -237,7 +237,7 @@ atr_gp_ev_p <- bp |>
 atr_gp_ev_p
 ```
 
-### Attribute group and frequency
+## Attribute group and frequency
 
 ```{r n attr per attr grp and freq}
 freq_code <- c('always', 'usually', 'sometimes', 'rarely')
@@ -261,6 +261,20 @@ atr_gp_fr_p <- bp |>
 atr_gp_fr_p
 ```
 
+## Combined plot attribute group x Evidence & attribute group x frequency
+
+This could be used for a supplementary figure:
+
+```{r supplementaru fig, fig.width=19, fig.height=6}
+supp1 <- atr_gp_ev_p / atr_gp_fr_p + plot_layout(ncol = 2) +
+    plot_annotation(tag_levels = 'a')
+ggsave(
+  filename = 'sup1.png', plot = supp1, width = 19, height = 6, 
+  units = 'in'
+)
+supp1
+```
+
 ## Evidence and frequency
 
 ```{r}
@@ -278,27 +292,91 @@ bp |>
 ```
 
 
+## Evidence and frequency (leaving strins out)
 
-
-
-
-
-
-## supplementary Figure
-
-This plot could be used for the supplementary figure:
-
-```{r supplementaru fig, fig.width=19, fig.height=6}
-supp1 <- atr_gp_ev_p / atr_gp_fr_p + plot_layout(ncol = 2) +
-    plot_annotation(tag_levels = 'a')
-ggsave(
-  filename = 'sup1.png', plot = supp1, width = 19, height = 6, 
-  units = 'in'
-)
-supp1
+```{r}
+bp |> 
+    filter(Rank != 'strain') |> 
+    count(Evidence, Frequency ) |> 
+    group_by(Evidence) |> 
+    mutate(total = sum(n)) |> 
+    ungroup() |> 
+    ggplot(aes(reorder(Evidence, desc(total)), n)) +
+    labs(
+        x = 'Evidence', y = 'Number of annotations'
+    ) +
+    geom_col(aes(fill = Frequency)) +
+    theme_bw()
 ```
 
-# Number of attributes per attribute group
+## Evidence and Frequency (explore for all attribute groups)
+
+```{r}
+bp |> 
+    count(Attribute_group, Evidence, Frequency ) |> 
+    group_by(Attribute_group, Evidence) |> 
+    mutate(total = sum(n)) |> 
+    ungroup() |> 
+    ggplot(aes(reorder(Evidence, desc(total)), n)) +
+    geom_col(aes(fill = Frequency)) +
+    labs(
+        x = 'Evidence', y = 'Number of annotations'
+    ) +
+    facet_wrap(.~Attribute_group, ncol = 5, scales = 'free_y') +
+    theme_bw()
+```
+
+## Evidence and Frequency (explore for all attribute groups, leaving strains out)
+
+```{r}
+bp |> 
+    filter(Rank != 'strain') |> 
+    count(Attribute_group, Evidence, Frequency ) |> 
+    group_by(Attribute_group, Evidence) |> 
+    mutate(total = sum(n)) |> 
+    ungroup() |> 
+    ggplot(aes(reorder(Evidence, desc(total)), n)) +
+    geom_col(aes(fill = Frequency)) +
+    labs(
+        x = 'Evidence', y = 'Number of annotations'
+    ) +
+    facet_wrap(.~Attribute_group, ncol = 5, scales = 'free_y') +
+    theme_bw()
+```
+
+## Rank and frequency
+
+```{r}
+bp |> 
+    count(Rank, Frequency ) |> 
+    group_by(Rank) |> 
+    mutate(total = sum(n)) |> 
+    ungroup() |> 
+    ggplot(aes(reorder(Rank, desc(total)), n)) +
+    labs(
+        x = 'Evidence', y = 'Number of annotations'
+    ) +
+    geom_col(aes(fill = Frequency)) +
+    theme_bw()
+```
+
+## Rank and evidence
+
+```{r}
+bp |> 
+    count(Rank, Evidence ) |> 
+    group_by(Rank) |> 
+    mutate(total = sum(n)) |> 
+    ungroup() |> 
+    ggplot(aes(reorder(Rank, desc(total)), n)) +
+    labs(
+        x = 'Evidence', y = 'Number of annotations'
+    ) +
+    geom_col(aes(fill = Evidence)) +
+    theme_bw()
+```
+
+## Number of attributes per attribute group
 
 ```{r n attr values per attribute group}
 attr_n <- bp |> 
@@ -380,28 +458,9 @@ ggsave('basic_stats.png', width = 12.5, height = 8.7, units = 'in')
 p
 ```
 
-# Source and propagation
-
-```{r number of original sources}
-bp_source <- filter(bp, !is.na(Attribute_source))
-unique_sources <- bp_source |> 
-    filter(Evidence  %in% c('exp', 'igc', 'tas', 'nas')) |> 
-    pull(Attribute_source) |> 
-    unique() |> 
-    strsplit(';') |> 
-    unlist() |> 
-    unique() |> 
-    sort()
-n_sources <- length(unique_sources)
-n_sources
-```
-
 ## Source sparsity
 
 ## Number of annotations per source (including propagation)
-
-Here, inheritance and asr are treated as two separate and new sources.
-Note that the majority of annotations actually come from the propagation.
 
 ```{r source summary, message=FALSE}
 summary_source <- bp |> 
@@ -413,7 +472,9 @@ summary_source <- bp |>
   mutate(
     Attribute_source = case_when(
       Attribute_source == 'inh' ~ 'Inheritance',
+      Attribute_source == 'inh2' ~ 'Inheritance2',
       Attribute_source == 'asr' ~ 'ASR',
+      Attribute_source == 'tax' ~ 'Taxonomic pooling',
       TRUE ~ Attribute_source
     )
   ) |> 
@@ -422,30 +483,46 @@ summary_source <- bp |>
   arrange(-n) |> 
   mutate(
     origin = case_when(
-      Attribute_source %in% c('ASR', 'Inheritance') ~ 'Propagation',
+      Attribute_source %in% c('ASR', 'Inheritance', 'Inheritance2', 'Taxonomic pooling') ~ 'Propagation',
       TRUE ~ 'Original source'
     )
   )
-  # head(10) # This is to get only the top 10 of the list
-  
-# summary_source
-summary_source_p <- summary_source |> 
-  mutate(origin = ifelse(origin == 'Original source', 'Source', origin)) |>
-  mutate(origin = fct_reorder(origin, desc(n))) |> 
-  ggplot(aes(reorder(Attribute_source, -n), n)) +
-  geom_col(aes(fill = origin)) +
-  labs(
-    x = 'Source', y = 'Number of annotations'
-  ) +
-  scale_y_continuous(limits = c(0, 1500000), labels = scales::comma) +
-  scale_y_cut(breaks = c(100, 20000)) +
-  scale_fill_discrete(name = '') +
-  theme_bw() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    panel.grid.major.x = element_blank()
-  )
-summary_source_p <- grid.grabExpr(print(summary_source_p))
+```
+
+
+```{r summary source origin, message=FALSE}
+summary_source_p1 <- summary_source |> 
+    mutate(origin = ifelse(origin == 'Original source', 'Source', origin)) |>
+    mutate(origin = fct_reorder(origin, desc(n))) |> 
+    filter(origin == 'Propagation') |> 
+    ggplot(aes(reorder(Attribute_source, -n), n)) +
+    geom_col(fill = 'gray80', linewidth = 0.2, color = 'black') +
+    labs(
+        x = 'Source', y = 'Number of annotations'
+    ) +
+    scale_fill_discrete(name = '') +
+    theme_bw() +
+    theme(
+        axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+summary_source_p2 <- summary_source |> 
+    mutate(origin = ifelse(origin == 'Original source', 'Source', origin)) |>
+    mutate(origin = fct_reorder(origin, desc(n))) |> 
+    filter(origin == 'Source') |> 
+    ggplot(aes(reorder(Attribute_source, -n), n)) +
+    geom_col(fill = 'gray80', linewidth = 0.2, color = 'black') +
+    labs(
+        x = 'Source', y = 'Number of annotations'
+    ) +
+    scale_fill_discrete(name = '') +
+    theme_bw() +
+    theme(
+        axis.text.x = element_text(angle = 45, hjust = 1),
+    )
+summary_source_p <- summary_source_p1 + summary_source_p2 + 
+    plot_layout(ncol = 2, widths = c(1, 4)) +
+    plot_annotation(tag_levels = 'a')
+summary_source_p
 ```
 
 ## Completeness tables
