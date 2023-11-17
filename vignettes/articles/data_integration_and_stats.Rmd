@@ -2,7 +2,7 @@
 title: "Data integration and stats"
 output:
     html_document:
-        code_folding: hide
+        code_folding:show 
         toc: true
 ---
 
@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Load packages and import data
+## Load packages
 
 ```{r setup, message=FALSE}
 library(bugphyzzAnalyses)
@@ -37,23 +37,24 @@ library(grid)
 library(cowplot)
 ```
 
+## Import data
+
 ```{r import bp}
 bp <- importBugphyzz()
 ```
-# Basic exploratory stats
 
 ## Completeness
-Percentage of non-NA values for each column
+
+Percentage of non-NA values for each column:
 
 ```{r}
 df <- stack(round(colSums(!is.na(bp))/nrow(bp)*100, 2))
 df$counts <- colSums(!is.na(bp))
 df <- df[order(df$values, decreasing = TRUE),]
-
-df |> 
+na_plot <- df |> 
     ggplot(aes(x = fct_rev(fct_reorder(ind, values)), 
                y = counts)) +
-    geom_col() +
+    geom_col(fill = 'gray80', color = 'black', linewidth = 0.2) +
     scale_y_continuous(
         # Features of the first axis
         name = "# of Records",
@@ -61,11 +62,13 @@ df |>
         sec.axis = sec_axis(trans = ~ round(./nrow(bp)*100, 2), 
                             name = "Completeness (%)")) +
     labs(x = "Attribute/Column Names",
-         title = "Completenss of Curated Attributes/Columns") +
+         title = "Completeness of Curated Attributes/Columns") +
     theme_bw() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
+na_plot
+```
 
-## Basic stats
+## Basic
 
 Number of taxa, annotations, sources, attribute groups (physiologies),
 and attributes:
@@ -86,6 +89,9 @@ n_source <- bp |>
     pull(Attribute_source) |> 
     unique() |> 
     length()
+
+
+
 ```
 
 We got totals of `r format(n_annotations, big.mark = ",", scientific = FALSE)`
