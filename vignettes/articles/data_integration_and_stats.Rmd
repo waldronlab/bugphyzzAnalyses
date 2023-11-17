@@ -89,6 +89,19 @@ n_source <- bp |>
     pull(Attribute_source) |> 
     unique() |> 
     length()
+
+count_summary_tbl <- tibble::tribble(
+    ~name, ~n,
+    'Taxa', n_taxa,
+    'Attribute groups/physiologies', n_attr_grps,
+    'Unique attributes', n_attr,
+    'Annotations/Records', n_annotations,
+    'Annotations from sources', n_annotations_source,
+    'Imputed annotatiosn', n_annotations_pred,
+    'Sources', n_source
+)
+
+DT::datatable(count_summary_tbl)
 ```
 
 We got totals of `r format(n_annotations, big.mark = ",", scientific = FALSE)`
