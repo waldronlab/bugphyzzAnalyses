@@ -2,7 +2,7 @@
 title: "Data integration and stats"
 output:
     html_document:
-        code_folding:show 
+        code_folding: show 
         toc: true
 ---
 
