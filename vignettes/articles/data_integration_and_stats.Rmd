@@ -2,7 +2,7 @@
 title: "Data integration and stats"
 output:
     html_document:
-        code_folding:show 
+        code_folding: show 
         toc: true
 ---
 
@@ -151,7 +151,7 @@ freq_plot <- freq_df |>
     geom_col(fill = 'gray80', color = 'black', linewidth = 0.2) +
     theme_bw() +
     scale_y_continuous(name = "# of Annotations",
-                       sec.axis = sec_axis(trans = ~ round(./sum(df$values)*100, 2),
+                       sec.axis = sec_axis(trans = ~ round(./sum(freq_df$values)*100, 2),
                                            name = "Percentage")) +
     labs(x = "Frequency",
          title = "Frequency for Annotations") +
@@ -174,7 +174,7 @@ ev_plot <- ev_df |>
     geom_col(fill = 'gray80', linewidth = 0.2, color = 'black') +
     theme_bw() +
     scale_y_continuous(name = "# of Annotations",
-                       sec.axis = sec_axis(trans = ~ round(./sum(df$values)*100, 2),
+                       sec.axis = sec_axis(trans = ~ round(./sum(ev_df$values)*100, 2),
                                            name = "Percentage")) +
     labs(x = "Evidence",
          title = "Evidence Types for Annotations") +
