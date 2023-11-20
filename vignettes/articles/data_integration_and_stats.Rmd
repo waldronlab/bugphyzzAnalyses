@@ -792,7 +792,7 @@ p9
 Import bugphyzz data before propagation and before resolving conflicts, 
 agreements, and double annotations.
 
-```{r, fig.width=10, fig.height=11}
+```{r, fig.width=9, fig.height=11}
 data <- original |> 
   count(Attribute_group, Attribute_source, Rank) |> 
   mutate(new_column = paste0(Attribute_group, '|', Rank)) |>
