@@ -361,9 +361,12 @@ ht2 <- Heatmap(
 )
 
 rank_col <- c('#0C7BDC', '#FFC20A')
+
+myRowAnnDF <- summary_physiolgy_freqs_enrichDF[rownames(mat_condition),]
+
 row_anno <- rowAnnotation(
     "# bp sigs" = anno_barplot(
-        summary_physiolgy_freqs_enrichDF, bar_width = 1,
+        myRowAnnDF, bar_width = 1,
         gp = gpar(fill = rank_col), width = unit(3, 'cm')),
     show_annotation_name = TRUE 
 )
