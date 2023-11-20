@@ -129,16 +129,62 @@ size of the text file smaller. This also reduces the time it takes to import
 the main csv text file into R.
 
 ```{r histogram of scores}
-scores_hist <- bp |> 
-    ggplot(aes(as.numeric(Score))) +
-    geom_histogram(
-      binwidth = 0.05,
-      color = 'black', linewidth = 0.2, fill = 'gray80'
-    ) +
-    labs(x = 'Scores', y = 'Number of annotations') +
-    scale_y_continuous(breaks = scales::pretty_breaks()) +
-    theme_bw()
-scores_hist
+## Let's create some custom bins:
+bp_count <- bp |> 
+  mutate(bin = case_when(
+    Score >= 0 & Score < 0.1 ~ '0',
+    Score >= 0.1 & Score < 0.2 ~ '0.1',
+    Score >= 0.2 & Score < 0.3 ~ '0.2',
+    Score >= 0.3 & Score < 0.4 ~ '0.3', 
+    Score >= 0.4 & Score < 0.5 ~ '0.4',
+    Score >= 0.5 & Score < 0.6 ~ '0.5',
+    Score >= 0.6 & Score < 0.7 ~ '0.6',
+    Score >= 0.7 & Score < 0.8 ~ '0.7',
+    Score >= 0.8 & Score < 0.9 ~ '0.8',
+    Score >= 0.9 & Score < 1 ~ '0.9',
+    Score >= 1 ~ '1'
+  )) |>
+  count(bin) |> 
+  mutate(
+    Freq = case_when(
+      bin %in% c('0', '0.1', '0.2', '0.3', '0.4') ~ 'rarely',
+      bin %in% c('0.5', '0.6', '0.7', '0.8') ~ 'sometimes',
+      bin == '0.9' ~ 'usually',
+      bin == '1' ~ 'always'
+    )
+  ) |> 
+  mutate(
+    Freq = factor(Freq, levels = c('always', 'usually', 'sometimes', 'rarely'))
+  )
+
+# scores_hist <- bp |> 
+#   mutate(Score = round(Score, digits = 1)) |> 
+#     ggplot(aes(as.numeric(Score), fill = Frequency)) +
+#     geom_histogram(
+#       # breaks = seq(0, 1, 0.05),
+#       color = 'black', linewidth = 0.2
+#       # fill = 'gray80'
+#     ) +
+#     labs(x = 'Scores', y = 'Number of annotations') +
+#     scale_y_continuous(breaks = scales::pretty_breaks()) +
+#     theme_bw()
+# scores_hist
+bp_count |> 
+  ggplot(aes(bin, n, fill = Freq)) +
+  geom_col(width = 1, color = 'black', linewidth = 0.2) +
+  geom_vline(xintercept = 5.5, linetype = 'dotdash', linewidth = 0.3) +
+  scale_fill_manual(
+    values = c('gray25', 'gray50', 'gray75', 'gray100'),
+    labels = c('always', 'usually', 'sometimes', 'rarely'),
+    name = 'Frequency'
+  ) + 
+  labs(
+    y = 'Number of annotations', x = 'Score bins',
+    title = 'Histogram of scores',
+    subtitle = '0s or "never" were removed\nValues to the right of the vertical line should be preferred for analysis'
+  ) +
+  scale_y_continuous(labels = scales::scientific_format()) +
+  theme_classic()
 ```
 
 ## Frequency keywords
