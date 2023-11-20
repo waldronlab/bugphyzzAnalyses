@@ -1,0 +1,142 @@
+---
+title: "tree_summaries"
+---
+
+```{r options, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(data.tree)
+library(bugphyzz)
+library(taxPPro)
+library(purrr)
+library(tidyr)
+library()
+```
+
+
+```{r get child taxa for species}
+data('tree_list')
+ncbiTree <- as.Node(tree_list)
+childTaxa <- ncbiTree$Get(
+    attribute = 'children',
+    filterFun = function(node) grepl('^s__', node$name)
+)
+```
+
+```{r}
+bp <- importBugphyzz()
+```
+
+
+```{r}
+ncbi_nodes <- ncbiTree$Get(
+    attribute = 'name',
+    filterFun = function(node) node$name != 'ArcBac',
+    simplify = TRUE
+) |>
+    names() |> 
+    {\(y) sub('^\\w__', '', y)}()
+```
+
+
+
+```{r}
+aer <- filter(bp, Attribute_group == 'aerophilicity') |> 
+    mutate(input = ifelse(NCBI_ID %in% ncbi_nodes, TRUE, FALSE)) |> 
+    mutate(Attribute_source = ifelse(Evidence == 'inh', NA, Attribute_source))
+```
+
+```{r}
+aer |> 
+    filter(!is.na(Attribute_source)) |> 
+    count(Rank, Attribute_source, input) |> 
+    arrange(Rank, Attribute_source, input) |> 
+    View()
+```
+
+## Genus
+
+```{r}
+aerGn <- filter(bp, Attribute_group == 'aerophilicity', Rank == 'genus')
+
+genera <- ncbiTree$Get(
+    attribute = 'name',
+    filterFun = function(node) grepl('g__', node$name),
+    simplify = TRUE
+) |> 
+    unname() |> 
+    {\(y) sub('g__', '', y)}()
+
+g <- count(aerGn, Evidence)
+ids <- filter(aer, Evidence %in% c('exp', 'igc', 'tas', 'nas')) |> 
+    pull(NCBI_ID)
+g2 <- data.frame(Evidence = 'input', n = sum(ids %in% genera))
+rbind(g, g2)
+```
+
+
+## Species
+
+```{r}
+aerSp <- filter(bp, Attribute_group == 'aerophilicity', Rank == 'species')
+
+species <- ncbiTree$Get(
+    attribute = 'name',
+    filterFun = function(node) grepl('s__', node$name),
+    simplify = TRUE
+) |> 
+    unname() |> 
+    {\(y) sub('s__', '', y)}()
+
+s <- count(aerSp, Evidence)
+sp_ids <- filter(aer, Evidence %in% c('exp', 'igc', 'tas', 'nas')) |> 
+    pull(NCBI_ID)
+s2 <- data.frame(Evidence = 'input', n = sum(sp_ids %in% species))
+rbind(s, s2)
+```
+
+
+## Strain
+
+```{r}
+aerSt <- filter(bp, Attribute_group == 'aerophilicity', Rank == 'strain')
+strains <- ncbiTree$Get(
+    attribute = 'name',
+    filterFun = function(node) grepl('t__', node$name),
+    simplify = TRUE
+) |> 
+    unname() |> 
+    {\(y) sub('t__', '', y)}()
+
+st <- count(aerSt, Evidence)
+st_ids <- filter(aer, Evidence %in% c('exp', 'igc', 'tas', 'nas')) |> 
+    pull(NCBI_ID)
+st2 <- data.frame(Evidence = 'input', n = sum(st_ids %in% strains))
+rbind(st, st2)
+```
+
+
+```{r}
+x <- data.frame(x = names(list_flatten(childTaxa)))
+
+```
+
+
+
+```{r}
+aer |> 
+    filter(Attribute_source == "Bergey's Manual", Rank == 'strain') |> 
+    View()
+```
+
+
+
+
+
+
+

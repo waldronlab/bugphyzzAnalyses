@@ -130,9 +130,10 @@ the main csv text file into R.
 
 ```{r histogram of scores}
 scores_hist <- bp |> 
-    ggplot(aes(Score)) +
+    ggplot(aes(as.numeric(Score))) +
     geom_histogram(
-        binwidth = 0.05, color = 'black', fill = 'gray80', linewidth = 0.2
+      binwidth = 0.05,
+      color = 'black', linewidth = 0.2, fill = 'gray80'
     ) +
     labs(x = 'Scores', y = 'Number of annotations') +
     scale_y_continuous(breaks = scales::pretty_breaks()) +
