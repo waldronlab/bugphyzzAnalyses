@@ -6,7 +6,7 @@ output:
         toc: true
 ---
 
-```{r, include = FALSE}
+```{r script options, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -43,11 +43,13 @@ library(cowplot)
 bp <- importBugphyzz()
 ```
 
-## Completeness
+# General stats
+
+## Non-na plots
 
 Percentage of non-NA values for each column:
 
-```{r}
+```{r non-Nas plot}
 na_df <- stack(round(colSums(!is.na(bp))/nrow(bp)*100, 2))
 na_df$counts <- colSums(!is.na(bp))
 na_df <- na_df[order(na_df$values, decreasing = TRUE),]
@@ -68,7 +70,14 @@ na_plot <- na_df |>
 na_plot
 ```
 
-## Basic
+This should probably be turned into a unit test. Only the Attribute_range, 
+Confidence_in_curation, and Attribute_source columns should have NA values.
+In the case of Confidence_in_curation and Attribute_source, imputed annotations
+don't come from a source and Confidence_in_curation refers to a source.
+Attribute range only applies to attribute groups/physiologies that were
+transformed from numeric to categorical.
+
+## Basic totals
 
 Number of taxa, annotations, sources, attribute groups (physiologies),
 and attributes:
@@ -119,7 +128,7 @@ Annotations with a score of 0 were removed from the final export to keep the
 size of the text file smaller. This also reduces the time it takes to import
 the main csv text file into R.
 
-```{r scores hist}
+```{r histogram of scores}
 scores_hist <- bp |> 
     ggplot(aes(Score)) +
     geom_histogram(
@@ -133,15 +142,10 @@ scores_hist
 
 ## Frequency keywords
 
-This reflects the histogram above.
+This should reflect the histogram of scores above.
 See this code for reference: https://github.com/waldronlab/taxPPro/blob/0607575c1bc408b6bdf49d3cad77857851f11f6d/R/utils.R#L23-L42
 
-#> TODO We should have a lot more of usually rather than always, I'll write
-#> a temporary fix in the bugphyzz import code, but this should be fix in the
-#> propagation workflow. I applied this temporary fix but it should be addressed
-#> in the propagation workflow.
-
-```{r Frequency, message=FALSE}
+```{r totals frequency, message=FALSE}
 freq_df <- stack(table(bp$Frequency, useNA = "ifany"))
 freq_df$ind <- fct_relevel(freq_df$ind, 'always', 'usually', 'sometimes', 'rarely')
 freq_df$prop <- round(freq_df$values/sum(freq_df$values)*100, 2)
@@ -160,12 +164,9 @@ freq_plot <- freq_df |>
 freq_plot
 ```
 
->In the plot above, so many are usually becose of the penalty of the
-inheritance algorithm.
-
 ## Evidence
 
-```{r, message=FALSE}
+```{r totals evidence, message=FALSE}
 ev_df <- stack(table(bp$Evidence, useNA = "ifany"))
 ev_df$prop <- round(ev_df$values/sum(ev_df$values)*100, 2)
 ev_plot <- ev_df |> 
@@ -265,7 +266,7 @@ atr_gp_fr_p
 
 This could be used for a supplementary figure:
 
-```{r supplementaru fig, fig.width=19, fig.height=6}
+```{r supplementary fig, fig.width=19, fig.height=6}
 supp1 <- atr_gp_ev_p / atr_gp_fr_p + plot_layout(ncol = 2) +
     plot_annotation(tag_levels = 'a')
 ggsave(
@@ -277,7 +278,7 @@ supp1
 
 ## Evidence and frequency
 
-```{r}
+```{r Evidence x Frequency - all annotations}
 bp |> 
     count(Evidence, Frequency ) |> 
     group_by(Evidence) |> 
@@ -291,10 +292,11 @@ bp |>
     theme_bw()
 ```
 
+## Evidence and frequency (removing strains)
 
-## Evidence and frequency (leaving strins out)
+The pattern is esentially the same
 
-```{r}
+```{r evidence x frequency - no strains}
 bp |> 
     filter(Rank != 'strain') |> 
     count(Evidence, Frequency ) |> 
@@ -311,7 +313,7 @@ bp |>
 
 ## Evidence and Frequency (explore for all attribute groups)
 
-```{r}
+```{r evidence x frequency by attribute group - all annotations, fig.width=13.5, fig.height=9.5}
 bp |> 
     count(Attribute_group, Evidence, Frequency ) |> 
     group_by(Attribute_group, Evidence) |> 
@@ -319,16 +321,14 @@ bp |>
     ungroup() |> 
     ggplot(aes(reorder(Evidence, desc(total)), n)) +
     geom_col(aes(fill = Frequency)) +
-    labs(
-        x = 'Evidence', y = 'Number of annotations'
-    ) +
+    labs(x = 'Evidence', y = 'Number of annotations') +
     facet_wrap(.~Attribute_group, ncol = 5, scales = 'free_y') +
     theme_bw()
 ```
 
 ## Evidence and Frequency (explore for all attribute groups, leaving strains out)
 
-```{r}
+```{r Evidence x Frequency by Attribute group - removing strains, fig.width=13.5, fig.height=9.5}
 bp |> 
     filter(Rank != 'strain') |> 
     count(Attribute_group, Evidence, Frequency ) |> 
@@ -343,10 +343,9 @@ bp |>
     facet_wrap(.~Attribute_group, ncol = 5, scales = 'free_y') +
     theme_bw()
 ```
-
 ## Rank and frequency
 
-```{r}
+```{r Rank x Frequency - all annotations}
 bp |> 
     count(Rank, Frequency ) |> 
     group_by(Rank) |> 
@@ -362,7 +361,7 @@ bp |>
 
 ## Rank and evidence
 
-```{r}
+```{r Rank x Evidence}
 bp |> 
     count(Rank, Evidence ) |> 
     group_by(Rank) |> 
@@ -441,7 +440,7 @@ freqs_p
 ```
 
 
-```{r combined plot 1, fig.width=12.5, fig.height=8.7}
+```{r combined plot 1 (Figure candidate), fig.width=12.5, fig.height=8.7}
 layout <- '
 AAAAC
 AAAAC
@@ -457,8 +456,6 @@ p <- attr_gp_rk_p + attr_n_p + freqs_p +
 ggsave('basic_stats.png', width = 12.5, height = 8.7, units = 'in')
 p
 ```
-
-## Source sparsity
 
 ## Number of annotations per source (including propagation)
 
@@ -487,6 +484,7 @@ summary_source <- bp |>
       TRUE ~ 'Original source'
     )
   )
+head(summary_source)
 ```
 
 
@@ -520,15 +518,34 @@ summary_source_p2 <- summary_source |>
         axis.text.x = element_text(angle = 90, hjust = 1),
     )
 summary_source_p <- summary_source_p1 + summary_source_p2 + 
-    plot_layout(ncol = 2, widths = c(1, 4)) +
-    plot_annotation(tag_levels = 'a')
+    plot_layout(ncol = 2, widths = c(1, 4))
+    # plot_annotation(tag_levels = 'a')
 summary_source_p
 ```
 
+# Completeness
+
 ## Completeness tables
 
-```{r}
-exclude_all_fname <- system.file(file.path('extdata', 'proc_exclude_all_07122023.txt'), package = 'taxPPro', mustWork = TRUE)
++ The `exclude_all` data in the code chunk below is the result of applying
+all filters here: https://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=STATISTICS&uncultured=hide&unspecified=hide.
+The output does not include any strain.
+
++ Strains were imported separately and they're contained in the 
+`strains` data in the code below. Data was obtained similarly to the 
+code above (applying filters).
+
++ Details here: https://github.com/waldronlab/taxPPro/tree/main/inst/scripts
+
++ Reference was the combination of `exclude_all` and `strains` in the code
+chunk below:
+
+```{r getting reference for completeness, warning=FALSE}
+exclude_all_fname <- system.file(
+  file.path('extdata', 'proc_exclude_all_07122023.txt'),
+  package = 'taxPPro',
+  mustWork = TRUE
+)
 exclude_all <- read.table(exclude_all_fname, col.names = 'taxid')
 exclude_all$taxid <- as.character(exclude_all$taxid)
 exclude_all$rank <- taxizedb::taxid2rank(exclude_all$taxid, db = 'ncbi')
@@ -543,7 +560,6 @@ strains$rank <- taxizedb::taxid2rank(strains$taxid, db = 'ncbi')
 strains <- strains[strains$rank == 'strain',]
 
 reference_df <- rbind(exclude_all, strains)
-# reference_df$rank <- ifelse(reference_df$rank == 'superkingdom', 'kingdom', reference_df$rank)
 reference_summary <- count(reference_df, rank)
 colnames(reference_summary) <- c('Rank', 'ref')
 reference <- split(reference_df, factor(reference_df$rank)) |> 
@@ -556,7 +572,13 @@ reference_totals <- map_int(reference, length) |>
 reference_totals
 ```
 
-```{r}
+## Completeness table
+
+Define helpful functions and a subset of the data (original) that only comes
+from sources:
+
+```{r define functions and set original data}
+## Inset means taxa that can be found in the reference
 inSet <- function(x, ref) {
   s <- split(x, x$Rank)
   s <- lapply(s, function(x) x$NCBI_ID)
@@ -573,6 +595,9 @@ inSet <- function(x, ref) {
   )
 }
 
+## outset means taxa that cannot be found in the reference.
+## This could happen because of outdated taxids, or because
+## the fitlers used for getting the reference excluded several taxa.
 outSet <- function(x, ref) {
   s <- split(x, x$Rank)
   s <- lapply(s, function(x) x$NCBI_ID)
@@ -588,14 +613,13 @@ outSet <- function(x, ref) {
     outset = unlist(output, use.names = FALSE)
   )
 }
-
-original <- bp |> 
+original <- bp |> ## These are annotations from sources only
   filter(Evidence %in% c('tas', 'nas', 'exp', 'igc'))
 ```
 
-### Completeness table before propgation
+Calculate completeness before propagation:
 
-```{r}
+```{r completeness before propagation}
 inset_before <- original |> 
   {\(y) split(y, factor(y$Attribute_group))}() |> 
   map(inSet, reference) |> 
@@ -608,11 +632,12 @@ completeness_before <- left_join(inset_before, outset_before, by = c('Attribute_
   left_join(reference_summary, by = 'Rank') |> 
   mutate(completeness = (inset / ref) * 100)
 DT::datatable(completeness_before)
+
 ```
 
-### Completeness table after propagation
+Completeness after propagation:
 
-```{r}
+```{r completeness after propagation}
 inset_after <- bp |> 
   {\(y) split(y, factor(y$Attribute_group))}() |> 
   map(inSet, reference) |> 
@@ -627,9 +652,9 @@ completeness_after <- left_join(inset_after, outset_after, by = c('Attribute_gro
 DT::datatable(completeness_after)
 ```
 
-### Completenes heatmaps
+## Completenes heatmaps
 
-```{r}
+```{r completeness heatmap}
 ordered_rownames <- bp |> 
   filter(Attribute_group != 'antimicrobial resistance') |> 
   count(Attribute_group) |> 
@@ -662,7 +687,7 @@ completeness_mat_after <- completeness_after |>
 
 ## Create heatmaps
 color_fun <- circlize::colorRamp2(
-  breaks = c(0, 100), colors = c('white', 'brown')
+  breaks = c(0, 100), colors = c('white', 'gray40')
 )
 lgd <- Legend(col_fun = color_fun, title = "Completeness")
 ht_b <- Heatmap(
@@ -671,7 +696,7 @@ ht_b <- Heatmap(
   row_names_side = 'left',
   show_heatmap_legend = FALSE,
   col = color_fun,
-  column_title = "BP",
+  column_title = "Before",
   row_names_max_width = max_text_width(
     rownames(completeness_mat_before), 
     gp = gpar(fontsize = 12)
@@ -691,7 +716,7 @@ ht_a <- Heatmap(
     at = c(0, 50, 100)
   ),
   col = color_fun,
-  column_title = "AP",
+  column_title = "After",
   row_names_max_width = max_text_width(
     rownames(completeness_mat_after), 
     gp = gpar(fontsize = 12)
@@ -718,7 +743,7 @@ p2 <- plot_grid(
   ncol = 1, 
   rel_heights = c(0.38, 0.62)
 )
-# ggsave("completeness.png", plot = p2, width = 6.15, height = 9.68, units = 'in')
+ggsave("completeness.png", plot = p2, width = 6.15, height = 9.68, units = 'in')
 p2
 ```
 
@@ -747,7 +772,7 @@ p9 <- z |>
   facet_wrap(~Rank, nrow = 1) +
   labs(
       x = 'Attribute group',
-      y = 'log2(completeness after propagation + 1 / completeness before propagation + 1) per rank'
+      y = 'log2(completeness after propagation + 1 / completeness before propagation + 1)'
   ) +
   scale_fill_viridis_c(name = 'Total starting\nnumber of\nannotations') +
   scale_size(name = 'Completeness\nbefore propagation\nper rank') +
@@ -762,18 +787,7 @@ ggsave(
 )
 p9
 ```
-
-
-#> Add confidence of annotations for this figure.
-#> Discuss the meaning of the inference.
-#> Hold out validation. Choose random annotations (10% ~30-100x). Cross-validation.
-#> Hold out positives and negatives.
-#> One rank or physiology at at a time.
-#> Look for a citation for method implemented for validation.
-#> Check Mathews Correlation coefficient for balanced/unbalanced prediction. Matthews correlation coefficient
-#> Try different tissues.
-
-# Dispersion of sources
+## Dispersion of sources
 
 Import bugphyzz data before propagation and before resolving conflicts, 
 agreements, and double annotations.
@@ -790,7 +804,6 @@ data <- original |>
   tibble::column_to_rownames(var = 'new_column') |> 
   as.matrix()
 
-
 bar_vct <- sub('^.*\\|', '', rownames(data))
 split_vct <- sub('\\|.*$', '', rownames(data))
 bar_color <- viridis::viridis(n = 3, option = 'C')
@@ -803,7 +816,7 @@ row_ha <- rowAnnotation(
 data[data > 0] <- 1
 
 color_fun2 <- circlize::colorRamp2(
-  breaks = c(0, 1), colors = c('white', 'black')
+  breaks = c(0, 1), colors = c('white', 'gray50')
 )
 ht_sources <- Heatmap(
   matrix = data,
@@ -819,18 +832,15 @@ ht_sources <- Heatmap(
   row_title_rot = 0, gap = unit(0.1, 'inches'),
   cell_fun = function(j, i, x, y, width, height, fill) {
         grid.rect(x = x, y = y, width = width, height = height,
-            gp = gpar(col = "black", fill = NA))
+            gp = gpar(col = "gray20", fill = NA))
   }
 )
 
-# png(filename = 'sup3.png', width = 10, height = 11, units = 'in', res = 300)
-# draw(ht_sources)
-# dev.off()
-
+png(filename = 'sup3.png', width = 10, height = 11, units = 'in', res = 300)
+draw(ht_sources)
+dev.off()
 ht_sources
 ```
-
-
 
 # Session information
 
