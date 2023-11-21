@@ -35,6 +35,7 @@ library(tibble)
 library(patchwork)
 library(grid)
 library(cowplot)
+library(magrittr)
 ```
 
 ## Import data
