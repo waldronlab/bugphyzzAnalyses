@@ -1,5 +1,5 @@
 ---
-title: "tree_summaries"
+title: "Tree summaries"
 ---
 
 ```{r options, include = FALSE}
@@ -9,28 +9,55 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+## Packages
+
+```{r setup, message=FALSE}
 library(data.tree)
 library(bugphyzz)
 library(taxPPro)
 library(purrr)
 library(tidyr)
-library()
+library(dplyr)
+library(ggplot2)
 ```
 
+## Import data
 
-```{r get child taxa for species}
+Import bugphyzz and NCBI tree (taxPPro):
+
+```{r get child taxa for species, message=FALSE}
 data('tree_list')
 ncbiTree <- as.Node(tree_list)
-childTaxa <- ncbiTree$Get(
+bp <- importBugphyzz()
+```
+
+## Number of child taxa per species
+
+```{r}
+childTaxaSp <- ncbiTree$Get(
     attribute = 'children',
     filterFun = function(node) grepl('^s__', node$name)
 )
+number_children_sp <- map_int(childTaxaSp, ~ {
+    sum(!is.na(.x))
+})
+nChildDF <- data.frame(
+    name = names(number_children_sp),
+    n_child = unname(number_children_sp) 
+) |> 
+    mutate(
+        cat = case_when(
+            n_child == 0 ~ '0',
+            n_child > 0 & n_child <= 20 ~ '1-20',
+            n_child > 20 ~ '>20'
+        )
+    )
+
+count(nChildDF, cat)
 ```
 
-```{r}
-bp <- importBugphyzz()
-```
+> Less than 6000 species have children (strains). Some of these, like
+Staphilococcus aureous have a lot (up to 4628).
 
 
 ```{r}
@@ -55,15 +82,13 @@ aer <- filter(bp, Attribute_group == 'aerophilicity') |>
 aer |> 
     filter(!is.na(Attribute_source)) |> 
     count(Rank, Attribute_source, input) |> 
-    arrange(Rank, Attribute_source, input) |> 
-    View()
+    arrange(Rank, Attribute_source, input)
 ```
 
 ## Genus
 
 ```{r}
 aerGn <- filter(bp, Attribute_group == 'aerophilicity', Rank == 'genus')
-
 genera <- ncbiTree$Get(
     attribute = 'name',
     filterFun = function(node) grepl('g__', node$name),
@@ -120,23 +145,9 @@ st2 <- data.frame(Evidence = 'input', n = sum(st_ids %in% strains))
 rbind(st, st2)
 ```
 
+## Session information
 
-```{r}
-x <- data.frame(x = names(list_flatten(childTaxa)))
-
+```{r session info}
+sessioninfo::session_info()
 ```
-
-
-
-```{r}
-aer |> 
-    filter(Attribute_source == "Bergey's Manual", Rank == 'strain') |> 
-    View()
-```
-
-
-
-
-
-
 
