@@ -247,8 +247,9 @@ cavity.</p>
 </h3>
 <p>Import data:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/importBugphyzz.html" class="external-link">importBugphyzz</a></span><span class="op">(</span>version <span class="op">=</span> <span class="st">'devel'</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Using data downloaded on 2023-11-21 06:43:59.</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/importBugphyzz.html" class="external-link">importBugphyzz</a></span><span class="op">(</span>version <span class="op">=</span> <span class="st">'devel'</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Frequency</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'always'</span>, <span class="st">'usually'</span>, <span class="st">'sometimes'</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Using data downloaded on 2023-11-21 21:33:18.</span></span></code></pre></div>
 <p>Create signatures at the genus level:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp_sigs_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getBugphyzzSignatures.html" class="external-link">getBugphyzzSignatures</a></span><span class="op">(</span></span>
@@ -315,13 +316,13 @@ cavity.</p>
 <span><span class="co">#&gt;   body_site rank        n</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> mouth     genus      30</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> mouth     species    65</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> mouth     species    63</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> nose      genus       3</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> skin      genus       9</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> skin      species    35</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> stool     genus     490</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> stool     species   931</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> vagina    genus      15</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> skin      species    38</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> stool     genus     495</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">7</span> stool     species   952</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">8</span> vagina    genus       9</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">9</span> vagina    species     7</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -446,6 +447,8 @@ cavity.</p>
 <span>    show_annotation_name <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">mat_condition</span><span class="op">)</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'bugphyzz:'</span>, <span class="st">''</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">mat_condition</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ht1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">Heatmap</a></span><span class="op">(</span></span>
 <span>    matrix <span class="op">=</span> <span class="va">mat_condition</span>,</span>
@@ -462,77 +465,68 @@ cavity.</p>
 <span>    top_annotation <span class="op">=</span> <span class="va">col_anno_category</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|small &lt;=3.8μm|s' in 'mbcsToSbcs': dot</span></span>
+<span><span class="co">#&gt; conversion failure on 'length|small &lt;=3.8μm|s' in 'mbcsToSbcs': dot substituted</span></span>
+<span><span class="co">#&gt; for &lt;ce&gt;</span></span>
+<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
+<span><span class="co">#&gt; conversion failure on 'length|small &lt;=3.8μm|s' in 'mbcsToSbcs': dot substituted</span></span>
+<span><span class="co">#&gt; for &lt;bc&gt;</span></span>
+<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
+<span><span class="co">#&gt; conversion failure on 'width|small &lt;=0.9μm|s' in 'mbcsToSbcs': dot substituted</span></span>
+<span><span class="co">#&gt; for &lt;ce&gt;</span></span>
+<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
+<span><span class="co">#&gt; conversion failure on 'width|small &lt;=0.9μm|s' in 'mbcsToSbcs': dot substituted</span></span>
+<span><span class="co">#&gt; for &lt;bc&gt;</span></span>
+<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
+<span><span class="co">#&gt; conversion failure on 'width|average 0.91-3.5μm|s' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|small &lt;=3.8μm|s' in 'mbcsToSbcs': dot</span></span>
+<span><span class="co">#&gt; conversion failure on 'width|average 0.91-3.5μm|s' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|s' in 'mbcsToSbcs':</span></span>
-<span><span class="co">#&gt; dot substituted for &lt;ce&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|s' in 'mbcsToSbcs':</span></span>
-<span><span class="co">#&gt; dot substituted for &lt;bc&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|small &lt;=0.9μm|s' in 'mbcsToSbcs': dot</span></span>
+<span><span class="co">#&gt; conversion failure on 'width|average 0.91-3.5μm|g' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|small &lt;=0.9μm|s' in 'mbcsToSbcs': dot</span></span>
+<span><span class="co">#&gt; conversion failure on 'width|average 0.91-3.5μm|g' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|g' in 'mbcsToSbcs':</span></span>
-<span><span class="co">#&gt; dot substituted for &lt;ce&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|g' in 'mbcsToSbcs':</span></span>
-<span><span class="co">#&gt; dot substituted for &lt;bc&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|g' in 'mbcsToSbcs': dot</span></span>
+<span><span class="co">#&gt; conversion failure on 'length|average 3.9-22μm|g' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|g' in 'mbcsToSbcs': dot</span></span>
+<span><span class="co">#&gt; conversion failure on 'length|average 3.9-22μm|g' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|s' in 'mbcsToSbcs': dot</span></span>
+<span><span class="co">#&gt; conversion failure on 'length|small &lt;=3.8μm|s' in 'mbcsToSbcs': dot substituted</span></span>
+<span><span class="co">#&gt; for &lt;ce&gt;</span></span>
+<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
+<span><span class="co">#&gt; conversion failure on 'length|small &lt;=3.8μm|s' in 'mbcsToSbcs': dot substituted</span></span>
+<span><span class="co">#&gt; for &lt;bc&gt;</span></span>
+<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
+<span><span class="co">#&gt; conversion failure on 'width|small &lt;=0.9μm|s' in 'mbcsToSbcs': dot substituted</span></span>
+<span><span class="co">#&gt; for &lt;ce&gt;</span></span>
+<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
+<span><span class="co">#&gt; conversion failure on 'width|small &lt;=0.9μm|s' in 'mbcsToSbcs': dot substituted</span></span>
+<span><span class="co">#&gt; for &lt;bc&gt;</span></span>
+<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
+<span><span class="co">#&gt; conversion failure on 'width|average 0.91-3.5μm|s' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|s' in 'mbcsToSbcs': dot</span></span>
+<span><span class="co">#&gt; conversion failure on 'width|average 0.91-3.5μm|s' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|small &lt;=3.8μm|s' in 'mbcsToSbcs': dot</span></span>
+<span><span class="co">#&gt; conversion failure on 'width|average 0.91-3.5μm|g' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|small &lt;=3.8μm|s' in 'mbcsToSbcs': dot</span></span>
+<span><span class="co">#&gt; conversion failure on 'width|average 0.91-3.5μm|g' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|s' in 'mbcsToSbcs':</span></span>
-<span><span class="co">#&gt; dot substituted for &lt;ce&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|s' in 'mbcsToSbcs':</span></span>
-<span><span class="co">#&gt; dot substituted for &lt;bc&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|small &lt;=0.9μm|s' in 'mbcsToSbcs': dot</span></span>
+<span><span class="co">#&gt; conversion failure on 'length|average 3.9-22μm|g' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|small &lt;=0.9μm|s' in 'mbcsToSbcs': dot</span></span>
+<span><span class="co">#&gt; conversion failure on 'length|average 3.9-22μm|g' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|g' in 'mbcsToSbcs':</span></span>
-<span><span class="co">#&gt; dot substituted for &lt;ce&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|g' in 'mbcsToSbcs':</span></span>
-<span><span class="co">#&gt; dot substituted for &lt;bc&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|g' in 'mbcsToSbcs': dot</span></span>
-<span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|g' in 'mbcsToSbcs': dot</span></span>
-<span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|s' in 'mbcsToSbcs': dot</span></span>
-<span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|s' in 'mbcsToSbcs': dot</span></span>
-<span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">mat_bodysite</span><span class="op">)</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'bugphyz:'</span>, <span class="st">''</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">mat_bodysite</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">ht2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">Heatmap</a></span><span class="op">(</span></span>
 <span>    matrix <span class="op">=</span> <span class="va">mat_bodysite</span>,</span>
@@ -556,17 +550,17 @@ cavity.</p>
 <span><span class="co">#&gt; conversion failure on 'bugphyzz:length|small &lt;=3.8μm|s' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|s' in 'mbcsToSbcs':</span></span>
-<span><span class="co">#&gt; dot substituted for &lt;ce&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|s' in 'mbcsToSbcs':</span></span>
-<span><span class="co">#&gt; dot substituted for &lt;bc&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
 <span><span class="co">#&gt; conversion failure on 'bugphyzz:width|small &lt;=0.9μm|s' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
 <span><span class="co">#&gt; conversion failure on 'bugphyzz:width|small &lt;=0.9μm|s' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
+<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
+<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|s' in 'mbcsToSbcs':</span></span>
+<span><span class="co">#&gt; dot substituted for &lt;ce&gt;</span></span>
+<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
+<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|s' in 'mbcsToSbcs':</span></span>
+<span><span class="co">#&gt; dot substituted for &lt;bc&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
 <span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|g' in 'mbcsToSbcs':</span></span>
 <span><span class="co">#&gt; dot substituted for &lt;ce&gt;</span></span>
@@ -578,12 +572,6 @@ cavity.</p>
 <span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
 <span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|g' in 'mbcsToSbcs': dot</span></span>
-<span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|s' in 'mbcsToSbcs': dot</span></span>
-<span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|s' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
 <span><span class="co">#&gt; conversion failure on 'bugphyzz:length|small &lt;=3.8μm|s' in 'mbcsToSbcs': dot</span></span>
@@ -592,17 +580,17 @@ cavity.</p>
 <span><span class="co">#&gt; conversion failure on 'bugphyzz:length|small &lt;=3.8μm|s' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|s' in 'mbcsToSbcs':</span></span>
-<span><span class="co">#&gt; dot substituted for &lt;ce&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|s' in 'mbcsToSbcs':</span></span>
-<span><span class="co">#&gt; dot substituted for &lt;bc&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
 <span><span class="co">#&gt; conversion failure on 'bugphyzz:width|small &lt;=0.9μm|s' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
 <span><span class="co">#&gt; conversion failure on 'bugphyzz:width|small &lt;=0.9μm|s' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
+<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
+<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|s' in 'mbcsToSbcs':</span></span>
+<span><span class="co">#&gt; dot substituted for &lt;ce&gt;</span></span>
+<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
+<span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|s' in 'mbcsToSbcs':</span></span>
+<span><span class="co">#&gt; dot substituted for &lt;bc&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
 <span><span class="co">#&gt; conversion failure on 'bugphyzz:width|average 0.91-3.5μm|g' in 'mbcsToSbcs':</span></span>
 <span><span class="co">#&gt; dot substituted for &lt;ce&gt;</span></span>
@@ -614,15 +602,12 @@ cavity.</p>
 <span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
 <span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
 <span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|g' in 'mbcsToSbcs': dot</span></span>
-<span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|s' in 'mbcsToSbcs': dot</span></span>
-<span><span class="co">#&gt; substituted for &lt;ce&gt;</span></span>
-<span><span class="co">#&gt; Warning in grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y, :</span></span>
-<span><span class="co">#&gt; conversion failure on 'bugphyzz:length|average 3.9-22μm|s' in 'mbcsToSbcs': dot</span></span>
 <span><span class="co">#&gt; substituted for &lt;bc&gt;</span></span>
 <span></span>
 <span><span class="va">rank_col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'#0C7BDC'</span>, <span class="st">'#FFC20A'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">summary_physiolgy_freqs_enrichDF</span><span class="op">)</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">'bugphyzz:'</span>, <span class="st">''</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">summary_physiolgy_freqs_enrichDF</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">myRowAnnDF</span> <span class="op">&lt;-</span> <span class="va">summary_physiolgy_freqs_enrichDF</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">mat_condition</span><span class="op">)</span>,<span class="op">]</span></span>
 <span></span>
@@ -647,7 +632,9 @@ cavity.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="high_throughput_bsea_bsdb_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 <p>Draw heatmap</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">#&gt; agg_png </span></span>
+<span><span class="co">#&gt;       2</span></span></code></pre>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/sessioninfo/reference/session_info.html" class="external-link">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Session info ───────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">setting </span> <span style="color: #555555; font-style: italic;">value</span></span></span>
