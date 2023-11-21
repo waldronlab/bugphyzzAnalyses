@@ -171,7 +171,7 @@ bp_count <- bp |>
 # scores_hist
 bp_count |> 
   ggplot(aes(bin, n, fill = Freq)) +
-  geom_col(width = 1, color = 'black', linewidth = 0.2) +
+  geom_col(width = 1, color = 'black', linewidth = 0.2, position = position_nudge(x = 0.5)) +
   geom_vline(xintercept = 5.5, linetype = 'dotdash', linewidth = 0.3) +
   scale_fill_manual(
     values = c('gray25', 'gray50', 'gray75', 'gray100'),
