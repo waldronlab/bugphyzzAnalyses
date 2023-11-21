@@ -23,13 +23,59 @@ library(ggplot2)
 
 ## Import data
 
-Import bugphyzz and NCBI tree (taxPPro):
+Import bugphyzz, and the LTP and the NCBI trees:
 
 ```{r get child taxa for species, message=FALSE}
+bp <- importBugphyzz()
+ltp <- ltp()
+tip_data <- ltp$tip_data
+node_data <- ltp$node_data
+nodes <- unique(c(tip_data$taxid, node_data$taxid))
 data('tree_list')
 ncbiTree <- as.Node(tree_list)
-bp <- importBugphyzz()
 ```
+
+
+Number of taxids in the original annotations mapped to the LTP tree before
+"taxPool".
+
+```{r}
+x <- bp |> 
+    filter(Evidence %in% c('exp', 'tas', 'nas', 'igc')) |> 
+    {\(y) split(y, factor(y$Attribute_group))}()
+y <- map_dbl(x, ~  {
+    if (!nrow(.x))
+        return(0)
+    mean(unique(.x$NCBI_ID) %in% tip_data$taxid) * 100
+})
+z <- data.frame(Attribute_group = names(y), Per = unname(y))
+```
+
+```{r}
+x2 <- bp |> 
+    filter(Evidence %in% c('exp', 'tas', 'nas', 'igc', 'tax', 'inh')) |> 
+    filter(Rank == 'species') |> 
+    {\(y) split(y, factor(y$Attribute_group))}()
+y2 <- map_dbl(x2, ~ mean(unique(.x$NCBI_ID) %in% tip_data$taxid) * 100)
+z2 <- data.frame(Attribute_group = names(y2), Per = unname(y2))
+
+```
+
+
+Number of genera represented in the tree
+
+
+```{r}
+x <- bp |> 
+    filter(Evidence %in% c('exp', 'tas', 'nas', 'igc')) |> 
+    {\(y) split(y, factor(y$Attribute_group))}()
+```
+
+
+
+
+
+
 
 ## Number of child taxa per species
 
