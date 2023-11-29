@@ -40,7 +40,9 @@ library(cowplot)
 ## Import data
 
 ```{r import bp}
-bp <- importBugphyzz()
+bp <- importBugphyzz() |> 
+    filter(!(grepl('--TRUE$', Attribute) & is.na(Attribute_source))) |>
+    filter(!is.na(Attribute_group))
 ```
 
 # General stats
