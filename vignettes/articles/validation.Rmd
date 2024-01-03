@@ -1,0 +1,67 @@
+---
+title: "Results of 10-fold cross-validation of predicted annotations"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+```{r setup, message=FALSE, echo=FALSE}
+library(DT)
+library(dplyr)
+```
+
+## Import validation data
+
+Validation scripts and outputs are in: https://github.com/waldronlab/taxPProValidation/tree/main
+
+### Columns description
+
+| Column | Description |
+| ------ | ----------- |
+| **method** | The R package used for the analysis. Either phytools or castor. ltp stands for Living Tree Project. Phytools was used for discrete attributes. castor was used for numeric attributes. |
+| **rank** | Rank of the input annotated taxa used. 'all' means no filter, so the data could contain genus, species, and strains, but possibly just one of two of these ranks.|
+| **physiology** | Name of the physiology in bugphyzz. |
+| **attribute** | Name of the attribute. In the case of numeric attributes, it's the same name of the physiology. |
+| **mcc_mean and mcc_sd ** | Mean and standard deviation of the Mathews correlation coefficient values. It's the result of 10-fold cross-validation. These values only apply to discrete attributes. |
+| **r_squared_mean and r_squated_sd** | Mean and standard deviation of the R-square values. It's the result of 10-fold cross-validation. These values only apply to numeric attributes.|
+| **ltp_and_bp** | Number of annotations in both the LTP tree and a given subset of a bughyzz dataset (per rank and attribute). |
+| **ltp_and_bp_phys** | Number of annotations in both the LTP tree and a given set of a bugphyzz physiology (adding up all attributes).|
+| **bugphyzz** | Number of taxa with annotations in a given subset of a bugphyzz dataset (per rank and attribute). |
+| **ltp**  | total number of tips in the LTP tree. These tips include a mix of genera, species, and strains.|
+
+```{r import validation data, echo=FALSE}
+url <- "https://raw.githubusercontent.com/waldronlab/taxPProValidation/main/validation_summary.tsv"
+dat <- read.table(file = url, header = TRUE, sep = "\t", row.names = NULL) |> 
+    arrange(method, rank, physiology, attribute) |> 
+    group_by(method, rank, physiology) |> 
+    mutate(ltp_and_bp_phys = sum(ltp_and_bugphyzz)) |> 
+    ungroup() |> 
+    rename(ltp_and_bp = ltp_and_bugphyzz) |> 
+    relocate(ltp_and_bp_phys, .after = ltp_and_bp)
+        
+datatable(
+    data = dat, filter = "top", rownames = FALSE,
+    options = list(
+        pageLength = 100,
+        searchCols = list(
+            NULL, # first column
+            list(search = 'all'), # secound column
+            NULL # other columns
+        )
+
+    )
+)
+```
+
+## Session information
+
+```{r, echo=FALSE}
+sessioninfo::session_info()
+```
+
+
