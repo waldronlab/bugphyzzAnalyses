@@ -5,8 +5,6 @@ navbar:
     menu:
     - text: "Data integration and stats"
       href: articles/data_integration_and_stats.html
-    - text: "Evaluation of predicted annotations (aerophilicity)"
-      href: articles/evaluation.html
     - text: "Known ground truth - Subgingival vs supragingival plaque"
       href: articles/subgingival_plaque.html
     - text: "Reproducibility of previous study - NYCHANES study - bugphyzz"
