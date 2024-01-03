@@ -18,4 +18,4 @@ navbar:
     - text: "Tree summaries"
       href: articles/tree_summaries.html
     - text: "Cross-validation"
-      href: articles/validation.Rmd
+      href: articles/validation.html
