@@ -19,4 +19,5 @@ navbar:
       href: articles/high_throughput_msea_bsdb.html
     - text: "Tree summaries"
       href: articles/tree_summaries.html
-
+    - text: "Cross-validation"
+      href: articles/validation.Rmd
