@@ -25,6 +25,7 @@ Suggests:
     biobroom,
     tidySummarizedExperiment,
     ggplot2,
+    ggrepel,
     taxize,
     taxizedb,
     EnrichmentBrowser,
