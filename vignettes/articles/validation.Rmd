@@ -43,18 +43,18 @@ dat <- read.table(file = url, header = TRUE, sep = "\t", row.names = NULL) |>
     arrange(method, rank, physiology, attribute) |>
     group_by(method, rank, physiology)
         
-# datatable(
-#     data = dat, filter = "top", rownames = FALSE,
-#     options = list(
-#         pageLength = 100,
-#         searchCols = list(
-#             NULL, # first column
-#             list(search = 'all'), # secound column
-#             NULL # other columns
-#         )
-# 
-#     )
-# )
+ datatable(
+     data = dat, filter = "top", rownames = FALSE,
+     options = list(
+         pageLength = 100,
+         searchCols = list(
+             NULL, # first column
+             list(search = 'all'), # secound column
+             NULL # other columns
+         )
+ 
+     )
+ )
 ```
 
 
