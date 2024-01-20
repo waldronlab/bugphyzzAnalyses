@@ -68,9 +68,6 @@
       <a href="../articles/high_throughput_msea_bsdb.html">High-throughput BSEA with BugSigDB sets</a>
     </li>
     <li>
-      <a href="../articles/tree_summaries.html">Tree summaries</a>
-    </li>
-    <li>
       <a href="../articles/validation.html">Cross-validation</a>
     </li>
   </ul>
@@ -170,12 +167,9 @@ attributes</h1>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/importBugphyzz.html" class="external-link">importBugphyzz</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">aer</span> <span class="op">&lt;-</span> <span class="va">bp</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Attribute_group</span> <span class="op">==</span> <span class="st">'aerophilicity'</span><span class="op">)</span></span>
-<span><span class="va">sp_sigs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/getBugphyzzSignatures.html" class="external-link">getBugphyzzSignatures</a></span><span class="op">(</span></span>
-<span>  df <span class="op">=</span> <span class="va">aer</span>, tax.id.type <span class="op">=</span> <span class="st">'NCBI_ID'</span>, tax.level <span class="op">=</span> <span class="st">'species'</span>,</span>
-<span>  frequency <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'always'</span>, <span class="st">'usually'</span>, <span class="st">'sometimes'</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">aer</span> <span class="op">&lt;-</span> <span class="va">bp</span><span class="op">$</span><span class="va">aerophilicity</span></span>
+<span><span class="va">sp_sigs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/makeSignatures.html" class="external-link">makeSignatures</a></span><span class="op">(</span>dat <span class="op">=</span> <span class="va">aer</span>, tax_id_type <span class="op">=</span> <span class="st">'NCBI_ID'</span>, tax_level <span class="op">=</span> <span class="st">'species'</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/keep.html" class="external-link">discard</a></span><span class="op">(</span><span class="va">is.null</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="differential-abundance">Differential abundance<a class="anchor" aria-label="anchor" href="#differential-abundance"></a>
@@ -229,7 +223,7 @@ attributes</h1>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-2a850a22d5b2462550d2" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-2a850a22d5b2462550d2">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-0.574\" data-max=\"0.734\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-1.26\" data-max=\"1.34\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.163\" data-max=\"0.167\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\" disabled=\"\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0\" data-max=\"1\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption style=\"caption-side: top; text-align: left;\">Table 1. GSEA results comparing the gut microbiome of subjects with\n  a normal gut micriobiome (healthy controls) and subjects with IBD.\n  ES = Enrichment score, NES = Normalized Enrichment Score. Positive and\n  negative scores (ES and NES) indicate enrichment in the IBD and\n  healthy control samples, respectively. Bug sets marked with an asterik (*) \n  indicate significant enrichment results (adjusted p-value &lt; 0.1). \n  Benjamini &amp; Hochberg (BH) was used for P value adjustment.<\/caption>","data":[["bugphyzz:aerophilicity|facultatively anaerobic|s","bugphyzz:aerophilicity|anaerobic|s"],[0.734,-0.574],[1.34,-1.26],[0.163,0.167],[0.167,0.167]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>GENE.SET<\/th>\n      <th>ES<\/th>\n      <th>NES<\/th>\n      <th>PVAL<\/th>\n      <th>ADJ.PVAL<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Bft","buttons":["copy","print"],"iDisplayLength":10,"keys":true,"autoWidth":true,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4]},{"name":"GENE.SET","targets":0},{"name":"ES","targets":1},{"name":"NES","targets":2},{"name":"PVAL","targets":3},{"name":"ADJ.PVAL","targets":4}],"order":[],"orderClasses":false,"orderCellsTop":true},"selection":{"mode":"multiple","selected":null,"target":"row","selectable":null}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-2a850a22d5b2462550d2">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-0.541\" data-max=\"0.716\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-1.2\" data-max=\"1.31\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.187\" data-max=\"0.227\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\" disabled=\"\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0\" data-max=\"1\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption style=\"caption-side: top; text-align: left;\">Table 1. GSEA results comparing the gut microbiome of subjects with\n  a normal gut micriobiome (healthy controls) and subjects with IBD.\n  ES = Enrichment score, NES = Normalized Enrichment Score. Positive and\n  negative scores (ES and NES) indicate enrichment in the IBD and\n  healthy control samples, respectively. Bug sets marked with an asterik (*) \n  indicate significant enrichment results (adjusted p-value &lt; 0.1). \n  Benjamini &amp; Hochberg (BH) was used for P value adjustment.<\/caption>","data":[["bugphyzz:aerophilicity|facultatively anaerobic","bugphyzz:aerophilicity|anaerobic"],[0.716,-0.541],[1.31,-1.2],[0.187,0.227],[0.227,0.227]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>GENE.SET<\/th>\n      <th>ES<\/th>\n      <th>NES<\/th>\n      <th>PVAL<\/th>\n      <th>ADJ.PVAL<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Bft","buttons":["copy","print"],"iDisplayLength":10,"keys":true,"autoWidth":true,"columnDefs":[{"className":"dt-right","targets":[1,2,3,4]},{"name":"GENE.SET","targets":0},{"name":"ES","targets":1},{"name":"NES","targets":2},{"name":"PVAL","targets":3},{"name":"ADJ.PVAL","targets":4}],"order":[],"orderClasses":false,"orderCellsTop":true},"selection":{"mode":"multiple","selected":null,"target":"row","selectable":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div class="section level2">
 <h2 id="import-biosis-data">Import biosis data<a class="anchor" aria-label="anchor" href="#import-biosis-data"></a>
@@ -346,17 +340,17 @@ attributes</h1>
 <span><span class="co">#&gt;   [3] bitops_1.0-7                  filelock_1.0.3               </span></span>
 <span><span class="co">#&gt;   [5] XML_3.99-0.16                 taxizedb_0.3.1               </span></span>
 <span><span class="co">#&gt;   [7] DirichletMultinomial_1.44.0   lifecycle_1.0.4              </span></span>
-<span><span class="co">#&gt;   [9] edgeR_4.0.5                   bold_1.3.0                   </span></span>
+<span><span class="co">#&gt;   [9] edgeR_4.0.11                  bold_1.3.0                   </span></span>
 <span><span class="co">#&gt;  [11] lattice_0.22-5                MASS_7.3-60                  </span></span>
 <span><span class="co">#&gt;  [13] crosstalk_1.2.1               MultiAssayExperiment_1.28.0  </span></span>
 <span><span class="co">#&gt;  [15] magrittr_2.0.3                limma_3.58.1                 </span></span>
 <span><span class="co">#&gt;  [17] sass_0.4.8                    rmarkdown_2.25               </span></span>
 <span><span class="co">#&gt;  [19] jquerylib_0.1.4               yaml_2.3.8                   </span></span>
-<span><span class="co">#&gt;  [21] httpuv_1.6.13                 DBI_1.2.0                    </span></span>
+<span><span class="co">#&gt;  [21] httpuv_1.6.13                 DBI_1.2.1                    </span></span>
 <span><span class="co">#&gt;  [23] abind_1.4-5                   zlibbioc_1.48.0              </span></span>
-<span><span class="co">#&gt;  [25] RCurl_1.98-1.13               yulab.utils_0.1.2            </span></span>
+<span><span class="co">#&gt;  [25] RCurl_1.98-1.14               yulab.utils_0.1.3            </span></span>
 <span><span class="co">#&gt;  [27] rappdirs_0.3.3                GenomeInfoDbData_1.2.11      </span></span>
-<span><span class="co">#&gt;  [29] ggrepel_0.9.4                 irlba_2.3.5.1                </span></span>
+<span><span class="co">#&gt;  [29] ggrepel_0.9.5                 irlba_2.3.5.1                </span></span>
 <span><span class="co">#&gt;  [31] tidytree_0.4.6                crul_1.4.0                   </span></span>
 <span><span class="co">#&gt;  [33] vegan_2.6-4                   conditionz_0.1.0             </span></span>
 <span><span class="co">#&gt;  [35] annotate_1.80.0               pkgdown_2.0.7                </span></span>
@@ -366,17 +360,17 @@ attributes</h1>
 <span><span class="co">#&gt;  [43] tidyselect_1.2.0              httpcode_0.3.0               </span></span>
 <span><span class="co">#&gt;  [45] ScaledMatrix_1.10.0           viridis_0.6.4                </span></span>
 <span><span class="co">#&gt;  [47] BiocFileCache_2.10.1          jsonlite_1.8.8               </span></span>
-<span><span class="co">#&gt;  [49] BiocNeighbors_1.20.1          decontam_1.22.0              </span></span>
+<span><span class="co">#&gt;  [49] BiocNeighbors_1.20.2          decontam_1.22.0              </span></span>
 <span><span class="co">#&gt;  [51] ellipsis_0.3.2                mia_1.10.0                   </span></span>
 <span><span class="co">#&gt;  [53] scater_1.30.1                 systemfonts_1.0.5            </span></span>
 <span><span class="co">#&gt;  [55] tools_4.3.2                   treeio_1.26.0                </span></span>
-<span><span class="co">#&gt;  [57] ragg_1.2.7                    Rcpp_1.0.11                  </span></span>
-<span><span class="co">#&gt;  [59] glue_1.6.2                    gridExtra_2.3                </span></span>
+<span><span class="co">#&gt;  [57] ragg_1.2.7                    Rcpp_1.0.12                  </span></span>
+<span><span class="co">#&gt;  [59] glue_1.7.0                    gridExtra_2.3                </span></span>
 <span><span class="co">#&gt;  [61] SparseArray_1.2.3             xfun_0.41                    </span></span>
-<span><span class="co">#&gt;  [63] mgcv_1.9-0                    withr_2.5.2                  </span></span>
+<span><span class="co">#&gt;  [63] mgcv_1.9-0                    withr_3.0.0                  </span></span>
 <span><span class="co">#&gt;  [65] BiocManager_1.30.22           fastmap_1.1.1                </span></span>
 <span><span class="co">#&gt;  [67] bluster_1.12.0                fansi_1.0.6                  </span></span>
-<span><span class="co">#&gt;  [69] digest_0.6.33                 rsvd_1.0.5                   </span></span>
+<span><span class="co">#&gt;  [69] digest_0.6.34                 rsvd_1.0.5                   </span></span>
 <span><span class="co">#&gt;  [71] R6_2.5.1                      mime_0.12                    </span></span>
 <span><span class="co">#&gt;  [73] textshaping_0.3.7             colorspace_2.1-0             </span></span>
 <span><span class="co">#&gt;  [75] RSQLite_2.3.4                 utf8_1.2.4                   </span></span>
@@ -388,7 +382,7 @@ attributes</h1>
 <span><span class="co">#&gt;  [87] htmltools_0.5.7               GSEABase_1.64.0              </span></span>
 <span><span class="co">#&gt;  [89] scales_1.3.0                  png_0.1-8                    </span></span>
 <span><span class="co">#&gt;  [91] knitr_1.45                    reshape2_1.4.4               </span></span>
-<span><span class="co">#&gt;  [93] uuid_1.1-1                    nlme_3.1-163                 </span></span>
+<span><span class="co">#&gt;  [93] uuid_1.2-0                    nlme_3.1-163                 </span></span>
 <span><span class="co">#&gt;  [95] curl_5.2.0                    cachem_1.0.8                 </span></span>
 <span><span class="co">#&gt;  [97] stringr_1.5.1                 BiocVersion_3.18.1           </span></span>
 <span><span class="co">#&gt;  [99] parallel_4.3.2                vipor_0.4.7                  </span></span>
@@ -401,7 +395,7 @@ attributes</h1>
 <span><span class="co">#&gt; [113] Rgraphviz_2.46.0              KEGGgraph_1.62.0             </span></span>
 <span><span class="co">#&gt; [115] evaluate_0.23                 locfit_1.5-9.8               </span></span>
 <span><span class="co">#&gt; [117] cli_3.6.2                     taxize_1.0                   </span></span>
-<span><span class="co">#&gt; [119] compiler_4.3.2                rlang_1.1.2                  </span></span>
+<span><span class="co">#&gt; [119] compiler_4.3.2                rlang_1.1.3                  </span></span>
 <span><span class="co">#&gt; [121] crayon_1.5.2                  plyr_1.8.9                   </span></span>
 <span><span class="co">#&gt; [123] fs_1.6.3                      ggbeeswarm_0.7.2             </span></span>
 <span><span class="co">#&gt; [125] stringi_1.8.3                 viridisLite_0.4.2            </span></span>
