@@ -32,7 +32,7 @@ Direct quotes from [Tobacco exposure associated with oral microbiota oxygen util
 >"... differentially abundant OTUs between current smokers and
 never smokers to be over-represented in aerobic OTUs (Hypergeometric test,
 p = 0.004)."
-
+higthroughout
 **GSEA**
 
 >"...aerobic OTUs were significantly depleted among current smokers relative to never
@@ -76,11 +76,10 @@ table(tse_gn$smokingstatus)
 
 ```{r, message=FALSE}
 bp <- importBugphyzz()
-aer <- filter(bp, Attribute_group == 'aerophilicity')
-gn_sigs <- getBugphyzzSignatures(
-    df = aer, tax.id.type = 'Taxon_name', tax.level = 'genus', 
-    frequency = c('always', 'usually', 'sometimes')
-)
+aer <- bp$aerophilicity
+gn_sigs <- makeSignatures(dat = aer, tax_id_type = 'Taxon_name', tax_level = 'genus') |> 
+    list_flatten(name_spec = "{inner") |> 
+    discard(is.null)
 lapply(gn_sigs, head)
 ```
 
