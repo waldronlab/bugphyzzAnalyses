@@ -39,557 +39,369 @@ library(cowplot)
 
 ## Import data
 
-```{r import bp}
+A couple of filters are applied by deault when importing bugphyzz with the
+`importBugphyzz` function:
+
+1. Data imputed through ASR must have a validation result higher than 0.5.
+2. For discrete attributes, Frequency/Score most be above 0.5 for imputed data (rarely frequency is excluded).
+
+```{r import bp, message=FALSE}
 bp <- importBugphyzz() |> 
-    filter(!(grepl('--TRUE$', Attribute) & is.na(Attribute_source))) |>
-    filter(!is.na(Attribute_group))
+    map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID)))
 ```
 
-# General stats
+## Columns with NAs
 
-## Non-na plots
-
-Percentage of non-NA values for each column:
-
-```{r non-Nas plot}
-na_df <- stack(round(colSums(!is.na(bp))/nrow(bp)*100, 2))
-na_df$counts <- colSums(!is.na(bp))
-na_df <- na_df[order(na_df$values, decreasing = TRUE),]
-na_plot <- na_df |> 
-    ggplot(aes(x = fct_rev(fct_reorder(ind, values)), 
-               y = counts)) +
-    geom_col(fill = 'gray80', color = 'black', linewidth = 0.2) +
-    scale_y_continuous(
-        # Features of the first axis
-        name = "# of Records",
-        # Add a second axis and specify its features
-        sec.axis = sec_axis(trans = ~ round(./nrow(bp)*100, 2), 
-                            name = "Completeness (%)")) +
-    labs(x = "Attribute/Column Names",
-         title = "Completeness of Curated Attributes/Columns") +
-    theme_bw() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
-na_plot
+```{r columns with NAs}
+## This is more of a check tha a result
+nas_in_cols <- lapply(bp, function(x)  {
+    n <- map_int(x, function(y) sum(is.na(y)))
+    per <- map_dbl(x, function(y) round(mean(is.na(y)) * 100))
+    data.frame(column_name = colnames(x), n = unname(n), per = unname(per))
+}) |> 
+    bind_rows(.id = "names") |> 
+    group_by(column_name) |> 
+    summarise(
+        n_rows = sum(n),
+        per_rows = round(mean(per))
+    )
+nas_in_cols |> 
+    DT::datatable()
 ```
 
-This should probably be turned into a unit test. Only the Attribute_range, 
-Confidence_in_curation, and Attribute_source columns should have NA values.
-In the case of Confidence_in_curation and Attribute_source, imputed annotations
-don't come from a source and Confidence_in_curation refers to a source.
-Attribute range only applies to attribute groups/physiologies that were
-transformed from numeric to categorical.
-
-## Basic totals
+## Totals
 
 Number of taxa, annotations, sources, attribute groups (physiologies),
-and attributes:
+and attributes.
+
+Let's only consider numbers for
 
 ```{r totals}
-n_taxa <- length(unique(bp$NCBI_ID))
-n_attr_grps <- length(unique(bp$Attribute_group))
-n_attr <- length(unique(bp$Attribute))
-n_annotations <- nrow(bp)
-n_annotations_pred <- bp |> 
-    filter(is.na(Attribute_source)) |> 
-    nrow()
-n_annotations_source <- bp |> 
-    filter(!is.na(Attribute_source)) |> 
-    nrow()
-n_source <- bp |> 
-    filter(!is.na(Attribute_source)) |> 
-    pull(Attribute_source) |> 
+## Number of unique taxa
+n_taxa <- map(bp, ~ .x$NCBI_ID) |> 
+    unlist(use.names = FALSE) |> 
+    unique() |> 
+    length()
+
+## Number of annotations
+n_annotations <- map_int(bp, nrow) |> 
+    sum()
+
+## Number of physiologies/attribute groups
+n_attr <- length(bp)
+
+## Number of sources
+n_sources <- map(bp, ~ {
+    unique(.x$Attribute_source) |> 
+        {\(y) y[!is.na(y)]}()
+}) |> 
+    unlist(recursive = TRUE, use.names = FALSE) |> 
+    unique() |> 
+    length()
+
+## Number of annotations from sources
+n_annotations_source <- map_int(bp, ~ {
+    .x |> 
+        filter(!is.na(Attribute_source)) |> 
+        nrow()
+}) |> 
+    sum()
+
+## Number of annotations IBD
+n_annotations_ibd <- map_int(bp, ~ {
+    .x |> 
+        filter(Evidence == "tax") |> 
+        nrow()
+}) |> 
+    sum()
+
+## Number of annotations ASR
+n_annotations_asr <- map_int(bp, ~ {
+    .x |> 
+        filter(Evidence == "asr") |> 
+        nrow()
+}) |> 
+    sum()
+
+## Number of 
+num_vs_dis_n <- map_chr(bp, ~ {
+    unique(.x$Attribute_type)
+}) |> 
+    table() |> 
+    as.data.frame() |> 
+    set_names(c("name", "n")) |> 
+    mutate(name = ifelse(name == "numeric", "numeric", "discrete")) |> 
+    count(name, wt = n)
+
+
+
+attr_asr_default_names <- map(bp, ~ {
+    unique(.x$Evidence)
+}) |> 
+    keep(~ "asr" %in% .x) |> 
+    names()
+
+attr_asr_default <- length(attr_asr_default_names)
+
+attr_asr_all <- importVal() |>
+    filter(rank == "all") |> 
+    select(physiology, mcc_mean, r2_mean) |> 
+    pull(physiology) |> 
     unique() |> 
     length()
 
 count_summary_tbl <- tibble::tribble(
     ~name, ~n,
-    'Taxa', n_taxa,
-    'Attribute groups/physiologies', n_attr_grps,
-    'Unique attributes', n_attr,
-    'Annotations/Records', n_annotations,
-    'Annotations from sources', n_annotations_source,
-    'Imputed annotatiosn', n_annotations_pred,
-    'Sources', n_source
+    "Number of taxa", n_taxa,
+    "Number of annotations", n_annotations,
+    "Number of attributes", n_attr,
+    "Number of discrete attributes", pull(filter(num_vs_dis_n, name == "discrete"),n),
+    "Number of sources", n_sources,
+    "Number of annoations from sources", n_annotations_source,
+    "Number of IBD annotations", n_annotations_ibd,
+    "Number of annotations imputed through ASR", n_annotations_asr,
+    "Number of attributes with ASR data (default > 0.5 val)", attr_asr_default,
+    "Number of attributes with ASR data (all)", attr_asr_all
 )
 
-DT::datatable(count_summary_tbl)
+DT::datatable(count_summary_tbl, rownames = FALSE)
 ```
-
-We got totals of `r format(n_annotations, big.mark = ",", scientific = FALSE)`
-annotations, `r format(n_taxa, big.mark = ",", scientific = FALSE)` taxa,
-`r n_attr_grps` attribute groups (physiologies), and `r n_attr` attributes;
-`r format(n_annotations_source, big.mark = ",", scientific = FALSE)`
-annotations come from sources and 
-`r format(n_annotations_pred, big.mark = ",", scientific = FALSE)` annotations
-were imputed/predicted we our propagation method. Total sources were 
-`r n_source`.
 
 ## Histograms of scores
 
-Annotations with a score of 0 were removed from the final export to keep the
-size of the text file smaller. This also reduces the time it takes to import
-the main csv text file into R.
+```{r, message=FALSE}
+bp2 <- importBugphyzz(v = 0, exclude_rarely = FALSE)
+bp2_discrete <- map(bp2, ~{
+    .x |> 
+        filter(Evidence == "asr", Attribute_type != "numeric")
+}) |> 
+    discard(~ !nrow(.x))
 
-```{r histogram of scores}
-## Let's create some custom bins:
-bp_count <- bp |> 
-  mutate(bin = case_when(
-    Score >= 0 & Score < 0.1 ~ '0',
-    Score >= 0.1 & Score < 0.2 ~ '0.1',
-    Score >= 0.2 & Score < 0.3 ~ '0.2',
-    Score >= 0.3 & Score < 0.4 ~ '0.3', 
-    Score >= 0.4 & Score < 0.5 ~ '0.4',
-    Score >= 0.5 & Score < 0.6 ~ '0.5',
-    Score >= 0.6 & Score < 0.7 ~ '0.6',
-    Score >= 0.7 & Score < 0.8 ~ '0.7',
-    Score >= 0.8 & Score < 0.9 ~ '0.8',
-    Score >= 0.9 & Score < 1 ~ '0.9',
-    Score >= 1 ~ '1'
-  )) |>
-  count(bin) |> 
-  mutate(
-    Freq = case_when(
-      bin %in% c('0', '0.1', '0.2', '0.3', '0.4') ~ 'rarely',
-      bin %in% c('0.5', '0.6', '0.7', '0.8') ~ 'sometimes',
-      bin == '0.9' ~ 'usually',
-      bin == '1' ~ 'always'
-    )
-  ) |> 
-  mutate(
-    Freq = factor(Freq, levels = c('always', 'usually', 'sometimes', 'rarely'))
-  )
-
-# scores_hist <- bp |> 
-#   mutate(Score = round(Score, digits = 1)) |> 
-#     ggplot(aes(as.numeric(Score), fill = Frequency)) +
-#     geom_histogram(
-#       # breaks = seq(0, 1, 0.05),
-#       color = 'black', linewidth = 0.2
-#       # fill = 'gray80'
-#     ) +
-#     labs(x = 'Scores', y = 'Number of annotations') +
-#     scale_y_continuous(breaks = scales::pretty_breaks()) +
-#     theme_bw()
-# scores_hist
-bp_count |> 
-  ggplot(aes(bin, n, fill = Freq)) +
-  geom_col(width = 1, color = 'black', linewidth = 0.2, position = position_nudge(x = 0.5)) +
-  geom_vline(xintercept = 6, linetype = 'dotdash', linewidth = 0.3) +
-  scale_fill_manual(
-    values = c('gray25', 'gray50', 'gray75', 'gray100'),
-    labels = c('always', 'usually', 'sometimes', 'rarely'),
-    name = 'Frequency'
-  ) + 
-  labs(
-    y = 'Number of annotations', x = 'Score bins',
-    title = 'Histogram of scores',
-    subtitle = '0s or "never" were removed\nValues to the right of the vertical line should be preferred for analysis'
-  ) +
-  scale_y_continuous(labels = scales::scientific_format()) +
-  theme_classic()
-```
-
-## Frequency keywords
-
-This should reflect the histogram of scores above.
-See this code for reference: https://github.com/waldronlab/taxPPro/blob/0607575c1bc408b6bdf49d3cad77857851f11f6d/R/utils.R#L23-L42
-
-```{r totals frequency, message=FALSE}
-freq_df <- stack(table(bp$Frequency, useNA = "ifany"))
-freq_df$ind <- fct_relevel(freq_df$ind, 'always', 'usually', 'sometimes', 'rarely')
-freq_df$prop <- round(freq_df$values/sum(freq_df$values)*100, 2)
-freq_plot <- freq_df |> 
-    ggplot(aes(x = fct_rev(fct_reorder(ind, values)),
-               y = values)) +
-    geom_col(fill = 'gray80', color = 'black', linewidth = 0.2) +
-    theme_bw() +
-    scale_y_continuous(name = "# of Annotations",
-                       sec.axis = sec_axis(trans = ~ round(./sum(freq_df$values)*100, 2),
-                                           name = "Percentage")) +
-    labs(x = "Frequency",
-         title = "Frequency for Annotations") +
-    geom_text(aes(label = prop), vjust = -0.2) +
-    theme(axis.text.x = element_text(size = 12, face = "italic"))
-freq_plot
-```
-
-## Evidence
-
-```{r totals evidence, message=FALSE}
-ev_df <- stack(table(bp$Evidence, useNA = "ifany"))
-ev_df$prop <- round(ev_df$values/sum(ev_df$values)*100, 2)
-ev_plot <- ev_df |> 
-    ggplot(aes(x = fct_rev(fct_reorder(ind, values)),
-               y = values)) +
-    geom_col(fill = 'gray80', linewidth = 0.2, color = 'black') +
-    theme_bw() +
-    scale_y_continuous(name = "# of Annotations",
-                       sec.axis = sec_axis(trans = ~ round(./sum(ev_df$values)*100, 2),
-                                           name = "Percentage")) +
-    labs(x = "Evidence",
-         title = "Evidence Types for Annotations") +
-    geom_text(aes(label = prop), vjust = -0.2) +
-    theme(axis.text.x = element_text(size = 12, face = "italic"))
-ev_plot
-```
-
-## Number of annotations by attribute group (physiology)
-
-### Attribute group and rank
-
-```{r n attr per attr grp and rank}
-dims <- map_chr(dim(bp), ~ format(.x, big.mark = ','))
-total_annotations <- paste0('Total annotations: ', dims[[1]])
-valid_ranks <- c(
-  'kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'strain'
-)
-attr_gp_rk_p <- bp |> 
-  mutate(Rank = factor(Rank, levels = valid_ranks, ordered = FALSE)) |> 
-  count(Attribute_group, Rank) |> 
-  group_by(Attribute_group) |> 
-  mutate(total = sum(n)) |> 
-  ungroup() |> 
-  ggplot(aes(reorder(Attribute_group, desc(total)), n)) +
-  geom_col(aes(fill = Rank)) +
-  labs(x = 'Attribute group', y = 'Number of annotations') +
-  scale_y_continuous(labels = scales::comma) +
-  scale_fill_brewer(type = 'qual', palette = 'Set2', direction = -1, name = '') +
-  # scale_y_cut(breaks = c(100, 30000, 120000)) +
-  theme_bw() +
-  theme(
-    axis.text.x = element_text(angle = 90, hjust = 1)
-     # legend.position = 'bottom'
-  )
-attr_gp_rk_p
-```
-
-## Attribute group and evidence
-
-```{r n attr per attr grp and evidence}
-evidence_code <- c('asr', 'tax', 'inh', 'inh2', 'tas', 'nas', 'igc', 'exp')
-atr_gp_ev_p <- bp |> 
-  mutate(Evidence = factor(Evidence, levels = evidence_code, ordered = FALSE)) |> 
-  count(Attribute_group, Evidence) |> 
-  group_by(Attribute_group) |> 
-  mutate(total = sum(n)) |> 
-  ungroup() |> 
-  ggplot(aes(reorder(Attribute_group, desc(total)), n)) +
-  geom_col(aes(fill = Evidence)) +
-  labs(x = 'Attribute group', y = 'Number of annotations') +
-  scale_y_continuous(labels = scales::comma) +
-  scale_fill_brewer(type = 'qual', palette = 'Set2', direction = 1, name = '') +
-  # scale_y_cut(breaks = c(100, 120000)) +
-  theme_bw() +
-  theme(
-    axis.text.x = element_text(angle = 90, hjust = 1),
-    legend.position = 'right'
-  )
-atr_gp_ev_p
-```
-
-## Attribute group and frequency
-
-```{r n attr per attr grp and freq}
-freq_code <- c('always', 'usually', 'sometimes', 'rarely')
-atr_gp_fr_p <- bp |> 
-  mutate(Frequency = factor(Frequency, levels = freq_code, ordered = FALSE)) |> 
-  count(Attribute_group, Frequency) |> 
-  group_by(Attribute_group) |> 
-  mutate(total = sum(n)) |> 
-  ungroup() |> 
-  ggplot(aes(reorder(Attribute_group, desc(total)), n)) +
-  geom_col(aes(fill = Frequency)) +
-  labs(x = 'Attribute group', y = 'Number of annotations') +
-  scale_y_continuous(labels = scales::comma) +
-  scale_fill_brewer(type = 'qual', palette = 'Set2', direction = 1, name = '') +
-  # scale_y_cut(breaks = c(100, 120000)) +
-  theme_bw() +
-  theme(
-    axis.text.x = element_text(angle = 90, hjust = 1),
-    legend.position = 'right'
-  )
-atr_gp_fr_p
-```
-
-## Combined plot attribute group x Evidence & attribute group x frequency
-
-This could be used for a supplementary figure:
-
-```{r supplementary fig, fig.width=19, fig.height=6}
-supp1 <- atr_gp_ev_p / atr_gp_fr_p + plot_layout(ncol = 2) +
-    plot_annotation(tag_levels = 'a')
-ggsave(
-  filename = 'sup1.png', plot = supp1, width = 19, height = 6, 
-  units = 'in'
-)
-supp1
-```
-
-## Evidence and frequency
-
-```{r Evidence x Frequency - all annotations}
-bp |> 
-    count(Evidence, Frequency ) |> 
-    group_by(Evidence) |> 
-    mutate(total = sum(n)) |> 
-    ungroup() |> 
-    ggplot(aes(reorder(Evidence, desc(total)), n)) +
+scores <- map(bp2_discrete, ~ pull(.x, Score)) |> 
+    unlist(recursive = TRUE, use.names = FALSE) |> 
+    {\(y) data.frame(x = y)}()
+scores |> 
+    ggplot(aes(x)) +
+    geom_histogram(binwidth = 0.1, fill = "gray80", color = "black", size = 0.2) +
     labs(
-        x = 'Evidence', y = 'Number of annotations'
+        x = "Scores", y = "Frequency",
+        title = "Scores of data imputed with ASR (discrete only)"
     ) +
-    geom_col(aes(fill = Frequency)) +
     theme_bw()
 ```
 
-## Evidence and frequency (removing strains)
+## Histogram of NSTI
 
-The pattern is esentially the same
-
-```{r evidence x frequency - no strains}
-bp |> 
-    filter(Rank != 'strain') |> 
-    count(Evidence, Frequency ) |> 
-    group_by(Evidence) |> 
-    mutate(total = sum(n)) |> 
-    ungroup() |> 
-    ggplot(aes(reorder(Evidence, desc(total)), n)) +
-    labs(
-        x = 'Evidence', y = 'Number of annotations'
-    ) +
-    geom_col(aes(fill = Frequency)) +
-    theme_bw()
-```
-
-## Evidence and Frequency (explore for all attribute groups)
-
-```{r evidence x frequency by attribute group - all annotations, fig.width=13.5, fig.height=9.5}
-bp |> 
-    count(Attribute_group, Evidence, Frequency ) |> 
-    group_by(Attribute_group, Evidence) |> 
-    mutate(total = sum(n)) |> 
-    ungroup() |> 
-    ggplot(aes(reorder(Evidence, desc(total)), n)) +
-    geom_col(aes(fill = Frequency)) +
-    labs(x = 'Evidence', y = 'Number of annotations') +
-    facet_wrap(.~Attribute_group, ncol = 5, scales = 'free_y') +
-    theme_bw()
-```
-
-## Evidence and Frequency (explore for all attribute groups, leaving strains out)
-
-```{r Evidence x Frequency by Attribute group - removing strains, fig.width=13.5, fig.height=9.5}
-bp |> 
-    filter(Rank != 'strain') |> 
-    count(Attribute_group, Evidence, Frequency ) |> 
-    group_by(Attribute_group, Evidence) |> 
-    mutate(total = sum(n)) |> 
-    ungroup() |> 
-    ggplot(aes(reorder(Evidence, desc(total)), n)) +
-    geom_col(aes(fill = Frequency)) +
-    labs(
-        x = 'Evidence', y = 'Number of annotations'
-    ) +
-    facet_wrap(.~Attribute_group, ncol = 5, scales = 'free_y') +
-    theme_bw()
-```
-## Rank and frequency
-
-```{r Rank x Frequency - all annotations}
-bp |> 
-    count(Rank, Frequency ) |> 
-    group_by(Rank) |> 
-    mutate(total = sum(n)) |> 
-    ungroup() |> 
-    ggplot(aes(reorder(Rank, desc(total)), n)) +
-    labs(
-        x = 'Evidence', y = 'Number of annotations'
-    ) +
-    geom_col(aes(fill = Frequency)) +
-    theme_bw()
-```
-
-## Rank and evidence
-
-```{r Rank x Evidence}
-bp |> 
-    count(Rank, Evidence ) |> 
-    group_by(Rank) |> 
-    mutate(total = sum(n)) |> 
-    ungroup() |> 
-    ggplot(aes(reorder(Rank, desc(total)), n)) +
-    labs(
-        x = 'Evidence', y = 'Number of annotations'
-    ) +
-    geom_col(aes(fill = Evidence)) +
-    theme_bw()
-```
-
-## Number of attributes per attribute group
-
-```{r n attr values per attribute group}
-attr_n <- bp |> 
-    select(Attribute_group, Attribute) |> 
-    distinct() |> 
-    count(Attribute_group) |> 
-    arrange(-n) |> 
-    mutate(
-        bin = ifelse(n > 2, 'multistate-intersection', 'Binary')
-        ) |> 
-    mutate(
-        bin = case_when(
-            Attribute_group %in% c('disease association', 'antimicrobial resistance', 'habitat') ~ 'multistate-union',
-            TRUE ~ bin 
+```{r}
+bp2_numeric <- map(bp2, ~{
+    .x |> 
+        filter(
+            Evidence == "asr", Attribute_type == "numeric",
         )
-    ) |> 
-    mutate(bin = fct_relevel(bin, 'multistate-union', 'multistate-intersection'))
+}) |> 
+    discard(~ !nrow(.x)) |> 
+    map(~ filter(.x, !is.na(NSTI)))
 
-attr_n_p <- attr_n |> 
-  ggplot(aes(reorder(Attribute_group, desc(n)), n)) +
-  geom_col(aes(fill = bin)) +
-  scale_y_continuous(
-    limits = c(0, 95), breaks = seq(0, 95, 30)
-  ) +
-  labs(
-    x = 'Attribute group', y = 'Number of attributes\n\n'
-  ) +
-  scale_fill_discrete(name = '') +
-  # guides(fill = guide_legend(nrow = 1)) +
-  theme_bw() +
-  theme(
-    axis.text.x = element_text(angle = 90, hjust = 1)
-    # legend.position = 'bottom'
-    # panel.grid.major.x = element_blank(), 
-  ) 
-attr_n_p
-```
-
-## Number of annotations per taxon
-
-```{r freq n annotatios per taxon}
-freqs <- bp |> 
-    filter(Rank %in% c('genus', 'species', 'strain')) |> 
-    count(Rank, NCBI_ID)
-
-freqs_p <- freqs |> 
-  ggplot(aes(n)) +
-  geom_histogram(binwidth = 1, fill = 'gray80', linewidth = 0.2, color = 'black') +
-  facet_wrap(~Rank, ncol = 1, scales = 'free') +
-  scale_y_continuous(labels = scales::comma) +
-  guides(fill = guide_legend(nrow = 1)) +
-  labs(
-      x = 'Number of annotations per taxon',
-      y = 'Frequency'
-  ) +
-  theme_bw()  +
-  theme(
-    legend.position = 'bottom'
-  )
-
-freqs_p
-```
-
-
-```{r combined plot 1 (Figure candidate), fig.width=12.5, fig.height=8.7}
-layout <- '
-AAAAC
-AAAAC
-AAAAC
-AAAAC
-BBBBC
-BBBB#
-'
-p <- attr_gp_rk_p + attr_n_p + freqs_p + 
-  plot_layout(design = layout, guides = 'keep') +
-  plot_annotation(tag_levels = 'a', tag_suffix = ')')
-  # theme(plot.tag = element_text(size = 8))
-ggsave('basic_stats.png', width = 12.5, height = 8.7, units = 'in')
-p
-```
-
-## Number of annotations per source (including propagation)
-
-```{r source summary, message=FALSE}
-summary_source <- bp |> 
-  mutate(
-    Attribute_source = ifelse(
-      is.na(Attribute_source), Evidence, Attribute_source
-    )
-  ) |> 
-  mutate(
-    Attribute_source = case_when(
-      Attribute_source == 'inh' ~ 'Inheritance',
-      Attribute_source == 'inh2' ~ 'Inheritance2',
-      Attribute_source == 'asr' ~ 'ASR',
-      Attribute_source == 'tax' ~ 'Taxonomic pooling',
-      TRUE ~ Attribute_source
-    )
-  ) |> 
-  filter(!grepl(';', Attribute_source)) |> # remove repeated annotations for now
-  count(Attribute_source) |> 
-  arrange(-n) |> 
-  mutate(
-    origin = case_when(
-      Attribute_source %in% c('ASR', 'Inheritance', 'Inheritance2', 'Taxonomic pooling') ~ 'Propagation',
-      TRUE ~ 'Original source'
-    )
-  )
-head(summary_source)
-```
-
-
-```{r summary source origin, message=FALSE}
-summary_source_p1 <- summary_source |> 
-    mutate(origin = ifelse(origin == 'Original source', 'Source', origin)) |>
-    mutate(origin = fct_reorder(origin, desc(n))) |> 
-    filter(origin == 'Propagation') |> 
-    ggplot(aes(reorder(Attribute_source, -n), n)) +
-    geom_col(fill = 'gray80', linewidth = 0.2, color = 'black') +
+nsti <- map(bp2_numeric, ~ pull(.x, NSTI)) |> 
+    unlist(recursive = TRUE, use.names = FALSE) |> 
+    {\(y) data.frame(x = y)}()
+nsti |> 
+    ggplot(aes(x)) +
+    geom_histogram(binwidth = 0.1, fill = "gray80", color = "black", size = 0.2) +
     labs(
-        x = 'Source', y = 'Number of annotations'
+        x = "Scores", y = "Frequency",
+        title = "NSTI of data imputed with ASR (tips; numeric only)"
     ) +
-    scale_fill_discrete(name = '') +
-    theme_bw() +
-    theme(
-        axis.text.x = element_text(angle = 90, hjust = 1)
-    )
-summary_source_p2 <- summary_source |> 
-    mutate(origin = ifelse(origin == 'Original source', 'Source', origin)) |>
-    mutate(origin = fct_reorder(origin, desc(n))) |> 
-    filter(origin == 'Source') |> 
-    ggplot(aes(reorder(Attribute_source, -n), n)) +
-    geom_col(fill = 'gray80', linewidth = 0.2, color = 'black') +
+    theme_bw()
+```
+
+## Summary table
+
+```{r}
+evidence_summary <- bp |> 
+    map(~ {
+        .x |> 
+            mutate(
+                Evidence = case_when(
+                    Evidence %in% c("nas", "tas", "exp", "igc") ~ "source",
+                    TRUE ~ Evidence
+                    )
+            ) |> 
+            count(Evidence) |> 
+            pivot_wider(
+                names_from = "Evidence", values_from = "n"
+            )
+    }) |>
+    bind_rows(.id = "Attribute") |> 
+    modify(~ replace_na(.x, 0)) |> 
+    relocate(Attribute, source, ibd = tax, asr)
+
+number_of_attr_values <- bp |> 
+    map(~ {
+        attr_type <- unique(.x$Attribute_type)
+        if (attr_type %in% c("binary", "numeric")) {
+            output <- .x |> 
+                select(Attribute, Attribute_type) |> 
+                distinct() |> 
+                count(Attribute, Attribute_type, name = "Attribute_values")
+        } else {
+            output <- .x |> 
+                select(Attribute, Attribute_value, Attribute_type) |> 
+                distinct() |> 
+                count(Attribute, Attribute_type, name = "Attribute_values")
+        }
+        return(output)
+    }) |> 
+    bind_rows(.id = "Attribute")
+
+
+tbl <- left_join(number_of_attr_values, evidence_summary, by = "Attribute")
+DT::datatable(tbl)
+```
+
+## Validation plots
+
+### Discrete
+
+```{r}
+val <- importVal()
+dis_phys_names <- val |> 
+    filter(!is.na(mcc_mean)) |> 
+    group_by(physiology) |> 
+    slice_max(order_by = mcc_mean, n = 1) |> 
+    arrange(-mcc_mean) |> 
+    pull(physiology)
+pValDis <- val |> 
+    filter(!is.na(mcc_mean))  |> 
+    mutate(ltp_bp = ifelse(is.na(ltp_bp), ltp_bp_phys, ltp_bp)) |> 
+    mutate(physiology = factor(physiology, levels = dis_phys_names)) |>
+    mutate(guide_col = ifelse(as.character(physiology) == attribute, as.character(physiology), paste0(as.character(physiology), "|", attribute))) |> 
+    arrange(physiology, mcc_mean) |> 
+    ggplot(aes(forcats::fct_inorder(guide_col), mcc_mean, group = attribute)) +
+    geom_errorbar(
+        aes(ymin = mcc_mean - mcc_sd, ymax = mcc_mean + mcc_sd),
+        position = position_dodge(0.5),
+        width = 0, linewidth = 0.3
+        
+    ) +
+    geom_hline(yintercept = 0.5, color = "red", linetype = "dotdash", linewidth = 0.2) +
+    geom_point(
+        aes(size = ltp_bp),
+        shape = 23, position = position_dodge(0.5), fill = "white"
+        # size = 2
+    ) +
+    scale_size_continuous(name = "tips annotated") +
+    scale_y_continuous(
+        breaks = round(seq(min(val$mcc_mean - val$mcc_sd, na.rm = TRUE) - 0.1, max(val$mcc_mean + val$mcc_sd, na.rm = TRUE) + 0.1, 0.2), 1)
+    ) +
     labs(
-        x = 'Source', y = 'Number of annotations'
+        y = "Matthews Correlation Coefficient",
+        x = "Attribute|Attribute value"
     ) +
-    scale_fill_discrete(name = '') +
-    theme_bw() +
+    theme_bw()  +
     theme(
         axis.text.x = element_text(angle = 90, hjust = 1),
-    )
-summary_source_p <- summary_source_p1 + summary_source_p2 + 
-    plot_layout(ncol = 2, widths = c(1, 4))
-    # plot_annotation(tag_levels = 'a')
-summary_source_p
+        panel.grid.minor = element_blank()
+        
+    ) +
+    coord_flip()
 ```
 
-# Completeness
+### Numeric
 
-## Completeness tables
+```{r}
+num <- val |>
+    filter(!is.na(r2_mean))
+num_phys_names <- num |> 
+    group_by(physiology) |> 
+    slice_max(order_by = r2_mean, n = 1) |> 
+    arrange(-r2_mean) |> 
+    pull(physiology)
+pValNum <- val |> 
+    filter(!is.na(r2_mean))  |> 
+    mutate(ltp_bp = ifelse(is.na(ltp_bp), ltp_bp_phys, ltp_bp)) |> 
+    ggplot(aes(reorder(physiology, -r2_mean), r2_mean, group = attribute)) +
+    geom_errorbar(
+        aes(ymin = r2_mean - r2_sd, ymax = r2_mean + r2_sd),
+        position = position_dodge(0.5),
+        width = 0, linewidth = 0.3
+        
+    ) +
+    geom_hline(yintercept = 0.5, color = "red", linetype = "dotdash", linewidth = 0.2) +
+    geom_point(
+        aes(size = ltp_bp),
+        shape = 23, position = position_dodge(0.5), fill = "white"
+        # size = 2
+    ) +
+    scale_size_continuous(name = "tips annotated") +
+    scale_y_continuous(
+        breaks = round(seq(min(val$r2_mean - val$r2_sd, na.rm = TRUE) - 0.1, max(val$r2_mean + val$r2_sd, na.rm = TRUE) + 0.1, 0.2), 1)
+        
+    ) +
+    labs(
+        y = "R-squared",
+        x = "Attribute"
+    ) +
+    theme_bw()  +
+    theme(
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        panel.grid.minor = element_blank()
+        
+    ) +
+    coord_flip()
+```
 
-+ The `exclude_all` data in the code chunk below is the result of applying
-all filters here: https://www.ncbi.nlm.nih.gov/Taxonomy/taxonomyhome.html/index.cgi?chapter=STATISTICS&uncultured=hide&unspecified=hide.
-The output does not include any strain.
 
-+ Strains were imported separately and they're contained in the 
-`strains` data in the code below. Data was obtained similarly to the 
-code above (applying filters).
+```{r, fig.height=10, fig.width=7}
+pVal <- plot_grid(
+  pValDis, pValNum, 
+  # labels = c('a)', 'b)'), 
+  ncol = 1, 
+  align = 'v', rel_heights = c(0.83, 0.17)
+)
+pVal
+```
 
-+ Details here: https://github.com/waldronlab/taxPPro/tree/main/inst/scripts
+## Completeness
 
-+ Reference was the combination of `exclude_all` and `strains` in the code
-chunk below:
+### Totals before and after data imputation
+
+```{r}
+taxids_before <- bp |> 
+    map( ~ {
+        df <- .x |> 
+            filter(Evidence != "asr") |> 
+            select(NCBI_ID, Rank) |> 
+            distinct()
+        # ids <- as.character(df$NCBI_ID)
+        # names(ids) <- df$Rank
+        return(df)
+    }) |> 
+    bind_rows() |> 
+    distinct() |> 
+    count(Rank, name = "before_imputation")
+
+taxids_after <- bp |> 
+    map( ~ {
+        df <- .x |> 
+            # filter(Evidence != "asr") |> 
+            select(NCBI_ID, Rank) |> 
+            distinct()
+        # ids <- as.character(df$NCBI_ID)
+        # names(ids) <- df$Rank
+        return(df)
+    }) |> 
+    bind_rows() |> 
+    distinct() |> 
+    count(Rank, name = "after_imputation")
+total_increment_of_taxa <- full_join(taxids_before, taxids_after, by = "Rank")
+DT::datatable(total_increment_of_taxa)
+```
+
+### Completeness tables
 
 ```{r getting reference for completeness, warning=FALSE}
+valid_ranks <- validRanks()
 exclude_all_fname <- system.file(
   file.path('extdata', 'proc_exclude_all_07122023.txt'),
   package = 'taxPPro',
@@ -599,140 +411,129 @@ exclude_all <- read.table(exclude_all_fname, col.names = 'taxid')
 exclude_all$taxid <- as.character(exclude_all$taxid)
 exclude_all$rank <- taxizedb::taxid2rank(exclude_all$taxid, db = 'ncbi')
 exclude_all <- exclude_all[which(!is.na(exclude_all$rank)),]
-exclude_all$rank <- ifelse(exclude_all$rank == 'superkingdom', 'kingdom', exclude_all$rank)
-exclude_all <- exclude_all[exclude_all$rank %in% valid_ranks,]
+# exclude_all$rank <- ifelse(exclude_all$rank == 'superkingdom', 'kingdom', exclude_all$rank)
+exclude_all <- exclude_all[which(exclude_all$rank %in% valid_ranks),]
 
 strains_fname <- system.file(file.path('extdata', 'proc_strains_07122023.txt'), package = 'taxPPro', mustWork = TRUE)
 strains <- read.table(strains_fname, col.names = 'taxid')
 strains$taxid <- as.character(strains$taxid)
 strains$rank <- taxizedb::taxid2rank(strains$taxid, db = 'ncbi')
-strains <- strains[strains$rank == 'strain',]
+strains <- strains[which(strains$rank == 'strain'),]
 
 reference_df <- rbind(exclude_all, strains)
-reference_summary <- count(reference_df, rank)
-colnames(reference_summary) <- c('Rank', 'ref')
-reference <- split(reference_df, factor(reference_df$rank)) |> 
-  lapply(function(x) unique(x$taxid))
-reference_totals <- map_int(reference, length) |> 
-    as.data.frame() |> 
-    set_names('n') |> 
-    tibble::rownames_to_column(var = 'rank') |> 
-    arrange(-n)
-reference_totals
+reference_summary <- reference_df |> 
+    count(rank, name = "NCBI_ref")
+
+reference_summary
 ```
 
-## Completeness table
+```{r}
+inSet <- function(dat, ref) {
+    valid_ranks <- c(
+        "superkingdom",
+        "phylum", "class","order", "family",
+        "genus", "species", "strain"
+    )
+    datByRank <- split(dat, dat$Rank)
+    refByRank <- split(ref, ref$rank)
+    output <- vector("integer", length(valid_ranks))
+    for (i in seq_along(output)) {
+        names(output)[i] <- valid_ranks[i]
+        if (valid_ranks[i]  %in% names(datByRank)) {
+        output[[i]] <- 
+            sum(unique(datByRank[[valid_ranks[i]]]$NCBI_ID) %in% refByRank[[valid_ranks[i]]]$taxid)
 
-Define helpful functions and a subset of the data (original) that only comes
-from sources:
-
-```{r define functions and set original data}
-## Inset means taxa that can be found in the reference
-inSet <- function(x, ref) {
-  s <- split(x, x$Rank)
-  s <- lapply(s, function(x) x$NCBI_ID)
-  output <- vector('list', length(s))
-  for (i in seq_along(output)) {
-    ref_taxids <- unique(ref[[names(s)[i]]])
-    target_taxids <- unique(s[[i]])
-    output[[i]] <- sum(target_taxids %in% ref_taxids)
-    names(output)[i] <- names(s)[i]
-  }
-  data.frame(
-    Rank = names(output),
-    inset = unlist(output, use.names = FALSE)
-  )
+        }
+    }
+    df <- data.frame(rank = names(output), inSet = unname(output))
+    return(df)
 }
 
-## outset means taxa that cannot be found in the reference.
-## This could happen because of outdated taxids, or because
-## the fitlers used for getting the reference excluded several taxa.
-outSet <- function(x, ref) {
-  s <- split(x, x$Rank)
-  s <- lapply(s, function(x) x$NCBI_ID)
-  output <- vector('list', length(s))
-  for (i in seq_along(output)) {
-    ref_taxids <- unique(ref[[names(s)[i]]])
-    target_taxids <- unique(s[[i]])
-    output[[i]] <- sum(!target_taxids %in% ref_taxids)
-    names(output)[i] <- names(s)[i]
-  }
-  data.frame(
-    Rank = names(output),
-    outset = unlist(output, use.names = FALSE)
-  )
+outSet <- function(dat, ref) {
+    valid_ranks <- c(
+        "superkingdom",
+        "phylum", "class","order", "family",
+        "genus", "species", "strain"
+    )
+    datByRank <- split(dat, dat$Rank)
+    refByRank <- split(ref, ref$rank)
+    output <- vector("integer", length(valid_ranks))
+    for (i in seq_along(output)) {
+        names(output)[i] <- valid_ranks[i]
+        if (valid_ranks[i]  %in% names(datByRank)) {
+        output[[i]] <- 
+            sum(!unique(datByRank[[valid_ranks[i]]]$NCBI_ID) %in% refByRank[[valid_ranks[i]]]$taxid)
+
+        }
+    }
+    df <- data.frame(rank = names(output), outSet = unname(output))
+    return(df)
 }
-original <- bp |> ## These are annotations from sources only
-  filter(Evidence %in% c('tas', 'nas', 'exp', 'igc'))
 ```
 
-Calculate completeness before propagation:
 
-```{r completeness before propagation}
-inset_before <- original |> 
-  {\(y) split(y, factor(y$Attribute_group))}() |> 
-  map(inSet, reference) |> 
-  bind_rows(.id = 'Attribute_group')
-outset_before <- original |> 
-  {\(y) split(y, factor(y$Attribute_group))}() |> 
-  map(outSet, reference) |> 
-  bind_rows(.id = 'Attribute_group')
-completeness_before <- left_join(inset_before, outset_before, by = c('Attribute_group', 'Rank')) |> 
-  left_join(reference_summary, by = 'Rank') |> 
-  mutate(completeness = (inset / ref) * 100)
-DT::datatable(completeness_before)
+### Before imputation
 
+```{r}
+insetDataBefore <- bp |> 
+    map(~ filter(.x, Evidence != "asr")) |> 
+    map(~ inSet(dat = .x, ref = reference_df)) |>
+    bind_rows(.id = "Attribute")
+outsetDataBefore <- bp |> 
+    map(~ outSet(dat = .x, ref = reference_df)) |>
+    bind_rows(.id = "Attribute")
+completenessBefore <- reduce(list(insetDataBefore, outsetDataBefore, reference_summary), full_join) |> 
+    mutate(completeness = round(inSet / NCBI_ref * 100)) |> 
+    rename(Rank = rank)
 ```
 
-Completeness after propagation:
+### After imputation
 
-```{r completeness after propagation}
-inset_after <- bp |> 
-  {\(y) split(y, factor(y$Attribute_group))}() |> 
-  map(inSet, reference) |> 
-  bind_rows(.id = 'Attribute_group')
-outset_after <- bp |> 
-  {\(y) split(y, factor(y$Attribute_group))}() |> 
-  map(outSet, reference) |> 
-  bind_rows(.id = 'Attribute_group')
-completeness_after <- left_join(inset_after, outset_after, by = c('Attribute_group', 'Rank')) |> 
-  left_join(reference_summary, by = 'Rank') |> 
-  mutate(completeness = (inset / ref) * 100)
-DT::datatable(completeness_after)
+```{r}
+insetDataAfter <- bp |> 
+    map(~ inSet(dat = .x, ref = reference_df)) |>
+    bind_rows(.id = "Attribute")
+outsetDataAfter <- bp |> 
+    map(~ outSet(dat = .x, ref = reference_df)) |>
+    bind_rows(.id = "Attribute")
+completenessAfter <- reduce(list(insetDataAfter, outsetDataAfter, reference_summary), full_join) |> 
+    mutate(completeness = round(inSet / NCBI_ref * 100)) |> 
+    rename(Rank = rank)
+```
+
+```{r}
+completeness <- full_join(
+    completenessBefore, completenessAfter, suffix = c("_bef", "_aft"),
+    by = c("Attribute", "Rank", "NCBI_ref")
+) |> 
+    select(Attribute, Rank, starts_with("completeness"))
 ```
 
 ## Completenes heatmaps
 
 ```{r completeness heatmap}
-ordered_rownames <- bp |> 
-  filter(Attribute_group != 'antimicrobial resistance') |> 
-  count(Attribute_group) |> 
-  arrange(-n) |> 
-  pull(Attribute_group)
-
 ## Create matrices
-completeness_mat_before <- completeness_before |>
-  select(Attribute_group, Rank, completeness) |>
+completeness_mat_before <- completenessBefore |>
+  select(Attribute, Rank, completeness) |>
   pivot_wider(
     names_from = Rank, values_from = completeness, values_fill = 0
   ) |>
-  column_to_rownames(var = 'Attribute_group') |>
-  relocate(strain, species, genus) |> 
+  column_to_rownames(var = 'Attribute') |>
+  select(strain, species, genus) |> 
   as.matrix()
 
-completeness_mat_after <- completeness_after |> 
-  # filter(Attribute_group != 'antimicrobial sensitivity') |> 
-  filter(Attribute_group != 'antimicrobial resistance') |> 
-  select(Attribute_group, Rank, completeness) |> 
+completeness_mat_after <- completenessAfter |> 
+  select(Attribute, Rank, completeness) |> 
   pivot_wider(
     names_from = Rank, values_from = completeness, values_fill = 0
   ) |> 
-  column_to_rownames(var = 'Attribute_group') |> 
+  column_to_rownames(var = 'Attribute') |> 
   relocate(
-    strain, species, genus, family, order, class, phylum, kingdom
+    strain, species, genus, family, order, class, phylum, superkingdom
   ) |> 
   as.matrix()
 
+ordered_rownames <- names(sort(rowSums(completeness_mat_after), decreasing = TRUE))
 
 ## Create heatmaps
 color_fun <- circlize::colorRamp2(
@@ -745,15 +546,11 @@ ht_b <- Heatmap(
   row_names_side = 'left',
   show_heatmap_legend = FALSE,
   col = color_fun,
-  column_title = "Before",
+  column_title = "Before\ndata imputation",
   row_names_max_width = max_text_width(
     rownames(completeness_mat_before), 
     gp = gpar(fontsize = 12)
   )
-  # cell_fun = function(j, i, x, y, width, height, fill) {
-  #       grid.rect(x = x, y = y, width = width, height = height,
-  #           gp = gpar(col = "black", fill = NA))
-  # }
 )
 
 ht_a <- Heatmap(
@@ -765,16 +562,11 @@ ht_a <- Heatmap(
     at = c(0, 50, 100)
   ),
   col = color_fun,
-  column_title = "After",
+  column_title = "After\ndata imputation",
   row_names_max_width = max_text_width(
     rownames(completeness_mat_after), 
     gp = gpar(fontsize = 12)
   )
-
-  # cell_fun = function(j, i, x, y, width, height, fill) {
-  #       grid.rect(x = x, y = y, width = width, height = height,
-  #           gp = gpar(col = "black", fill = NA))
-  # }
 )
 
 ## Combine heatmaps
@@ -785,110 +577,17 @@ ht <- grid.grabExpr(
 
 ### Combined plot
 
-```{r, fig.width=6.15, fig.height=9.68}
+```{r, fig.width=14, fig.height=10}
 p2 <- plot_grid(
-  summary_source_p, ht, 
+  pVal, ht, 
   # labels = c('a)', 'b)'), 
-  ncol = 1, 
-  rel_heights = c(0.38, 0.62)
+  ncol = 2, 
+  rel_widths = c(0.55, 0.45)
+  
+  # rel_heights = c(0.38, 0.62)
 )
 ggsave("completeness.png", plot = p2, width = 6.15, height = 9.68, units = 'in')
 p2
-```
-
-### Relationship between initial ammount of annotations and magnitude of propagation
-
-```{r, fig.width=9.4, fig.height= 6.1}
-cols <- c('Attribute_group', 'Rank', 'completeness')
-x <- completeness_before |> 
-  select(all_of(cols)) |> 
-  rename(comp_bef = completeness) |> 
-  complete(Attribute_group, Rank, fill = list(comp_bef = 0))
-y <- completeness_after |> 
-  select(all_of(cols)) |> 
-  rename(comp_aft = completeness)
-original_summary <- original |> 
-  count(Attribute_group)
-z <- left_join(x, y, by = c('Attribute_group', 'Rank')) |> 
-  mutate(ratio = log((comp_aft + 1) / (comp_bef + 1))) |> 
-  left_join(original_summary, by = 'Attribute_group') |> 
-  arrange(n, Attribute_group) |> 
-  mutate(Attribute_group = fct_inorder(Attribute_group))
-p9 <- z |> 
-  ggplot(aes(Attribute_group, ratio)) +
-  # geom_point(aes(size = comp_bef), shape = 1, alpha = 0.5) +
-  geom_point(aes(size = comp_bef, fill = n), shape = 21,  alpha = 0.5) +
-  facet_wrap(~Rank, nrow = 1) +
-  labs(
-      x = 'Attribute group',
-      y = 'log2(completeness after propagation + 1 / completeness before propagation + 1)'
-  ) +
-  scale_fill_viridis_c(name = 'Total starting\nnumber of\nannotations') +
-  scale_size(name = 'Completeness\nbefore propagation\nper rank') +
-  theme_bw() +
-  coord_flip()
-ggsave(
-  filename = 'sup2.png', 
-  plot = p9,
-  units = c('in'),
-  width = 9.4,
-  height = 6.1
-)
-p9
-```
-## Dispersion of sources
-
-Import bugphyzz data before propagation and before resolving conflicts, 
-agreements, and double annotations.
-
-```{r, fig.width=9, fig.height=11}
-data <- original |> 
-  count(Attribute_group, Attribute_source, Rank) |> 
-  mutate(new_column = paste0(Attribute_group, '|', Rank)) |>
-  select(new_column, Attribute_source, n) |> 
-  pivot_wider(
-    names_from = 'Attribute_source', values_from = 'n', values_fill = 0
-  ) |> 
-  arrange(new_column) |> 
-  tibble::column_to_rownames(var = 'new_column') |> 
-  as.matrix()
-
-bar_vct <- sub('^.*\\|', '', rownames(data))
-split_vct <- sub('\\|.*$', '', rownames(data))
-bar_color <- viridis::viridis(n = 3, option = 'C')
-names(bar_color) <- c('genus', 'species', 'strain')
-row_ha <- rowAnnotation(
-  'Rank' = bar_vct, col = list(Rank = bar_color), 
-  show_annotation_name = FALSE
-)
-# log2_data <- log2(data + 1)
-data[data > 0] <- 1
-
-color_fun2 <- circlize::colorRamp2(
-  breaks = c(0, 1), colors = c('white', 'gray50')
-)
-ht_sources <- Heatmap(
-  matrix = data,
-  cluster_rows = FALSE, cluster_columns = FALSE,
-  show_row_names = FALSE,
-  row_names_side = 'left',
-  name = 'Presence/ausence',
-  show_heatmap_legend = TRUE,
-  col = color_fun2(c(0, 1)),
-  left_annotation = row_ha, 
-  row_split = split_vct,
-  column_names_rot = 45,
-  row_title_rot = 0, gap = unit(0.1, 'inches'),
-  cell_fun = function(j, i, x, y, width, height, fill) {
-        grid.rect(x = x, y = y, width = width, height = height,
-            gp = gpar(col = "gray20", fill = NA))
-  }
-)
-
-png(filename = 'sup3.png', width = 10, height = 11, units = 'in', res = 300)
-draw(ht_sources)
-dev.off()
-ht_sources
 ```
 
 # Session information
@@ -896,4 +595,3 @@ ht_sources
 ```{r class.soruce = 'fold-show'}
 sessioninfo::session_info()
 ```
-
