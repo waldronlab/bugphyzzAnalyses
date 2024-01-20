@@ -58,11 +58,8 @@ Signatures at the genus level:
 
 ```{r bp signatures genus}
 bp <- importBugphyzz()
-aer <- filter(bp, Attribute_group == 'aerophilicity')
-gn_sigs <- getBugphyzzSignatures(
-  df = aer, tax.id.type = 'Taxon_name', tax.level = 'genus', 
-  frequency = c('always', 'usually', 'sometimes')
-)
+aer <- bp$aerophilicity
+gn_sigs <- makeSignatures(dat = aer, tax_id_type = 'Taxon_name', tax_level = 'genus')
 ```
 
 # Differential abundance
