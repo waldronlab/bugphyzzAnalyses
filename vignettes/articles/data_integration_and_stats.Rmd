@@ -546,7 +546,7 @@ ht_b <- Heatmap(
   row_names_side = 'left',
   show_heatmap_legend = FALSE,
   col = color_fun,
-  column_title = "Before\ndata imputation",
+  column_title = "No ASR",
   row_names_max_width = max_text_width(
     rownames(completeness_mat_before), 
     gp = gpar(fontsize = 12)
@@ -562,7 +562,7 @@ ht_a <- Heatmap(
     at = c(0, 50, 100)
   ),
   col = color_fun,
-  column_title = "After\ndata imputation",
+  column_title = "ASR",
   row_names_max_width = max_text_width(
     rownames(completeness_mat_after), 
     gp = gpar(fontsize = 12)

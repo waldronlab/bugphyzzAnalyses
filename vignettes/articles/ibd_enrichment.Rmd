@@ -51,12 +51,9 @@ tse_subset
 
 ```{r bp signatures species, message=FALSE}
 bp <- importBugphyzz()
-aer <- bp |> 
-  filter(Attribute_group == 'aerophilicity')
-sp_sigs <- getBugphyzzSignatures(
-  df = aer, tax.id.type = 'NCBI_ID', tax.level = 'species',
-  frequency = c('always', 'usually', 'sometimes')
-)
+aer <- bp$aerophilicity
+sp_sigs <- makeSignatures(dat = aer, tax_id_type = 'NCBI_ID', tax_level = 'species') |> 
+    discard(is.null)
 ```
 
 # Differential abundance
