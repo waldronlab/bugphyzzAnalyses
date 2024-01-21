@@ -163,7 +163,7 @@ count_summary_tbl <- tibble::tribble(
     "Number of attributes with ASR data (all)", attr_asr_all
 )
 
-DT::datatable(count_summary_tbl, rownames = FALSE)
+myDataTable(count_summary_tbl)
 ```
 
 ## Histograms of scores
@@ -255,7 +255,7 @@ number_of_attr_values <- bp |>
 
 
 tbl <- left_join(number_of_attr_values, evidence_summary, by = "Attribute")
-DT::datatable(tbl)
+myDataTable(tbl)
 ```
 
 ## Validation plots
@@ -354,7 +354,7 @@ pValNum <- val |>
 ```{r, fig.height=10, fig.width=7}
 pVal <- plot_grid(
   pValDis, pValNum, 
-  # labels = c('a)', 'b)'), 
+  # labels = c('a)', 'b)'),
   ncol = 1, 
   align = 'v', rel_heights = c(0.83, 0.17)
 )
@@ -394,7 +394,7 @@ taxids_after <- bp |>
     distinct() |> 
     count(Rank, name = "after_imputation")
 total_increment_of_taxa <- full_join(taxids_before, taxids_after, by = "Rank")
-DT::datatable(total_increment_of_taxa)
+myDataTable(total_increment_of_taxa)
 ```
 
 ### Completeness tables
@@ -423,7 +423,7 @@ reference_df <- rbind(exclude_all, strains)
 reference_summary <- reference_df |> 
     count(rank, name = "NCBI_ref")
 
-reference_summary
+myDataTable(reference_summary)
 ```
 
 ```{r}
@@ -579,7 +579,7 @@ ht <- grid.grabExpr(
 ```{r, fig.width=14, fig.height=10}
 p2 <- plot_grid(
   pVal, ht, 
-  # labels = c('a)', 'b)'), 
+  labels = c('a)', 'b)'),
   ncol = 2, 
   rel_widths = c(0.55, 0.45)
   

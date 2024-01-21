@@ -315,9 +315,10 @@ myDataTable <- function(dat, page_len = NULL) {
                 extensions = "Buttons",
                 filter = "top",
                 options = list(
-                    dom = 'Bfrtip',
+                    dom = 'lBfrtip',
+                    paging = TRUE,
+                    pageLength = page_len,
                     buttons = list(
-                        pageLength = page_len,
                         list(extend = "copy", title = NULL),
                         list(extend = "print", title = NULL),
                         list(extend = "csv", title = NULL)
@@ -332,7 +333,8 @@ myDataTable <- function(dat, page_len = NULL) {
                 extensions = "Buttons",
                 filter = "top",
                 options = list(
-                    dom = 'Bfrtip',
+                    dom = 'lBfrtip',
+                    # lengthMenu = c(10, 20, 50, 100),
                     buttons = list(
                         list(extend = "copy", title = NULL),
                         list(extend = "print", title = NULL),
