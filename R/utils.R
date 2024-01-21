@@ -296,3 +296,51 @@ calcPredStats <- function(df) {
     }
     BiocFileCache::bfcrpath(bfc, rids = rid)
 }
+
+#' Print datatable with my default options
+#'
+#' \code{myDataTable} prints a DT::datatable with my default options.
+#'
+#' @param dat A data.frame.
+#' @param page_len An integer. Number of rows to print.
+#'
+#' @return A datatable object
+#' @export
+#'
+myDataTable <- function(dat, page_len = NULL) {
+    if (!is.null(page_len)) {
+        output <- dat |>
+            DT::datatable(
+                rownames = FALSE,
+                extensions = "Buttons",
+                filter = "top",
+                options = list(
+                    dom = 'Bfrtip',
+                    buttons = list(
+                        pageLength = page_len,
+                        list(extend = "copy", title = NULL),
+                        list(extend = "print", title = NULL),
+                        list(extend = "csv", title = NULL)
+                    )
+
+                )
+            )
+    } else {
+        output <- dat |>
+            DT::datatable(
+                rownames = FALSE,
+                extensions = "Buttons",
+                filter = "top",
+                options = list(
+                    dom = 'Bfrtip',
+                    buttons = list(
+                        list(extend = "copy", title = NULL),
+                        list(extend = "print", title = NULL),
+                        list(extend = "csv", title = NULL)
+                    )
+
+                )
+            )
+    }
+    return(output)
+}

@@ -65,8 +65,7 @@ nas_in_cols <- lapply(bp, function(x)  {
         n_rows = sum(n),
         per_rows = round(mean(per))
     )
-nas_in_cols |> 
-    DT::datatable()
+myDataTable(nas_in_cols)
 ```
 
 ## Totals
