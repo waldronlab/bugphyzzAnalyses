@@ -233,7 +233,8 @@ evidence_summary <- bp |>
     }) |>
     bind_rows(.id = "Attribute") |> 
     modify(~ replace_na(.x, 0)) |> 
-    relocate(Attribute, source, ibd = tax, asr)
+    relocate(Attribute, source, ibd = tax, asr) |> 
+    mutate(total = source + ibd + asr)
 
 number_of_attr_values <- bp |> 
     map(~ {
@@ -242,7 +243,8 @@ number_of_attr_values <- bp |>
             output <- .x |> 
                 select(Attribute, Attribute_type) |> 
                 distinct() |> 
-                count(Attribute, Attribute_type, name = "Attribute_values")
+                count(Attribute, Attribute_type, name = "Attribute_values") |> 
+                mutate(Attribute_values = ifelse(Attribute_type == "binary", 2, Attribute_values))
         } else {
             output <- .x |> 
                 select(Attribute, Attribute_value, Attribute_type) |> 
@@ -254,9 +256,124 @@ number_of_attr_values <- bp |>
     bind_rows(.id = "Attribute")
 
 
-tbl <- left_join(number_of_attr_values, evidence_summary, by = "Attribute")
-myDataTable(tbl)
+references <- bp |> 
+    map(~{
+        .x |> 
+            select(Attribute, Attribute_source) |> 
+            drop_na() |> 
+            distinct() |> 
+            group_by(Attribute) |> 
+            mutate(Attribute_source = paste0(sort(Attribute_source), collapse = ", ")) |> 
+            ungroup() |> 
+            distinct()
+    }) |> 
+    bind_rows()
+
+
+tbl <- reduce(list(number_of_attr_values, evidence_summary, references), left_join) |> 
+    rename(Type = Attribute_type, `No. Attribute values` = Attribute_values,
+           `Annotations from Source` = source, `Annotations from IBD` = ibd,
+           `Annotations from ASR` = asr, `Total annotations` = total,
+           Sources = Attribute_source
+    )
+myDataTable(tbl, page_len = nrow(tbl))
 ```
+
+
+```{r}
+valid_ranks <- c(
+    "superkingdom", "phylum", "class", "order", "family",
+    "genus", "species", "strain"
+)
+attr_order <- tbl |> 
+    select(Attribute, `Total annotations`) |> 
+    distinct() |> 
+    arrange(-`Total annotations`) |> 
+    pull(Attribute)
+counts_rank <- bp |> 
+    map(~ count(.x, Attribute, Rank)) |> 
+    bind_rows() |> 
+    mutate(Attribute = factor(Attribute, levels = attr_order)) |> 
+    mutate(Rank = factor(Rank, levels = valid_ranks))
+p_counts_rank <- counts_rank |> 
+    ggplot(aes(Attribute, n)) +
+    geom_col(aes(fill = Rank), position = "stack") +
+    labs(
+        x = "Attribute", y = "No. annotations"
+    ) +
+    theme_bw() +
+    theme(
+        axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+p_counts_rank
+```
+
+
+```{r}
+p_count_types <- tbl |> 
+    mutate(Attribute = factor(Attribute, levels = attr_order)) |> 
+    pivot_longer(
+        names_to = "count_type", values_to = "n", cols = c(4, 5, 6) 
+    ) |>
+    ggplot(aes(Attribute, n)) +
+    geom_col(aes(fill = count_type), position = "stack") +
+    labs(
+        x = "Attribute", y = "No. annotations"
+    ) +
+    scale_fill_discrete(name = "Annotation types") +
+    scale_y_continuous(label = scales::comma) +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p_count_types
+```
+
+
+```{r}
+n_annot_tax <- bp |> 
+   map(~ {
+       attr_type <- unique(.x$Attribute_type)
+       .x |> 
+           filter(Rank %in% c("strain", "species", "genus")) |> 
+           select(Attribute, NCBI_ID, Rank)
+   }) |> 
+    bind_rows() |> 
+    count(NCBI_ID, Rank)
+p_n_annot_tax <- n_annot_tax |> 
+    ggplot() +
+    geom_histogram(aes(x = n)) +
+    labs(
+        x = "Number of annotations per taxon",
+        y = "Frequency"
+    ) +
+    facet_wrap(~Rank, ncol = 1) +
+    theme_bw()
+```
+
+```{r}
+n_annot_tax |> 
+    summary()
+```
+
+
+```{r, fig.height=7, fig.width=11}
+p1 <- plot_grid(
+  p_counts_rank, p_count_types, 
+  labels = c('a)', 'b)'),
+  ncol = 1, align = "v"
+  # rel_widths = c(0.55, 0.45)
+)
+
+p2 <- plot_grid(
+    p1, p_n_annot_tax,
+    labels = c("", "c)"),
+    ncol = 2, 
+    rel_widths = c(0.75, 0.25)
+)
+p2
+```
+
+
+
 
 ## Validation plots
 
@@ -588,6 +705,37 @@ p2 <- plot_grid(
 ggsave("completeness.png", plot = p2, width = 6.15, height = 9.68, units = 'in')
 p2
 ```
+
+
+
+
+
+```{r}
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
 
 # Session information
 
