@@ -358,7 +358,7 @@ n_annot_tax |>
 
 ```{r, fig.height=7, fig.width=11}
 p1 <- plot_grid(
-  p_counts_rank, p_count_types, 
+  p_count_types, p_counts_rank,
   labels = c('a)', 'b)'),
   ncol = 1, align = "v"
   # rel_widths = c(0.55, 0.45)
