@@ -298,6 +298,7 @@ counts_rank <- bp |>
 p_counts_rank <- counts_rank |> 
     ggplot(aes(Attribute, n)) +
     geom_col(aes(fill = Rank), position = "stack") +
+    scale_fill_discrete(name = "Rank") +
     labs(
         x = "Attribute", y = "No. annotations"
     ) +
