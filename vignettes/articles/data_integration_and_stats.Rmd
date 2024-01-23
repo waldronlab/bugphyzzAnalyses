@@ -311,11 +311,18 @@ p_counts_rank
 
 
 ```{r}
-p_count_types <- tbl |> 
+
+count_types <- tbl |> 
     mutate(Attribute = factor(Attribute, levels = attr_order)) |> 
     pivot_longer(
         names_to = "count_type", values_to = "n", cols = c(4, 5, 6) 
-    ) |>
+    )
+
+p_count_types <- count_types |> 
+    # mutate(Attribute = factor(Attribute, levels = attr_order)) |> 
+    # pivot_longer(
+    #     names_to = "count_type", values_to = "n", cols = c(4, 5, 6) 
+    # ) |>
     ggplot(aes(Attribute, n)) +
     geom_col(aes(fill = count_type), position = "stack") +
     labs(
@@ -374,11 +381,6 @@ p2 <- plot_grid(
 p2
 ```
 
-
-
-
-## Validation plots
-
 ### Discrete
 
 ```{r}
@@ -402,7 +404,7 @@ pValDis <- val |>
         width = 0, linewidth = 0.3
         
     ) +
-    geom_hline(yintercept = 0.5, color = "red", linetype = "dotdash", linewidth = 0.2) +
+    geom_hline(yintercept = 0.5, linetype = "dotdash", linewidth = 0.2) +
     geom_point(
         aes(size = ltp_bp),
         shape = 23, position = position_dodge(0.5), fill = "white"
@@ -418,7 +420,7 @@ pValDis <- val |>
     ) +
     theme_bw()  +
     theme(
-        axis.text.x = element_text(angle = 90, hjust = 1),
+        # axis.text.x = element_text(angle = 90, hjust = 1),
         panel.grid.minor = element_blank()
         
     ) +
@@ -445,7 +447,7 @@ pValNum <- val |>
         width = 0, linewidth = 0.3
         
     ) +
-    geom_hline(yintercept = 0.5, color = "red", linetype = "dotdash", linewidth = 0.2) +
+    geom_hline(yintercept = 0.5, linetype = "dotdash", linewidth = 0.2) +
     geom_point(
         aes(size = ltp_bp),
         shape = 23, position = position_dodge(0.5), fill = "white"
@@ -462,7 +464,7 @@ pValNum <- val |>
     ) +
     theme_bw()  +
     theme(
-        axis.text.x = element_text(angle = 90, hjust = 1),
+        # axis.text.x = element_text(angle = 90, hjust = 1),
         panel.grid.minor = element_blank()
         
     ) +
@@ -478,6 +480,61 @@ pVal <- plot_grid(
   align = 'v', rel_heights = c(0.83, 0.17)
 )
 pVal
+```
+
+
+
+```{r}
+counts_type_sp <- bp |> 
+    map(~ {
+        .x |> 
+            filter(Rank == "species") |> 
+            mutate(
+                Evidence = case_when(
+                    Evidence == "tax" ~ "IBD",
+                    Evidence == "asr" ~ "ASR",
+                    Evidence %in% c("exp", "igc", "tas", "nas") ~ "Source",
+                    TRUE ~ Evidence
+                )
+            ) |>
+            count(Attribute, Evidence) |> 
+            mutate(total = sum(n))
+    }) |> 
+    bind_rows()
+
+p_counts_sp <- counts_type_sp |>
+    mutate(Evidence = factor(Evidence, levels = c("ASR", "IBD", "Source"))) |> 
+    ggplot(aes(reorder(Attribute, total), n)) +
+    geom_col(aes(fill = Evidence), position = "stack") +
+    labs(
+        y = "No. annotations (species)", x = "Attribute"
+    ) +
+    scale_fill_manual(
+        values = c("#56B4E9", "#D55E00", "#0072B2"),
+        name = "Annotation type"
+    ) +
+    scale_y_continuous(labels = scales::comma) +
+    theme_bw() +
+    # theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    coord_flip()
+p_counts_sp
+```
+
+
+
+```{r, fig.height=8, fig.width=14}
+myPlot2 <- plot_grid(
+    pValNum, p_counts_sp, ncol = 1,
+    labels = c("b)", "c)"),
+    rel_heights = c(0.2, 0.8), align = "v"
+)
+myPlot1 <- plot_grid(
+    pValDis, myPlot2,
+    labels = c("a)"),
+    rel_widths = c(0.55, 0.45), axis = "b"
+
+)
+myPlot1
 ```
 
 ## Completeness
@@ -697,7 +754,7 @@ ht <- grid.grabExpr(
 
 ```{r, fig.width=14, fig.height=10}
 p2 <- plot_grid(
-  pVal, ht, 
+  pVal, p_counts_sp, 
   labels = c('a)', 'b)'),
   ncol = 2, 
   rel_widths = c(0.55, 0.45)
