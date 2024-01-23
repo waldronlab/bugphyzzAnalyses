@@ -355,6 +355,7 @@ n_annot_tax |>
     summary()
 ```
 
+## Number of annotations per attribute
 
 ```{r, fig.height=7, fig.width=11}
 p1 <- plot_grid(
@@ -708,35 +709,60 @@ p2
 ```
 
 
+```{r, fig.width=9, fig.height=15}
+x <- bp |> 
+    map(~{
+        .x |> 
+            filter(!is.na(Attribute_source)) |> 
+            count(Attribute, Attribute_source, Rank)
+    }) |> 
+    bind_rows()
+
+
+m <- x |>
+    arrange(Attribute, Rank) |> 
+    unite(col = "Attribute|Rank", Attribute, Rank, sep = "|") |> 
+    pivot_wider(
+        names_from = "Attribute_source", values_from = "n"
+    ) |> 
+    tibble::column_to_rownames(var = "Attribute|Rank") |> 
+    as.data.frame() |> 
+    as.matrix()
+m[is.na(m)] <- 0
+
+color_fun <- circlize::colorRamp2(
+  breaks = c(0, max(m)), colors = c('white', 'gray40')
+)
 
 
 
-```{r}
+row_colors <- case_when(
+    grepl("genus", rownames(m)) ~ "red",
+    grepl("species", rownames(m)) ~ "blue",
+    grepl("strain", rownames(m)) ~ "orange"
+)
 
 
+row_ha <- rowAnnotation(Rank = sub("^(.*\\|)(\\w+)$", "\\2", rownames(m)))
+
+row_ha <- rowAnnotation(Rank = row_colors)
 
 
-
+h <- Heatmap(
+    matrix = m,
+    cluster_rows = FALSE, cluster_columns = FALSE,
+    row_names_side = 'left',
+    show_heatmap_legend = TRUE,
+    col = color_fun,
+    name = "No. Annotations",
+    left_annotation = row_ha,
+    row_names_max_width = max_text_width(
+        rownames(m), 
+        gp = gpar(fontsize = 12)
+    )
+)
+h
 ```
-
-
-
-
-
-
-
-
-```{r}
-
-```
-
-
-
-
-
-
-
-
 
 # Session information
 
