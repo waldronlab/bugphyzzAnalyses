@@ -313,7 +313,7 @@ mat_bodysite <- mat_bodysite[xrownames, colnames_order_bodysite]
 # mat_bodysite <- mat_bodysite[rownames_order, colnames_order_bodysite]
 ```
 
-```{r}
+```{r, fig.height=15, fig.width=10}
 max_n <- max(max(mat_condition), max(mat_bodysite))
 color_fun <- circlize::colorRamp2(
     breaks = c(0, max_n), colors = c('white', 'gray20')
@@ -401,7 +401,6 @@ draw(
 
 ```
 
-
 Draw heatmap
 
 ```{r, echo=FALSE, eval=TRUE, include=TRUE}
@@ -416,11 +415,6 @@ draw(
 )
 dev.off()
 ```
-
-
-
-
-
 
 ```{r session info}
 sessioninfo::session_info()
