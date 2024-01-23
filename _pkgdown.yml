@@ -14,6 +14,6 @@ navbar:
     - text: "Enrichment in IBD samples"
       href: articles/ibd_enrichment.html
     - text: "High-throughput BSEA with BugSigDB sets"
-      href: articles/high_throughput_msea_bsdb.html
+      href: articles/high_throughput_bsea_bsdb.html
     - text: "Cross-validation"
       href: articles/validation.html
