@@ -708,6 +708,7 @@ ggsave("completeness.png", plot = p2, width = 6.15, height = 9.68, units = 'in')
 p2
 ```
 
+## Sources x Rank
 
 ```{r, fig.width=9, fig.height=15}
 x <- bp |> 
@@ -762,6 +763,26 @@ h <- Heatmap(
     )
 )
 h
+```
+
+
+## Sources
+
+
+```{r}
+sources_fname <- system.file(
+    "extdata", "attribute_sources.tsv", package = "bugphyzz", mustWork = TRUE
+)
+sources <- read.table(
+    file = sources_fname,
+    header = TRUE, sep = "\t",  quote = ""
+) |> 
+    rename(
+        `Source (short)` = Attribute_source,
+        `Confidence in curation` = Confidence_in_curation,
+        `Source (long)` = full_source
+    )
+myDataTable(sources, page_len = nrow(sources))
 ```
 
 # Session information
