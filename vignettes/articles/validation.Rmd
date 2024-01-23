@@ -9,7 +9,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-
 ```{r setup, message=FALSE, echo=FALSE}
 library(DT)
 library(dplyr)
@@ -40,90 +39,30 @@ Validation scripts and outputs are in: https://github.com/waldronlab/taxPProVali
 ```{r import validation data, echo=FALSE}
 url <- "https://raw.githubusercontent.com/waldronlab/taxPProValidation/main/validation_summary.tsv"
 dat <- read.table(file = url, header = TRUE, sep = "\t", row.names = NULL) |> 
-    arrange(method, rank, physiology, attribute) |>
-    group_by(method, rank, physiology)
-        
- datatable(
-     data = dat, filter = "top", rownames = FALSE,
-     options = list(
-         pageLength = 100,
-         searchCols = list(
-             NULL, # first column
-             list(search = 'all'), # secound column
-             NULL # other columns
-         )
- 
-     )
- )
-```
-
-
-## Some plots
-
-```{r, echo=FALSE}
-dat <- dat |> 
-    mutate(
-        attribute_type = case_when(
-            method == "castor-ltp" ~ "numeric",
-            method == "phytools-ltp" & physiology == attribute ~ "binary",
-            method == "phytools-ltp" & physiology != attribute ~ "multistate",
-            TRUE ~ NA
+    arrange(method, rank, physiology, attribute)
+    
+dat |>
+    DT::datatable(
+        rownames = FALSE,
+        extensions = "Buttons",
+        filter = "top",
+        options = list(
+            dom = 'lBfrtip',
+            paging = TRUE,
+            pageLength = nrow(dat),
+            searchCols = list(
+                NULL, # first column
+                list(search = 'all'), # secound column
+                NULL # other columns
+            ),
+            buttons = list(
+                list(extend = "copy", title = NULL),
+                list(extend = "print", title = NULL),
+                list(extend = "csv", title = NULL)
+            )
         )
-    )
+)
 ```
-
-
-### Binary
-
-```{r}
-p_binary <- dat |> 
-    filter(attribute_type == "binary") |> 
-    ggplot(aes(ltp_bp_phys, nsti_mean)) +
-    geom_point(aes(color = mcc_mean), size = 3) +
-    geom_text_repel(aes(label = paste0(physiology, " (", mcc_mean, ")"))) +
-    facet_wrap(~rank) +
-    scale_color_viridis_c(option = "C") +
-    theme_bw()
-p_binary
-```
-
-### Numeric
-
-```{r}
-p_numeric <- dat |> 
-    mutate(r2_mean = ifelse(r2_mean < 0, 0, r2_mean)) |> 
-    filter(attribute_type == "numeric") |> 
-    ggplot(aes(ltp_bp_phys, nsti_mean)) +
-    geom_point(aes(color = r2_mean), size = 3) +
-    geom_text_repel(aes(label = paste0(physiology, " (", r2_mean, ")"))) +
-    facet_wrap(~rank) +
-    scale_color_viridis_c(option = "C") +
-    theme_bw()
-p_numeric
-```
-
-### Multistate
-
-```{r}
-p_multi <- dat |> 
-    filter(attribute_type == "multistate") |> 
-    group_by(physiology) |> 
-    mutate(
-        mcc_mean = round(mean(mcc_mean), 2),
-        nsti_mean = round(mean(nsti_mean), 2)
-    ) |>
-    ungroup() |> 
-    select(physiology, mcc_mean, nsti_mean, ltp_bp_phys, rank) |> 
-    distinct() |> 
-    ggplot(aes(ltp_bp_phys, nsti_mean)) +
-    geom_point(aes(color = mcc_mean), size = 3) +
-    geom_text_repel(aes(label = paste0(physiology, " (", mcc_mean, ")"))) +
-    facet_wrap(~rank) +
-    scale_color_viridis_c(option = "C") +
-    theme_bw()
-p_multi
-```
-
 
 
 ## Session information
@@ -131,5 +70,3 @@ p_multi
 ```{r, echo=FALSE}
 sessioninfo::session_info()
 ```
-
-

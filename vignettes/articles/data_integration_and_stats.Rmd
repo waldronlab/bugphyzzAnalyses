@@ -765,9 +765,7 @@ h <- Heatmap(
 h
 ```
 
-
 ## Sources
-
 
 ```{r}
 sources_fname <- system.file(
