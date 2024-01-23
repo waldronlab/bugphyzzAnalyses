@@ -350,7 +350,7 @@ p_n_annot_tax <- n_annot_tax |>
     ggplot() +
     geom_histogram(aes(x = n)) +
     labs(
-        x = "Number of annotations per taxon",
+        x = "No. annotations per taxon",
         y = "Frequency"
     ) +
     facet_wrap(~Rank, ncol = 1) +
@@ -537,6 +537,58 @@ myPlot1 <- plot_grid(
 myPlot1
 ```
 
+## For supplementary figure
+
+```{r}
+counts_type_2 <- bp |> 
+    map(~ {
+        .x |> 
+            filter(Rank %in% c("genus", "species", "strain")) |>
+            mutate(
+                Evidence = case_when(
+                    Evidence == "tax" ~ "IBD",
+                    Evidence == "asr" ~ "ASR",
+                    Evidence %in% c("exp", "igc", "tas", "nas") ~ "Source",
+                    TRUE ~ Evidence
+                )
+            ) |>
+            count(Attribute, Rank, Evidence) |> 
+            mutate(total = sum(n))
+    }) |> 
+    bind_rows()
+
+p_counts_2 <- counts_type_2 |>
+    mutate(Evidence = factor(Evidence, levels = c("ASR", "IBD", "Source"))) |> 
+    ggplot(aes(reorder(Attribute, total), n)) +
+    geom_col(aes(fill = Evidence), position = "stack") +
+    labs(
+        y = "No. annotations", x = "Attribute"
+    ) +
+    scale_fill_manual(
+        values = c("#56B4E9", "#D55E00", "#0072B2"),
+        name = "Annotation type"
+    ) +
+    scale_y_continuous(labels = scales::comma) +
+    theme_bw() +
+    facet_wrap(~Rank, nrow = 1, scales = "free_x") +
+    # theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    coord_flip()
+p_counts_2
+
+```
+
+
+
+```{r, fig.width=14, fig.height=7, message=FALSE}
+suppN <- plot_grid(
+    p_counts_2, p_n_annot_tax,
+    labels = c("a)", "b)"),
+    rel_widths = c(0.8, 0.20),
+    nrow = 1
+) 
+suppN
+```
+
 ## Completeness
 
 ### Totals before and after data imputation
@@ -548,8 +600,6 @@ taxids_before <- bp |>
             filter(Evidence != "asr") |> 
             select(NCBI_ID, Rank) |> 
             distinct()
-        # ids <- as.character(df$NCBI_ID)
-        # names(ids) <- df$Rank
         return(df)
     }) |> 
     bind_rows() |> 
@@ -559,11 +609,8 @@ taxids_before <- bp |>
 taxids_after <- bp |> 
     map( ~ {
         df <- .x |> 
-            # filter(Evidence != "asr") |> 
             select(NCBI_ID, Rank) |> 
             distinct()
-        # ids <- as.character(df$NCBI_ID)
-        # names(ids) <- df$Rank
         return(df)
     }) |> 
     bind_rows() |> 
@@ -792,23 +839,12 @@ color_fun <- circlize::colorRamp2(
   breaks = c(0, max(m)), colors = c('white', 'gray40')
 )
 
-
-
-row_colors <- case_when(
-    grepl("genus", rownames(m)) ~ "red",
-    grepl("species", rownames(m)) ~ "blue",
-    grepl("strain", rownames(m)) ~ "orange"
-)
-
-
 row_ha <- rowAnnotation(Rank = sub("^(.*\\|)(\\w+)$", "\\2", rownames(m)))
-
-row_ha <- rowAnnotation(Rank = row_colors)
-
 
 h <- Heatmap(
     matrix = m,
-    cluster_rows = FALSE, cluster_columns = FALSE,
+    cluster_rows = FALSE,
+    cluster_columns = FALSE,
     row_names_side = 'left',
     show_heatmap_legend = TRUE,
     col = color_fun,
