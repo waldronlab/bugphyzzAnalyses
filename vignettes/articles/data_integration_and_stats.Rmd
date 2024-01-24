@@ -846,6 +846,7 @@ color_fun <- circlize::colorRamp2(
 df <- data.frame(Rank = sub("^(.*\\|)(\\w+)$", "\\2", rownames(m)))
 mycols =list(Rank = c("genus" = "orange","species" = "#009E73", "strain" = "#CC79A7"))
 row_ha <- rowAnnotation(df = df, col = mycols, width = unit(5, "cm"))
+splits_attrs <- sub("^(.*)\\|\\w+$", "\\1", rownames(m))
 
 # mode(m) <- "character"
 
