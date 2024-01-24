@@ -834,26 +834,50 @@ m <- x |>
     as.data.frame() |> 
     as.matrix()
 m[is.na(m)] <- 0
+m[m > 0] <- 1
 
+
+# color_fun <- circlize::colorRamp2(
+#   breaks = c(0, min(m), max(m)), colors = c('white', 'gray20', "gray10")
+# )
 color_fun <- circlize::colorRamp2(
-  breaks = c(0, max(m)), colors = c('white', 'gray40')
+  breaks = c(0, 1), colors = c('white', "gray20")
 )
+df <- data.frame(Rank = sub("^(.*\\|)(\\w+)$", "\\2", rownames(m)))
+mycols =list(Rank = c("genus" = "orange","species" = "#009E73", "strain" = "#CC79A7"))
+row_ha <- rowAnnotation(df = df, col = mycols, width = unit(5, "cm"))
 
-row_ha <- rowAnnotation(Rank = sub("^(.*\\|)(\\w+)$", "\\2", rownames(m)))
+# mode(m) <- "character"
 
 h <- Heatmap(
     matrix = m,
     cluster_rows = FALSE,
     cluster_columns = FALSE,
-    row_names_side = 'left',
+    show_row_names = FALSE,
     show_heatmap_legend = TRUE,
-    col = color_fun,
-    name = "No. Annotations",
+    col = color_fun(c(0, 1)),
+    # heatmap_legend_param = list(
+    #             bar = list(
+    #             title = "No. annotations",
+    #             at = c(0, 1),
+    #             labels = c("0", "1"), 
+    #             color = c("white", "black")
+    #             
+    #         )
+    # ),
+    name = "Annotation presence",
     left_annotation = row_ha,
-    row_names_max_width = max_text_width(
-        rownames(m), 
-        gp = gpar(fontsize = 12)
-    )
+    row_split = splits_attrs,
+    row_title_rot = 0,
+    heatmap_legend_param = list(
+        color_bar = "discrete"
+    ),
+    border = TRUE,
+    rect_gp = gpar(col = "gray50", lwd = 1)
+    # row_names_max_width = max_text_width(
+    #     rownames(m), 
+    #     gp = gpar(fontsize = 12)
+    # )
 )
 h
 ```
