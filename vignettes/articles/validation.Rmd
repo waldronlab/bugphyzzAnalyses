@@ -14,6 +14,7 @@ library(DT)
 library(dplyr)
 library(ggplot2)
 library(ggrepel)
+library(bugphyzzAnalyses)
 ```
 
 ## Import validation data
@@ -63,6 +64,33 @@ dat |>
         )
 )
 ```
+
+
+```{r}
+output <- dat |> 
+    filter(rank == "all") |> 
+    select(
+        method,
+        Attribute = physiology,
+        `Attribute value` = attribute,
+        `MCC mean` = mcc_mean,
+        `MCC sd` = mcc_sd,
+        `R-squared mean` = r2_mean,
+        `R-squared sd` = r2_sd,
+        `No. annotated tips per attribute value` = ltp_bp,
+        `No. annotated tips per attribute` = ltp_bp_phys,
+        `Percent of annotated tips per attribute value` = ltp_bp_per,
+        `Percent of annotated tips per attribute` = ltp_bp_phys_per
+    ) |> 
+    arrange(method, Attribute, `Attribute value`, `MCC mean`, `R-squared mean`) |> 
+    select(-method)
+myDataTable(output, page_len = nrow(output))
+```
+
+
+
+
+
 
 
 ## Session information
