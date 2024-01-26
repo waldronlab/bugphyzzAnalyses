@@ -845,11 +845,13 @@ color_fun <- circlize::colorRamp2(
 )
 df <- data.frame(Rank = sub("^(.*\\|)(\\w+)$", "\\2", rownames(m)))
 mycols =list(Rank = c("genus" = "orange","species" = "#009E73", "strain" = "#CC79A7"))
-row_ha <- rowAnnotation(df = df, col = mycols, width = unit(5, "cm"))
+row_ha <- rowAnnotation(
+    df = df, col = mycols, width = unit(5, "cm")
+    # show_annotation_name = FALSE
+)
 splits_attrs <- sub("^(.*)\\|\\w+$", "\\1", rownames(m))
 
 # mode(m) <- "character"
-
 h <- Heatmap(
     matrix = m,
     cluster_rows = FALSE,
@@ -857,28 +859,19 @@ h <- Heatmap(
     show_row_names = FALSE,
     show_heatmap_legend = TRUE,
     col = color_fun(c(0, 1)),
-    # heatmap_legend_param = list(
-    #             bar = list(
-    #             title = "No. annotations",
-    #             at = c(0, 1),
-    #             labels = c("0", "1"), 
-    #             color = c("white", "black")
-    #             
-    #         )
-    # ),
     name = "Annotation presence",
     left_annotation = row_ha,
     row_split = splits_attrs,
     row_title_rot = 0,
     heatmap_legend_param = list(
-        color_bar = "discrete"
+        color_bar = "discrete", 
+        border = "black"
     ),
     border = TRUE,
-    rect_gp = gpar(col = "gray50", lwd = 1)
-    # row_names_max_width = max_text_width(
-    #     rownames(m), 
-    #     gp = gpar(fontsize = 12)
-    # )
+    rect_gp = gpar(col = "gray50", lwd = 1),
+    column_names_max_height = unit(7, "cm")
+    # column_names_rot = 45
+
 )
 h
 ```
