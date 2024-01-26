@@ -2,7 +2,7 @@
 title: "Data integration and stats"
 output:
     html_document:
-        code_folding: show 
+        code_folding: hide 
         toc: true
 ---
 
@@ -14,8 +14,6 @@ knitr::opts_chunk$set(
   warning = FALSE
 )
 ```
-
-## Load packages
 
 ```{r setup, message=FALSE}
 library(bugphyzzAnalyses)
@@ -37,23 +35,17 @@ library(grid)
 library(cowplot)
 ```
 
-## Import data
-
-A couple of filters are applied by deault when importing bugphyzz with the
-`importBugphyzz` function:
-
-1. Data imputed through ASR must have a validation result higher than 0.5.
-2. For discrete attributes, Frequency/Score most be above 0.5 for imputed data (rarely frequency is excluded).
+## Bugphyzz data
 
 ```{r import bp, message=FALSE}
 bp <- importBugphyzz() |> 
     map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID)))
+myDataTable(data.frame(attributes = names(bp)), page_len = length(bp))
 ```
 
 ## Columns with NAs
 
-```{r columns with NAs}
-## This is more of a check tha a result
+```{r columns with NAs, message=FALSE}
 nas_in_cols <- lapply(bp, function(x)  {
     n <- map_int(x, function(y) sum(is.na(y)))
     per <- map_dbl(x, function(y) round(mean(is.na(y)) * 100))
@@ -69,11 +61,6 @@ myDataTable(nas_in_cols)
 ```
 
 ## Totals
-
-Number of taxa, annotations, sources, attribute groups (physiologies),
-and attributes.
-
-Let's only consider numbers for
 
 ```{r totals}
 ## Number of unique taxa
@@ -168,7 +155,9 @@ myDataTable(count_summary_tbl)
 
 ## Histograms of scores
 
-```{r, message=FALSE}
+This includes all ASR output
+
+```{r histogram of scores, message=FALSE}
 bp2 <- importBugphyzz(v = 0, exclude_rarely = FALSE)
 bp2_discrete <- map(bp2, ~{
     .x |> 
@@ -176,12 +165,14 @@ bp2_discrete <- map(bp2, ~{
 }) |> 
     discard(~ !nrow(.x))
 
-scores <- map(bp2_discrete, ~ pull(.x, Score)) |> 
+scores_df <- map(bp2_discrete, ~ pull(.x, Score)) |> 
     unlist(recursive = TRUE, use.names = FALSE) |> 
     {\(y) data.frame(x = y)}()
-scores |> 
+scores_df |> 
     ggplot(aes(x)) +
-    geom_histogram(binwidth = 0.1, fill = "gray80", color = "black", size = 0.2) +
+    geom_histogram(
+        binwidth = 0.1, fill = "gray80", color = "black", linewidth = 0.2
+    ) +
     labs(
         x = "Scores", y = "Frequency",
         title = "Scores of data imputed with ASR (discrete only)"
@@ -201,12 +192,14 @@ bp2_numeric <- map(bp2, ~{
     discard(~ !nrow(.x)) |> 
     map(~ filter(.x, !is.na(NSTI)))
 
-nsti <- map(bp2_numeric, ~ pull(.x, NSTI)) |> 
+nsti_df <- map(bp2_numeric, ~ pull(.x, NSTI)) |> 
     unlist(recursive = TRUE, use.names = FALSE) |> 
     {\(y) data.frame(x = y)}()
-nsti |> 
+nsti_df |> 
     ggplot(aes(x)) +
-    geom_histogram(binwidth = 0.1, fill = "gray80", color = "black", size = 0.2) +
+    geom_histogram(
+        binwidth = 0.1, fill = "gray80", color = "black", linewidth = 0.2
+) +
     labs(
         x = "Scores", y = "Frequency",
         title = "NSTI of data imputed with ASR (tips; numeric only)"
@@ -214,82 +207,14 @@ nsti |>
     theme_bw()
 ```
 
-## Summary table
-
-```{r}
-evidence_summary <- bp |> 
-    map(~ {
-        .x |> 
-            mutate(
-                Evidence = case_when(
-                    Evidence %in% c("nas", "tas", "exp", "igc") ~ "source",
-                    TRUE ~ Evidence
-                    )
-            ) |> 
-            count(Evidence) |> 
-            pivot_wider(
-                names_from = "Evidence", values_from = "n"
-            )
-    }) |>
-    bind_rows(.id = "Attribute") |> 
-    modify(~ replace_na(.x, 0)) |> 
-    relocate(Attribute, source, ibd = tax, asr) |> 
-    mutate(total = source + ibd + asr)
-
-number_of_attr_values <- bp |> 
-    map(~ {
-        attr_type <- unique(.x$Attribute_type)
-        if (attr_type %in% c("binary", "numeric")) {
-            output <- .x |> 
-                select(Attribute, Attribute_type) |> 
-                distinct() |> 
-                count(Attribute, Attribute_type, name = "Attribute_values") |> 
-                mutate(Attribute_values = ifelse(Attribute_type == "binary", 2, Attribute_values))
-        } else {
-            output <- .x |> 
-                select(Attribute, Attribute_value, Attribute_type) |> 
-                distinct() |> 
-                count(Attribute, Attribute_type, name = "Attribute_values")
-        }
-        return(output)
-    }) |> 
-    bind_rows(.id = "Attribute")
-
-
-references <- bp |> 
-    map(~{
-        .x |> 
-            select(Attribute, Attribute_source) |> 
-            drop_na() |> 
-            distinct() |> 
-            group_by(Attribute) |> 
-            mutate(Attribute_source = paste0(sort(Attribute_source), collapse = ", ")) |> 
-            ungroup() |> 
-            distinct()
-    }) |> 
-    bind_rows()
-
-
-tbl <- reduce(list(number_of_attr_values, evidence_summary, references), left_join) |> 
-    rename(Type = Attribute_type, `No. Attribute values` = Attribute_values,
-           `Annotations from Source` = source, `Annotations from IBD` = ibd,
-           `Annotations from ASR` = asr, `Total annotations` = total,
-           Sources = Attribute_source
-    )
-myDataTable(tbl, page_len = nrow(tbl))
-```
-
+## Totals by rank
 
 ```{r}
 valid_ranks <- c(
     "superkingdom", "phylum", "class", "order", "family",
     "genus", "species", "strain"
 )
-attr_order <- tbl |> 
-    select(Attribute, `Total annotations`) |> 
-    distinct() |> 
-    arrange(-`Total annotations`) |> 
-    pull(Attribute)
+attr_order <- names(sort(map_int(bp, nrow), decreasing = TRUE))
 counts_rank <- bp |> 
     map(~ count(.x, Attribute, Rank)) |> 
     bind_rows() |> 
@@ -309,22 +234,27 @@ p_counts_rank <- counts_rank |>
 p_counts_rank
 ```
 
+## Totals by type of Evidence
 
 ```{r}
-
-count_types <- tbl |> 
-    mutate(Attribute = factor(Attribute, levels = attr_order)) |> 
-    pivot_longer(
-        names_to = "count_type", values_to = "n", cols = c(4, 5, 6) 
-    )
+count_types <- bp |> 
+    map (~{
+        .x |> 
+            mutate(
+                Type = case_when(
+                    Evidence %in% c("exp", "igc", "nas", "tas") ~ "Source",
+                    Evidence == "asr" ~ "ASR",
+                    Evidence == "tax" ~ "IBD"
+                )
+            ) |> 
+            count(Attribute, Type)
+}) |> 
+    bind_rows()
 
 p_count_types <- count_types |> 
-    # mutate(Attribute = factor(Attribute, levels = attr_order)) |> 
-    # pivot_longer(
-    #     names_to = "count_type", values_to = "n", cols = c(4, 5, 6) 
-    # ) |>
+    mutate(Attribute = factor(Attribute, levels = attr_order)) |> 
     ggplot(aes(Attribute, n)) +
-    geom_col(aes(fill = count_type), position = "stack") +
+    geom_col(aes(fill = Type), position = "stack") +
     labs(
         x = "Attribute", y = "No. annotations"
     ) +
@@ -335,55 +265,9 @@ p_count_types <- count_types |>
 p_count_types
 ```
 
+## 10-fold cross-validation and counts per evidence type (species)
 
-```{r}
-n_annot_tax <- bp |> 
-   map(~ {
-       attr_type <- unique(.x$Attribute_type)
-       .x |> 
-           filter(Rank %in% c("strain", "species", "genus")) |> 
-           select(Attribute, NCBI_ID, Rank)
-   }) |> 
-    bind_rows() |> 
-    count(NCBI_ID, Rank)
-p_n_annot_tax <- n_annot_tax |> 
-    ggplot() +
-    geom_histogram(aes(x = n)) +
-    labs(
-        x = "No. annotations per taxon",
-        y = "Frequency"
-    ) +
-    facet_wrap(~Rank, ncol = 1) +
-    theme_bw()
-```
-
-```{r}
-n_annot_tax |> 
-    summary()
-```
-
-## Number of annotations per attribute
-
-```{r, fig.height=7, fig.width=11}
-p1 <- plot_grid(
-  p_count_types, p_counts_rank,
-  labels = c('a)', 'b)'),
-  ncol = 1, align = "v"
-  # rel_widths = c(0.55, 0.45)
-)
-
-p2 <- plot_grid(
-    p1, p_n_annot_tax,
-    labels = c("", "c)"),
-    ncol = 2, 
-    rel_widths = c(0.75, 0.25)
-)
-p2
-```
-
-### Discrete
-
-```{r}
+```{r validation discrete}
 val <- importVal()
 dis_phys_names <- val |> 
     filter(!is.na(mcc_mean)) |> 
@@ -395,7 +279,13 @@ pValDis <- val |>
     filter(!is.na(mcc_mean))  |> 
     mutate(ltp_bp = ifelse(is.na(ltp_bp), ltp_bp_phys, ltp_bp)) |> 
     mutate(physiology = factor(physiology, levels = dis_phys_names)) |>
-    mutate(guide_col = ifelse(as.character(physiology) == attribute, as.character(physiology), paste0(as.character(physiology), "|", attribute))) |> 
+    mutate(
+        guide_col = ifelse(
+            as.character(physiology) == attribute,
+            as.character(physiology),
+            paste0(as.character(physiology), "|", attribute)
+        )
+    ) |> 
     arrange(physiology, mcc_mean) |> 
     ggplot(aes(forcats::fct_inorder(guide_col), mcc_mean, group = attribute)) +
     geom_errorbar(
@@ -412,7 +302,12 @@ pValDis <- val |>
     ) +
     scale_size_continuous(name = "tips annotated") +
     scale_y_continuous(
-        breaks = round(seq(min(val$mcc_mean - val$mcc_sd, na.rm = TRUE) - 0.1, max(val$mcc_mean + val$mcc_sd, na.rm = TRUE) + 0.1, 0.2), 1)
+        breaks = round(
+            seq(
+                min(val$mcc_mean - val$mcc_sd, na.rm = TRUE) - 0.1,
+                max(val$mcc_mean + val$mcc_sd, na.rm = TRUE) + 0.1,
+                0.2),
+            1)
     ) +
     labs(
         y = "Matthews Correlation Coefficient",
@@ -420,16 +315,13 @@ pValDis <- val |>
     ) +
     theme_bw()  +
     theme(
-        # axis.text.x = element_text(angle = 90, hjust = 1),
         panel.grid.minor = element_blank()
         
     ) +
     coord_flip()
 ```
 
-### Numeric
-
-```{r}
+```{r validation numeric}
 num <- val |>
     filter(!is.na(r2_mean))
 num_phys_names <- num |> 
@@ -464,27 +356,13 @@ pValNum <- val |>
     ) +
     theme_bw()  +
     theme(
-        # axis.text.x = element_text(angle = 90, hjust = 1),
         panel.grid.minor = element_blank()
         
     ) +
     coord_flip()
 ```
 
-
-```{r, fig.height=10, fig.width=7}
-pVal <- plot_grid(
-  pValDis, pValNum, 
-  # labels = c('a)', 'b)'),
-  ncol = 1, 
-  align = 'v', rel_heights = c(0.83, 0.17)
-)
-pVal
-```
-
-
-
-```{r}
+```{r counts species}
 counts_type_sp <- bp |> 
     map(~ {
         .x |> 
@@ -515,14 +393,10 @@ p_counts_sp <- counts_type_sp |>
     ) +
     scale_y_continuous(labels = scales::comma) +
     theme_bw() +
-    # theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     coord_flip()
-p_counts_sp
 ```
 
-
-
-```{r, fig.height=8, fig.width=14}
+```{r validation and counts sp plot, fig.height=8, fig.width=14}
 myPlot2 <- plot_grid(
     pValNum, p_counts_sp, ncol = 1,
     labels = c("b)", "c)"),
@@ -537,7 +411,7 @@ myPlot1 <- plot_grid(
 myPlot1
 ```
 
-## For supplementary figure
+## counts (genus, species, strain) and annotations per taxon
 
 ```{r}
 counts_type_2 <- bp |> 
@@ -571,12 +445,30 @@ p_counts_2 <- counts_type_2 |>
     scale_y_continuous(labels = scales::comma) +
     theme_bw() +
     facet_wrap(~Rank, nrow = 1, scales = "free_x") +
-    # theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     coord_flip()
-p_counts_2
-
 ```
 
+
+```{r}
+n_annot_tax <- bp |> 
+   map(~ {
+       attr_type <- unique(.x$Attribute_type)
+       .x |> 
+           filter(Rank %in% c("strain", "species", "genus")) |> 
+           select(Attribute, NCBI_ID, Rank)
+   }) |> 
+    bind_rows() |> 
+    count(NCBI_ID, Rank)
+p_n_annot_tax <- n_annot_tax |> 
+    ggplot() +
+    geom_histogram(aes(x = n)) +
+    labs(
+        x = "No. annotations per taxon",
+        y = "Frequency"
+    ) +
+    facet_wrap(~Rank, ncol = 1) +
+    theme_bw()
+```
 
 
 ```{r, fig.width=14, fig.height=7, message=FALSE}
@@ -589,233 +481,10 @@ suppN <- plot_grid(
 suppN
 ```
 
-## Completeness
-
-### Totals before and after data imputation
-
-```{r}
-taxids_before <- bp |> 
-    map( ~ {
-        df <- .x |> 
-            filter(Evidence != "asr") |> 
-            select(NCBI_ID, Rank) |> 
-            distinct()
-        return(df)
-    }) |> 
-    bind_rows() |> 
-    distinct() |> 
-    count(Rank, name = "before_imputation")
-
-taxids_after <- bp |> 
-    map( ~ {
-        df <- .x |> 
-            select(NCBI_ID, Rank) |> 
-            distinct()
-        return(df)
-    }) |> 
-    bind_rows() |> 
-    distinct() |> 
-    count(Rank, name = "after_imputation")
-total_increment_of_taxa <- full_join(taxids_before, taxids_after, by = "Rank")
-myDataTable(total_increment_of_taxa)
-```
-
-### Completeness tables
-
-```{r getting reference for completeness, warning=FALSE}
-valid_ranks <- validRanks()
-exclude_all_fname <- system.file(
-  file.path('extdata', 'proc_exclude_all_07122023.txt'),
-  package = 'taxPPro',
-  mustWork = TRUE
-)
-exclude_all <- read.table(exclude_all_fname, col.names = 'taxid')
-exclude_all$taxid <- as.character(exclude_all$taxid)
-exclude_all$rank <- taxizedb::taxid2rank(exclude_all$taxid, db = 'ncbi')
-exclude_all <- exclude_all[which(!is.na(exclude_all$rank)),]
-# exclude_all$rank <- ifelse(exclude_all$rank == 'superkingdom', 'kingdom', exclude_all$rank)
-exclude_all <- exclude_all[which(exclude_all$rank %in% valid_ranks),]
-
-strains_fname <- system.file(file.path('extdata', 'proc_strains_07122023.txt'), package = 'taxPPro', mustWork = TRUE)
-strains <- read.table(strains_fname, col.names = 'taxid')
-strains$taxid <- as.character(strains$taxid)
-strains$rank <- taxizedb::taxid2rank(strains$taxid, db = 'ncbi')
-strains <- strains[which(strains$rank == 'strain'),]
-
-reference_df <- rbind(exclude_all, strains)
-reference_summary <- reference_df |> 
-    count(rank, name = "NCBI_ref")
-
-myDataTable(reference_summary)
-```
-
-```{r}
-inSet <- function(dat, ref) {
-    valid_ranks <- c(
-        "superkingdom",
-        "phylum", "class","order", "family",
-        "genus", "species", "strain"
-    )
-    datByRank <- split(dat, dat$Rank)
-    refByRank <- split(ref, ref$rank)
-    output <- vector("integer", length(valid_ranks))
-    for (i in seq_along(output)) {
-        names(output)[i] <- valid_ranks[i]
-        if (valid_ranks[i]  %in% names(datByRank)) {
-        output[[i]] <- 
-            sum(unique(datByRank[[valid_ranks[i]]]$NCBI_ID) %in% refByRank[[valid_ranks[i]]]$taxid)
-
-        }
-    }
-    df <- data.frame(rank = names(output), inSet = unname(output))
-    return(df)
-}
-
-outSet <- function(dat, ref) {
-    valid_ranks <- c(
-        "superkingdom",
-        "phylum", "class","order", "family",
-        "genus", "species", "strain"
-    )
-    datByRank <- split(dat, dat$Rank)
-    refByRank <- split(ref, ref$rank)
-    output <- vector("integer", length(valid_ranks))
-    for (i in seq_along(output)) {
-        names(output)[i] <- valid_ranks[i]
-        if (valid_ranks[i]  %in% names(datByRank)) {
-        output[[i]] <- 
-            sum(!unique(datByRank[[valid_ranks[i]]]$NCBI_ID) %in% refByRank[[valid_ranks[i]]]$taxid)
-
-        }
-    }
-    df <- data.frame(rank = names(output), outSet = unname(output))
-    return(df)
-}
-```
-
-
-### Before imputation
-
-```{r}
-insetDataBefore <- bp |> 
-    map(~ filter(.x, Evidence != "asr")) |> 
-    map(~ inSet(dat = .x, ref = reference_df)) |>
-    bind_rows(.id = "Attribute")
-outsetDataBefore <- bp |> 
-    map(~ outSet(dat = .x, ref = reference_df)) |>
-    bind_rows(.id = "Attribute")
-completenessBefore <- reduce(list(insetDataBefore, outsetDataBefore, reference_summary), full_join) |> 
-    mutate(completeness = round(inSet / NCBI_ref * 100)) |> 
-    rename(Rank = rank)
-```
-
-### After imputation
-
-```{r}
-insetDataAfter <- bp |> 
-    map(~ inSet(dat = .x, ref = reference_df)) |>
-    bind_rows(.id = "Attribute")
-outsetDataAfter <- bp |> 
-    map(~ outSet(dat = .x, ref = reference_df)) |>
-    bind_rows(.id = "Attribute")
-completenessAfter <- reduce(list(insetDataAfter, outsetDataAfter, reference_summary), full_join) |> 
-    mutate(completeness = round(inSet / NCBI_ref * 100)) |> 
-    rename(Rank = rank)
-```
-
-```{r}
-completeness <- full_join(
-    completenessBefore, completenessAfter, suffix = c("_bef", "_aft"),
-    by = c("Attribute", "Rank", "NCBI_ref")
-) |> 
-    select(Attribute, Rank, starts_with("completeness"))
-```
-
-## Completenes heatmaps
-
-```{r completeness heatmap}
-## Create matrices
-completeness_mat_before <- completenessBefore |>
-  select(Attribute, Rank, completeness) |>
-  pivot_wider(
-    names_from = Rank, values_from = completeness, values_fill = 0
-  ) |>
-  column_to_rownames(var = 'Attribute') |>
-  select(strain, species, genus) |> 
-  as.matrix()
-
-completeness_mat_after <- completenessAfter |> 
-  select(Attribute, Rank, completeness) |> 
-  pivot_wider(
-    names_from = Rank, values_from = completeness, values_fill = 0
-  ) |> 
-  column_to_rownames(var = 'Attribute') |> 
-  relocate(
-    strain, species, genus, family, order, class, phylum, superkingdom
-  ) |> 
-  as.matrix()
-
-ordered_rownames <- names(sort(rowSums(completeness_mat_after), decreasing = TRUE))
-
-## Create heatmaps
-color_fun <- circlize::colorRamp2(
-  breaks = c(0, 100), colors = c('white', 'gray40')
-)
-lgd <- Legend(col_fun = color_fun, title = "Completeness")
-ht_b <- Heatmap(
-  matrix = completeness_mat_before[ordered_rownames,],
-  cluster_rows = FALSE, cluster_columns = FALSE,
-  row_names_side = 'left',
-  show_heatmap_legend = FALSE,
-  col = color_fun,
-  column_title = "No ASR",
-  row_names_max_width = max_text_width(
-    rownames(completeness_mat_before), 
-    gp = gpar(fontsize = 12)
-  )
-)
-
-ht_a <- Heatmap(
-  matrix = completeness_mat_after[ordered_rownames,],
-  cluster_rows = FALSE, cluster_columns = FALSE,
-  row_names_side = 'left',
-  name = 'Completeness',
-  heatmap_legend_param = list(
-    at = c(0, 50, 100)
-  ),
-  col = color_fun,
-  column_title = "ASR",
-  row_names_max_width = max_text_width(
-    rownames(completeness_mat_after), 
-    gp = gpar(fontsize = 12)
-  )
-)
-
-## Combine heatmaps
-ht <- grid.grabExpr(
-  draw(ht_b + ht_a, ht_gap = unit(0.4, "cm"))
-)
-```
-
-### Combined plot
-
-```{r, fig.width=14, fig.height=10}
-p2 <- plot_grid(
-  pVal, p_counts_sp, 
-  labels = c('a)', 'b)'),
-  ncol = 2, 
-  rel_widths = c(0.55, 0.45)
-  
-  # rel_heights = c(0.38, 0.62)
-)
-ggsave("completeness.png", plot = p2, width = 6.15, height = 9.68, units = 'in')
-p2
-```
-
-## Sources x Rank
+## Sources x Attribute x Rank
 
 ```{r, fig.width=9, fig.height=15}
-x <- bp |> 
+source_attribute_rank <- bp |> 
     map(~{
         .x |> 
             filter(!is.na(Attribute_source)) |> 
@@ -823,8 +492,7 @@ x <- bp |>
     }) |> 
     bind_rows()
 
-
-m <- x |>
+mat <- source_attribute_rank |>
     arrange(Attribute, Rank) |> 
     unite(col = "Attribute|Rank", Attribute, Rank, sep = "|") |> 
     pivot_wider(
@@ -833,27 +501,24 @@ m <- x |>
     tibble::column_to_rownames(var = "Attribute|Rank") |> 
     as.data.frame() |> 
     as.matrix()
-m[is.na(m)] <- 0
-m[m > 0] <- 1
+mat[is.na(mat)] <- 0
+mat[mat > 0] <- 1
 
-
-# color_fun <- circlize::colorRamp2(
-#   breaks = c(0, min(m), max(m)), colors = c('white', 'gray20', "gray10")
-# )
 color_fun <- circlize::colorRamp2(
   breaks = c(0, 1), colors = c('white', "gray20")
 )
-df <- data.frame(Rank = sub("^(.*\\|)(\\w+)$", "\\2", rownames(m)))
-mycols =list(Rank = c("genus" = "orange","species" = "#009E73", "strain" = "#CC79A7"))
-row_ha <- rowAnnotation(
-    df = df, col = mycols, width = unit(5, "cm")
-    # show_annotation_name = FALSE
+rankAnnotationsDF <- data.frame(
+    Rank = sub("^(.*\\|)(\\w+)$", "\\2", rownames(mat))
 )
-splits_attrs <- sub("^(.*)\\|\\w+$", "\\1", rownames(m))
-
-# mode(m) <- "character"
-h <- Heatmap(
-    matrix = m,
+rank_colors =list(
+    Rank = c("genus" = "orange","species" = "#009E73", "strain" = "#CC79A7")
+)
+row_ha <- rowAnnotation(
+    df = rankAnnotationsDF, col = rank_colors, width = unit(5, "cm")
+)
+splits_attrs <- sub("^(.*)\\|\\w+$", "\\1", rownames(mat))
+hp <- Heatmap(
+    matrix = mat,
     cluster_rows = FALSE,
     cluster_columns = FALSE,
     show_row_names = FALSE,
@@ -870,10 +535,8 @@ h <- Heatmap(
     border = TRUE,
     rect_gp = gpar(col = "gray50", lwd = 1),
     column_names_max_height = unit(7, "cm")
-    # column_names_rot = 45
-
 )
-h
+hp
 ```
 
 ## Sources
@@ -894,7 +557,7 @@ sources <- read.table(
 myDataTable(sources, page_len = nrow(sources))
 ```
 
-# Session information
+## Session information
 
 ```{r class.soruce = 'fold-show'}
 sessioninfo::session_info()
