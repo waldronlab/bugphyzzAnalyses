@@ -123,13 +123,6 @@
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span></code></pre></div>
-<p>The main purpose of this vignette is to find the expected enrichment
-results in a biological dataset with ground truth. The expected result
-is enrichment of aerobic taxa in the supragingival plaque and enrichment
-of anaerobic taxa in the subgingival plaque. Obtaining the expected
-results could be interpreted as an indicative that the bugphyzz
-annotations are useful for meaningful bug set enrichemnt analysis
-(BSEA).</p>
 <div class="section level2">
 <h2 id="microbiome-data">Microbiome data<a class="anchor" aria-label="anchor" href="#microbiome-data"></a>
 </h2>
@@ -171,12 +164,25 @@ annotations are useful for meaningful bug set enrichemnt analysis
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/importBugphyzz.html" class="external-link">importBugphyzz</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">aer</span> <span class="op">&lt;-</span> <span class="va">bp</span><span class="op">$</span><span class="va">aerophilicity</span></span>
-<span><span class="va">gn_sigs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/makeSignatures.html" class="external-link">makeSignatures</a></span><span class="op">(</span>dat <span class="op">=</span> <span class="va">aer</span>, tax_id_type <span class="op">=</span> <span class="st">'Taxon_name'</span>, tax_level <span class="op">=</span> <span class="st">'genus'</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">gn_sigs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/makeSignatures.html" class="external-link">makeSignatures</a></span><span class="op">(</span></span>
+<span>    dat <span class="op">=</span> <span class="va">aer</span>, tax_id_type <span class="op">=</span> <span class="st">'Taxon_name'</span>, tax_level <span class="op">=</span> <span class="st">'genus'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">## Only one genus is missing  (TG5), which is ambiguous in the ncbi taxonomy</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">tse_subset</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">gn_sigs</span>, use.names <span class="op">=</span> <span class="cn">FALSE</span> <span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.972973</span></span></code></pre></div>
+<p>Without ASR some annotations are missing:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">gn_sigs_noasr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/bugphyzz/man/makeSignatures.html" class="external-link">makeSignatures</a></span><span class="op">(</span></span>
+<span>    dat <span class="op">=</span> <span class="va">aer</span>, tax_id_type <span class="op">=</span> <span class="st">'Taxon_name'</span>, tax_level <span class="op">=</span> <span class="st">'genus'</span>,</span>
+<span>    evidence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"exp"</span>, <span class="st">"igc"</span>, <span class="st">"tas"</span>, <span class="st">"nas"</span>, <span class="st">"tax"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">tse_subset</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">gn_sigs_noasr</span>, use.names <span class="op">=</span> <span class="cn">FALSE</span> <span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.8108108</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="differential-abundance">Differential abundance<a class="anchor" aria-label="anchor" href="#differential-abundance"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tse_subset</span><span class="op">$</span><span class="va">GROUP</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span></span>
 <span>  <span class="va">tse_subset</span><span class="op">$</span><span class="va">body_subsite</span> <span class="op">==</span> <span class="st">'subgingival_plaque'</span>, <span class="fl">0</span>, <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
@@ -188,12 +194,19 @@ annotations are useful for meaningful bug set enrichemnt analysis
 <div class="section level2">
 <h2 id="enrichment-gsea">Enrichment (GSEA)<a class="anchor" aria-label="anchor" href="#enrichment-gsea"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<ul>
+<li>
+<code>*</code> significant (FDR &lt; 0.1)</li>
+<li>
+<code>+</code> enriched in supragingival plaque</li>
+<li>
+<code>-</code> enriched in subgingival plaque</li>
+</ul>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">edger</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/limmaVoom.html">limmaVoom</a></span><span class="op">(</span><span class="va">edger</span><span class="op">)</span></span>
 <span><span class="va">gsea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
 <span>  method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">edger</span>, gs <span class="op">=</span> <span class="va">gn_sigs</span>, perm <span class="op">=</span> <span class="fl">1000</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">0.1</span></span>
-<span>  </span>
 <span><span class="op">)</span></span>
 <span><span class="va">gsea_tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">gsea</span><span class="op">$</span><span class="va">res.tbl</span><span class="op">)</span></span>
 <span><span class="va">gsea_tbl</span> <span class="op">&lt;-</span> <span class="va">gsea_tbl</span> <span class="op">|&gt;</span> </span>
@@ -204,43 +217,38 @@ annotations are useful for meaningful bug set enrichemnt analysis
 <span>    ADJ.PVAL <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">ADJ.PVAL</span>, scientific <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>BUG.SET <span class="op">=</span> <span class="va">GENE.SET</span><span class="op">)</span></span>
-<span></span>
-<span></span>
-<span><span class="va">caption1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="st">'Table 1. GSEA results comparing subgingival vs supragingival plaque.</span></span>
-<span><span class="st">  ES = Enrichment score, NES = Normalized Enrichment Score. Positive and</span></span>
-<span><span class="st">  negative scores (ES and NES) indicate enrichment in the supragingival and</span></span>
-<span><span class="st">  subgingival plaque, respectively. Bug sets marked with an asterik (*) </span></span>
-<span><span class="st">  indicate significant enrichment results (adjusted p-value &lt; 0.1). </span></span>
-<span><span class="st">  Benjamini &amp; Hochberg (BH) was used for P value adjustment.'</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">datatable</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">gsea_tbl</span>,</span>
-<span>  filter <span class="op">=</span> <span class="st">'top'</span>,</span>
-<span>  rownames <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extensions <span class="op">=</span> <span class="st">'Buttons'</span>,</span>
-<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    dom <span class="op">=</span> <span class="st">'Bft'</span>,</span>
-<span>    buttons <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">'copy'</span>, <span class="st">'print'</span><span class="op">)</span>,</span>
-<span>    iDisplayLength <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>    keys <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    autoWidth <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  caption <span class="op">=</span> <span class="fu">htmltools</span><span class="fu">::</span><span class="va"><a href="https://rstudio.github.io/htmltools/reference/builder.html" class="external-link">tags</a></span><span class="op">$</span><span class="fu">caption</span><span class="op">(</span></span>
-<span>    style <span class="op">=</span> <span class="st">'caption-side: top; text-align: left;'</span>,</span>
-<span>    <span class="va">caption1</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/myDataTable.html">myDataTable</a></span><span class="op">(</span><span class="va">gsea_tbl</span><span class="op">)</span></span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-cda67fed8a3129d11428" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-cda67fed8a3129d11428">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-0.877\" data-max=\"0.833\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-1.7\" data-max=\"1.84\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption style=\"caption-side: top; text-align: left;\">Table 1. GSEA results comparing subgingival vs supragingival plaque.\n  ES = Enrichment score, NES = Normalized Enrichment Score. Positive and\n  negative scores (ES and NES) indicate enrichment in the supragingival and\n  subgingival plaque, respectively. Bug sets marked with an asterik (*) \n  indicate significant enrichment results (adjusted p-value &lt; 0.1). \n  Benjamini &amp; Hochberg (BH) was used for P value adjustment.<\/caption>","data":[["bugphyzz:aerophilicity|anaerobic *","bugphyzz:aerophilicity|aerobic *","bugphyzz:aerophilicity|facultatively anaerobic"],[-0.877,0.833,0.268],[-1.7,1.84,0.623],["4.12e-03","4.18e-03","9.09e-01"],["6.27e-03","6.27e-03","9.09e-01"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>BUG.SET<\/th>\n      <th>ES<\/th>\n      <th>NES<\/th>\n      <th>PVAL<\/th>\n      <th>ADJ.PVAL<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Bft","buttons":["copy","print"],"iDisplayLength":10,"keys":true,"autoWidth":true,"columnDefs":[{"className":"dt-right","targets":[1,2]},{"name":"BUG.SET","targets":0},{"name":"ES","targets":1},{"name":"NES","targets":2},{"name":"PVAL","targets":3},{"name":"ADJ.PVAL","targets":4}],"order":[],"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-cda67fed8a3129d11428">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-0.877\" data-max=\"0.833\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-1.7\" data-max=\"1.84\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"data":[["bugphyzz:aerophilicity|anaerobic *","bugphyzz:aerophilicity|aerobic *","bugphyzz:aerophilicity|facultatively anaerobic"],[-0.877,0.833,0.268],[-1.7,1.84,0.623],["4.12e-03","4.18e-03","9.09e-01"],["6.27e-03","6.27e-03","9.09e-01"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>BUG.SET<\/th>\n      <th>ES<\/th>\n      <th>NES<\/th>\n      <th>PVAL<\/th>\n      <th>ADJ.PVAL<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"lBfrtip","buttons":[{"extend":"copy","title":null},{"extend":"print","title":null},{"extend":"csv","title":null}],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"name":"BUG.SET","targets":0},{"name":"ES","targets":1},{"name":"NES","targets":2},{"name":"PVAL","targets":3},{"name":"ADJ.PVAL","targets":4}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script><div class="section level3">
+<h3 id="enrichment-gsea-no-asr">Enrichment (GSEA) no asr<a class="anchor" aria-label="anchor" href="#enrichment-gsea-no-asr"></a>
+</h3>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">edger</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/limmaVoom.html">limmaVoom</a></span><span class="op">(</span><span class="va">edger</span><span class="op">)</span></span>
+<span><span class="va">gsea</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>  method <span class="op">=</span> <span class="st">'gsea'</span>, se <span class="op">=</span> <span class="va">edger</span>, gs <span class="op">=</span> <span class="va">gn_sigs_noasr</span>, perm <span class="op">=</span> <span class="fl">1000</span>, padj.method <span class="op">=</span> <span class="st">'BH'</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">0.1</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">gsea_tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">gsea</span><span class="op">$</span><span class="va">res.tbl</span><span class="op">)</span></span>
+<span><span class="va">gsea_tbl</span> <span class="op">&lt;-</span> <span class="va">gsea_tbl</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">PVAL</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    GENE.SET <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">ADJ.PVAL</span> <span class="op">&lt;</span> <span class="fl">0.1</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">GENE.SET</span>, <span class="st">' *'</span><span class="op">)</span>, <span class="va">GENE.SET</span><span class="op">)</span>,</span>
+<span>    PVAL <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">PVAL</span>, scientific <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    ADJ.PVAL <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">ADJ.PVAL</span>, scientific <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span>BUG.SET <span class="op">=</span> <span class="va">GENE.SET</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/myDataTable.html">myDataTable</a></span><span class="op">(</span><span class="va">gsea_tbl</span><span class="op">)</span></span></code></pre></div>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-dda5cecf8e1cea961bba" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-dda5cecf8e1cea961bba">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-0.89\" data-max=\"0.941\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-1.59\" data-max=\"1.76\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"data":[["bugphyzz:aerophilicity|aerobic *","bugphyzz:aerophilicity|anaerobic *","bugphyzz:aerophilicity|facultatively anaerobic"],[0.9409999999999999,-0.89,0.6860000000000001],[1.76,-1.59,1.39],["2.11e-03","1.90e-02","1.33e-01"],["6.33e-03","2.85e-02","1.33e-01"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>BUG.SET<\/th>\n      <th>ES<\/th>\n      <th>NES<\/th>\n      <th>PVAL<\/th>\n      <th>ADJ.PVAL<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"lBfrtip","buttons":[{"extend":"copy","title":null},{"extend":"print","title":null},{"extend":"csv","title":null}],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"name":"BUG.SET","targets":0},{"name":"ES","targets":1},{"name":"NES","targets":2},{"name":"PVAL","targets":3},{"name":"ADJ.PVAL","targets":4}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
+</div>
 </div>
 <div class="section level2">
 <h2 id="enrichment-ora">Enrichment (ORA)<a class="anchor" aria-label="anchor" href="#enrichment-ora"></a>
 </h2>
-<p>Enriched in supragingival (up):</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">edger_up</span> <span class="op">&lt;-</span> <span class="va">edger</span></span>
+<p>Combine into a single table:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Up</span></span>
+<span><span class="va">edger_up</span> <span class="op">&lt;-</span> <span class="va">edger</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger_up</span><span class="op">)</span><span class="op">$</span><span class="va">ADJ.PVAL</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger_up</span><span class="op">)</span><span class="op">$</span><span class="va">FC</span> <span class="op">&lt;</span> <span class="fl">0</span>, <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger_up</span><span class="op">)</span><span class="op">$</span><span class="va">ADJ.PVAL</span></span>
 <span><span class="op">)</span></span>
@@ -249,10 +257,10 @@ annotations are useful for meaningful bug set enrichemnt analysis
 <span>  padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">ora_up_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">ora_up</span><span class="op">$</span><span class="va">res.tbl</span><span class="op">)</span></span>
-<span><span class="va">ora_up_df</span><span class="op">$</span><span class="va">BODY.SITE</span> <span class="op">&lt;-</span> <span class="st">'Supragingival plaque'</span></span></code></pre></div>
-<p>Enriched in subgingival (down):</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">edger_down</span> <span class="op">&lt;-</span> <span class="va">edger</span></span>
+<span><span class="va">ora_up_df</span><span class="op">$</span><span class="va">BODY.SITE</span> <span class="op">&lt;-</span> <span class="st">'Supragingival plaque'</span></span>
+<span></span>
+<span><span class="co">## Down</span></span>
+<span><span class="va">edger_down</span> <span class="op">&lt;-</span> <span class="va">edger</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger_down</span><span class="op">)</span><span class="op">$</span><span class="va">ADJ.PVAL</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger_down</span><span class="op">)</span><span class="op">$</span><span class="va">FC</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger_down</span><span class="op">)</span><span class="op">$</span><span class="va">ADJ.PVAL</span></span>
 <span><span class="op">)</span></span>
@@ -261,10 +269,10 @@ annotations are useful for meaningful bug set enrichemnt analysis
 <span>  padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">ora_down_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">ora_down</span><span class="op">$</span><span class="va">res.tbl</span><span class="op">)</span></span>
-<span><span class="va">ora_down_df</span><span class="op">$</span><span class="va">BODY.SITE</span> <span class="op">&lt;-</span> <span class="st">'Subgingival plaque'</span></span></code></pre></div>
-<p>Combine into a single table:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ora</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">ora_up_df</span>, <span class="va">ora_down_df</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span><span class="va">ora_down_df</span><span class="op">$</span><span class="va">BODY.SITE</span> <span class="op">&lt;-</span> <span class="st">'Subgingival plaque'</span></span>
+<span></span>
+<span><span class="co">## ORA</span></span>
+<span><span class="va">ora</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">ora_up_df</span>, <span class="va">ora_down_df</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">BODY.SITE</span>, <span class="va">PVAL</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/relocate.html" class="external-link">relocate</a></span><span class="op">(</span><span class="va">BODY.SITE</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
@@ -276,40 +284,112 @@ annotations are useful for meaningful bug set enrichemnt analysis
 <span>    BUG.SET <span class="op">=</span> <span class="va">GENE.SET</span>, NR.BUGS <span class="op">=</span> <span class="va">NR.GENES</span>, NR.SIG.BUGS <span class="op">=</span> <span class="va">NR.SIG.GENES</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">caption2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="st">'Table 2. ORA results comparing subgingival vs supragingival plaque.</span></span>
-<span><span class="st">  NR.BUGS = Number of annotated bugs in the reference set, </span></span>
-<span><span class="st">  NR.SIG.BUGS = Number of annotated bugs with significant differential</span></span>
-<span><span class="st">  abundance (FC &gt; 0 &amp; ADJ.PVAL &lt; 0.1). Bug sets marked with an asterisk (*)</span></span>
-<span><span class="st">  indicate significant enrichment resuts (adjusted p-value &lt; 0.1). </span></span>
-<span><span class="st">  Benjamini &amp; Hochberg (BH) was used for P value adjustment.'</span></span>
-<span><span class="op">)</span></span>
+<span><span class="co"># caption2 &lt;- c(</span></span>
+<span><span class="co">#   'Table 2. ORA results comparing subgingival vs supragingival plaque.</span></span>
+<span><span class="co">#   NR.BUGS = Number of annotated bugs in the reference set, </span></span>
+<span><span class="co">#   NR.SIG.BUGS = Number of annotated bugs with significant differential</span></span>
+<span><span class="co">#   abundance (FC &gt; 0 &amp; ADJ.PVAL &lt; 0.1). Bug sets marked with an asterisk (*)</span></span>
+<span><span class="co">#   indicate significant enrichment resuts (adjusted p-value &lt; 0.1). </span></span>
+<span><span class="co">#   Benjamini &amp; Hochberg (BH) was used for P value adjustment.'</span></span>
+<span><span class="co"># )</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/DT/man/datatable.html" class="external-link">datatable</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">ora</span>,</span>
-<span>  filter <span class="op">=</span> <span class="st">'top'</span>,</span>
-<span>  rownames <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extensions <span class="op">=</span> <span class="st">'Buttons'</span>,</span>
-<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    dom <span class="op">=</span> <span class="st">'Bft'</span>,</span>
-<span>    buttons <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">'copy'</span>, <span class="st">'print'</span><span class="op">)</span>,</span>
-<span>    iDisplayLength <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>    keys <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    autoWidth <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  caption <span class="op">=</span> <span class="fu">htmltools</span><span class="fu">::</span><span class="va"><a href="https://rstudio.github.io/htmltools/reference/builder.html" class="external-link">tags</a></span><span class="op">$</span><span class="fu">caption</span><span class="op">(</span></span>
-<span>    style <span class="op">=</span> <span class="st">'caption-side: top; text-align: left;'</span>,</span>
-<span>    <span class="va">caption2</span></span>
+<span><span class="co"># datatable(</span></span>
+<span><span class="co">#   data = ora,</span></span>
+<span><span class="co">#   filter = 'top',</span></span>
+<span><span class="co">#   rownames = FALSE,</span></span>
+<span><span class="co">#   extensions = 'Buttons',</span></span>
+<span><span class="co">#   options = list(</span></span>
+<span><span class="co">#     dom = 'Bft',</span></span>
+<span><span class="co">#     buttons = list('copy', 'print'),</span></span>
+<span><span class="co">#     iDisplayLength = 10,</span></span>
+<span><span class="co">#     keys = TRUE,</span></span>
+<span><span class="co">#     autoWidth = TRUE</span></span>
+<span><span class="co">#   ),</span></span>
+<span><span class="co">#   caption = htmltools::tags$caption(</span></span>
+<span><span class="co">#     style = 'caption-side: top; text-align: left;',</span></span>
+<span><span class="co">#     caption2</span></span>
+<span><span class="co">#   )</span></span>
+<span><span class="co"># )</span></span>
+<span><span class="fu"><a href="../reference/myDataTable.html">myDataTable</a></span><span class="op">(</span><span class="va">ora</span><span class="op">)</span></span></code></pre></div>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-dfbbf8bd0e34f032a2af" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-dfbbf8bd0e34f032a2af">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"10\" data-max=\"18\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0\" data-max=\"13\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"data":[["Subgingival plaque","Subgingival plaque","Subgingival plaque","Supragingival plaque","Supragingival plaque","Supragingival plaque"],["bugphyzz:aerophilicity|anaerobic *","bugphyzz:aerophilicity|facultatively anaerobic","bugphyzz:aerophilicity|aerobic","bugphyzz:aerophilicity|aerobic *","bugphyzz:aerophilicity|facultatively anaerobic","bugphyzz:aerophilicity|anaerobic"],[18,10,10,10,10,18],[13,1,0,8,4,1],["4.14e-05","9.97e-01","1.00e+00","2.00e-04","3.53e-01","1.00e+00"],["1.242e-04","1.000e+00","1.000e+00","6.000e-04","5.295e-01","1.000e+00"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>BODY.SITE<\/th>\n      <th>BUG.SET<\/th>\n      <th>NR.BUGS<\/th>\n      <th>NR.SIG.BUGS<\/th>\n      <th>PVAL<\/th>\n      <th>ADJ.PVAL<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"lBfrtip","buttons":[{"extend":"copy","title":null},{"extend":"print","title":null},{"extend":"csv","title":null}],"columnDefs":[{"className":"dt-right","targets":[2,3]},{"name":"BODY.SITE","targets":0},{"name":"BUG.SET","targets":1},{"name":"NR.BUGS","targets":2},{"name":"NR.SIG.BUGS","targets":3},{"name":"PVAL","targets":4},{"name":"ADJ.PVAL","targets":5}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div class="section level2">
+<h2 id="ora---no-asr">ORA - NO ASR<a class="anchor" aria-label="anchor" href="#ora---no-asr"></a>
+</h2>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Up</span></span>
+<span><span class="va">edger_up</span> <span class="op">&lt;-</span> <span class="va">edger</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger_up</span><span class="op">)</span><span class="op">$</span><span class="va">ADJ.PVAL</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger_up</span><span class="op">)</span><span class="op">$</span><span class="va">FC</span> <span class="op">&lt;</span> <span class="fl">0</span>, <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger_up</span><span class="op">)</span><span class="op">$</span><span class="va">ADJ.PVAL</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">ora_up</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>  method <span class="op">=</span> <span class="st">'ora'</span>, se <span class="op">=</span> <span class="va">edger_up</span>, gs <span class="op">=</span> <span class="va">gn_sigs_noasr</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>, </span>
+<span>  padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">ora_up_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">ora_up</span><span class="op">$</span><span class="va">res.tbl</span><span class="op">)</span></span>
+<span><span class="va">ora_up_df</span><span class="op">$</span><span class="va">BODY.SITE</span> <span class="op">&lt;-</span> <span class="st">'Supragingival plaque'</span></span>
+<span></span>
+<span><span class="co">## Down</span></span>
+<span><span class="va">edger_down</span> <span class="op">&lt;-</span> <span class="va">edger</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger_down</span><span class="op">)</span><span class="op">$</span><span class="va">ADJ.PVAL</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger_down</span><span class="op">)</span><span class="op">$</span><span class="va">FC</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">edger_down</span><span class="op">)</span><span class="op">$</span><span class="va">ADJ.PVAL</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">ora_down</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/EnrichmentBrowser/man/sbea.html" class="external-link">sbea</a></span><span class="op">(</span></span>
+<span>  method <span class="op">=</span> <span class="st">'ora'</span>, se <span class="op">=</span> <span class="va">edger_down</span>, gs <span class="op">=</span> <span class="va">gn_sigs_noasr</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, perm <span class="op">=</span> <span class="fl">0</span>, </span>
+<span>  padj.method <span class="op">=</span> <span class="st">'BH'</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">ora_down_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">ora_down</span><span class="op">$</span><span class="va">res.tbl</span><span class="op">)</span></span>
+<span><span class="va">ora_down_df</span><span class="op">$</span><span class="va">BODY.SITE</span> <span class="op">&lt;-</span> <span class="st">'Subgingival plaque'</span></span>
+<span></span>
+<span><span class="co">## ORA</span></span>
+<span><span class="va">ora</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">ora_up_df</span>, <span class="va">ora_down_df</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">BODY.SITE</span>, <span class="va">PVAL</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/relocate.html" class="external-link">relocate</a></span><span class="op">(</span><span class="va">BODY.SITE</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    GENE.SET <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">ADJ.PVAL</span> <span class="op">&lt;</span> <span class="fl">0.1</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">GENE.SET</span>, <span class="st">' *'</span><span class="op">)</span>, <span class="va">GENE.SET</span><span class="op">)</span>,</span>
+<span>    PVAL <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">PVAL</span>, scientific <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    ADJ.PVAL <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">ADJ.PVAL</span>, scientific <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename</a></span><span class="op">(</span></span>
+<span>    BUG.SET <span class="op">=</span> <span class="va">GENE.SET</span>, NR.BUGS <span class="op">=</span> <span class="va">NR.GENES</span>, NR.SIG.BUGS <span class="op">=</span> <span class="va">NR.SIG.GENES</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<div class="datatables html-widget html-fill-item" id="htmlwidget-dda5cecf8e1cea961bba" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-dda5cecf8e1cea961bba">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"10\" data-max=\"18\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0\" data-max=\"13\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption style=\"caption-side: top; text-align: left;\">Table 2. ORA results comparing subgingival vs supragingival plaque.\n  NR.BUGS = Number of annotated bugs in the reference set, \n  NR.SIG.BUGS = Number of annotated bugs with significant differential\n  abundance (FC &gt; 0 &amp; ADJ.PVAL &lt; 0.1). Bug sets marked with an asterisk (*)\n  indicate significant enrichment resuts (adjusted p-value &lt; 0.1). \n  Benjamini &amp; Hochberg (BH) was used for P value adjustment.<\/caption>","data":[["Subgingival plaque","Subgingival plaque","Subgingival plaque","Supragingival plaque","Supragingival plaque","Supragingival plaque"],["bugphyzz:aerophilicity|anaerobic *","bugphyzz:aerophilicity|facultatively anaerobic","bugphyzz:aerophilicity|aerobic","bugphyzz:aerophilicity|aerobic *","bugphyzz:aerophilicity|facultatively anaerobic","bugphyzz:aerophilicity|anaerobic"],[18,10,10,10,10,18],[13,1,0,8,4,1],["4.14e-05","9.97e-01","1.00e+00","2.00e-04","3.53e-01","1.00e+00"],["1.242e-04","1.000e+00","1.000e+00","6.000e-04","5.295e-01","1.000e+00"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>BODY.SITE<\/th>\n      <th>BUG.SET<\/th>\n      <th>NR.BUGS<\/th>\n      <th>NR.SIG.BUGS<\/th>\n      <th>PVAL<\/th>\n      <th>ADJ.PVAL<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Bft","buttons":["copy","print"],"iDisplayLength":10,"keys":true,"autoWidth":true,"columnDefs":[{"className":"dt-right","targets":[2,3]},{"name":"BODY.SITE","targets":0},{"name":"BUG.SET","targets":1},{"name":"NR.BUGS","targets":2},{"name":"NR.SIG.BUGS","targets":3},{"name":"PVAL","targets":4},{"name":"ADJ.PVAL","targets":5}],"order":[],"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
+<span></span>
+<span><span class="co"># caption2 &lt;- c(</span></span>
+<span><span class="co">#   'Table 2. ORA results comparing subgingival vs supragingival plaque.</span></span>
+<span><span class="co">#   NR.BUGS = Number of annotated bugs in the reference set, </span></span>
+<span><span class="co">#   NR.SIG.BUGS = Number of annotated bugs with significant differential</span></span>
+<span><span class="co">#   abundance (FC &gt; 0 &amp; ADJ.PVAL &lt; 0.1). Bug sets marked with an asterisk (*)</span></span>
+<span><span class="co">#   indicate significant enrichment resuts (adjusted p-value &lt; 0.1). </span></span>
+<span><span class="co">#   Benjamini &amp; Hochberg (BH) was used for P value adjustment.'</span></span>
+<span><span class="co"># )</span></span>
+<span></span>
+<span><span class="co"># datatable(</span></span>
+<span><span class="co">#   data = ora,</span></span>
+<span><span class="co">#   filter = 'top',</span></span>
+<span><span class="co">#   rownames = FALSE,</span></span>
+<span><span class="co">#   extensions = 'Buttons',</span></span>
+<span><span class="co">#   options = list(</span></span>
+<span><span class="co">#     dom = 'Bft',</span></span>
+<span><span class="co">#     buttons = list('copy', 'print'),</span></span>
+<span><span class="co">#     iDisplayLength = 10,</span></span>
+<span><span class="co">#     keys = TRUE,</span></span>
+<span><span class="co">#     autoWidth = TRUE</span></span>
+<span><span class="co">#   ),</span></span>
+<span><span class="co">#   caption = htmltools::tags$caption(</span></span>
+<span><span class="co">#     style = 'caption-side: top; text-align: left;',</span></span>
+<span><span class="co">#     caption2</span></span>
+<span><span class="co">#   )</span></span>
+<span><span class="co"># )</span></span>
+<span><span class="fu"><a href="../reference/myDataTable.html">myDataTable</a></span><span class="op">(</span><span class="va">ora</span><span class="op">)</span></span></code></pre></div>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-0fe27faad9b01ecf7e4a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0fe27faad9b01ecf7e4a">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"6\" data-max=\"16\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0\" data-max=\"12\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"data":[["Subgingival plaque","Subgingival plaque","Subgingival plaque","Supragingival plaque","Supragingival plaque","Supragingival plaque"],["bugphyzz:aerophilicity|anaerobic *","bugphyzz:aerophilicity|facultatively anaerobic","bugphyzz:aerophilicity|aerobic","bugphyzz:aerophilicity|aerobic *","bugphyzz:aerophilicity|facultatively anaerobic","bugphyzz:aerophilicity|anaerobic"],[16,10,6,6,10,16],[12,1,0,6,4,0],["2.17e-04","9.99e-01","1.00e+00","4.72e-05","2.30e-01","1.00e+00"],["6.510e-04","1.000e+00","1.000e+00","1.416e-04","3.450e-01","1.000e+00"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>BODY.SITE<\/th>\n      <th>BUG.SET<\/th>\n      <th>NR.BUGS<\/th>\n      <th>NR.SIG.BUGS<\/th>\n      <th>PVAL<\/th>\n      <th>ADJ.PVAL<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"lBfrtip","buttons":[{"extend":"copy","title":null},{"extend":"print","title":null},{"extend":"csv","title":null}],"columnDefs":[{"className":"dt-right","targets":[2,3]},{"name":"BODY.SITE","targets":0},{"name":"BUG.SET","targets":1},{"name":"NR.BUGS","targets":2},{"name":"NR.SIG.BUGS","targets":3},{"name":"PVAL","targets":4},{"name":"ADJ.PVAL","targets":5}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div class="section level2">
 <h2 id="quick-checks">Quick checks<a class="anchor" aria-label="anchor" href="#quick-checks"></a>
 </h2>
 <p>Abundance of taxa in the ‘down-regulated’ set:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Couldn't make tidySummarizedExperiment work.</span></span>
 <span><span class="co">## Update code later.</span></span>
 <span><span class="va">counts1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">edger_down</span>, <span class="st">'counts'</span><span class="op">)</span></span>
@@ -342,9 +422,9 @@ annotations are useful for meaningful bug set enrichemnt analysis
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html" class="external-link">geom_boxplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">p1</span></span></code></pre></div>
-<p><img src="subgingival_plaque_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
+<p><img src="subgingival_plaque_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
 <p>Abundance of taxa in the ‘up-regulated’ set:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Couldn't make tidySummarizedExperiment work.</span></span>
 <span><span class="co">## Update code later.</span></span>
 <span><span class="va">counts2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">assay</a></span><span class="op">(</span><span class="va">edger_up</span>, <span class="st">'counts'</span><span class="op">)</span></span>
@@ -377,12 +457,12 @@ annotations are useful for meaningful bug set enrichemnt analysis
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_boxplot.html" class="external-link">geom_boxplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">p2</span></span></code></pre></div>
-<p><img src="subgingival_plaque_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
+<p><img src="subgingival_plaque_files/figure-html/unnamed-chunk-10-1.png" width="700"></p>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/sessioninfo/reference/session_info.html" class="external-link">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Session info ───────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">setting </span> <span style="color: #555555; font-style: italic;">value</span></span></span>
