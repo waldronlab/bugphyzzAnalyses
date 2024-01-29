@@ -1,9 +1,9 @@
 ---
 title: "Data integration and stats"
 output:
-    html_vignette:
-        code_folding: hide 
-        toc: true
+  html_vignette:
+    code_folding: hide
+    toc: true
 ---
 
 ```{r script options, include = FALSE}
