@@ -28,13 +28,6 @@ library(tidyr)
 library(ggplot2)
 ```
 
-The main purpose of this vignette is to find the expected enrichment results
-in a biological dataset with ground truth. The expected result is enrichment
-of aerobic taxa in the supragingival plaque and enrichment of anaerobic taxa
-in the subgingival plaque. Obtaining the expected results could be interpreted
-as an indicative that the bugphyzz annotations are useful for meaningful
-bug set enrichemnt analysis (BSEA).
-
 # Microbiome data
 
 ```{r import tse data, message=FALSE}
@@ -46,6 +39,7 @@ min_n_samples <- round(ncol(tse_genus) * 0.2)
 tse_subset <- tse_genus[rowSums(assay(tse_genus) >= 1) >= min_n_samples,]
 tse_subset
 ```
+
 Number of samples per condition
 
 ```{r}
@@ -56,15 +50,30 @@ table(tse_subset$body_subsite)
 
 Signatures at the genus level:
 
-```{r bp signatures genus}
+```{r bp signatures genus, message = FALSE}
 bp <- importBugphyzz()
 aer <- bp$aerophilicity
-gn_sigs <- makeSignatures(dat = aer, tax_id_type = 'Taxon_name', tax_level = 'genus')
+gn_sigs <- makeSignatures(
+    dat = aer, tax_id_type = 'Taxon_name', tax_level = 'genus'
+)
+## Only one genus is missing  (TG5), which is ambiguous in the ncbi taxonomy
+mean(as.integer(rownames(tse_subset) %in% unique(unlist(gn_sigs, use.names = FALSE ))))
 ```
+
+Without ASR some annotations are missing:
+
+```{r}
+gn_sigs_noasr <- makeSignatures(
+    dat = aer, tax_id_type = 'Taxon_name', tax_level = 'genus',
+    evidence = c("exp", "igc", "tas", "nas", "tax")
+)
+mean(as.integer(rownames(tse_subset) %in% unique(unlist(gn_sigs_noasr, use.names = FALSE ))))
+```
+
 
 # Differential abundance
 
-```{r DA - edgeR}
+```{r}
 tse_subset$GROUP <- ifelse(
   tse_subset$body_subsite == 'subgingival_plaque', 0, 1
 )
@@ -76,12 +85,15 @@ edger <- deAna(
 
 # Enrichment (GSEA)
 
+-   `*` significant (FDR \< 0.1)
+-   `+` enriched in supragingival plaque
+-   `-` enriched in subgingival plaque
+
 ```{r, message=FALSE}
 edger <- limmaVoom(edger)
 gsea <- sbea(
   method = 'gsea', se = edger, gs = gn_sigs, perm = 1000, padj.method = 'BH',
   alpha = 0.1
-  
 )
 gsea_tbl <- as.data.frame(gsea$res.tbl)
 gsea_tbl <- gsea_tbl |> 
@@ -92,41 +104,35 @@ gsea_tbl <- gsea_tbl |>
     ADJ.PVAL = format(ADJ.PVAL, scientific = TRUE)
   ) |> 
   rename(BUG.SET = GENE.SET)
+myDataTable(gsea_tbl)
+```
 
+## Enrichment (GSEA) no asr
 
-caption1 <- c(
-  'Table 1. GSEA results comparing subgingival vs supragingival plaque.
-  ES = Enrichment score, NES = Normalized Enrichment Score. Positive and
-  negative scores (ES and NES) indicate enrichment in the supragingival and
-  subgingival plaque, respectively. Bug sets marked with an asterik (*) 
-  indicate significant enrichment results (adjusted p-value < 0.1). 
-  Benjamini & Hochberg (BH) was used for P value adjustment.'
+```{r}
+edger <- limmaVoom(edger)
+gsea <- sbea(
+  method = 'gsea', se = edger, gs = gn_sigs_noasr, perm = 1000, padj.method = 'BH',
+  alpha = 0.1
 )
-
-datatable(
-  data = gsea_tbl,
-  filter = 'top',
-  rownames = FALSE,
-  extensions = 'Buttons',
-  options = list(
-    dom = 'Bft',
-    buttons = list('copy', 'print'),
-    iDisplayLength = 10,
-    keys = TRUE,
-    autoWidth = TRUE
-  ),
-  caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: left;',
-    caption1
-  )
-)
+gsea_tbl <- as.data.frame(gsea$res.tbl)
+gsea_tbl <- gsea_tbl |> 
+  arrange(PVAL) |> 
+  mutate(
+    GENE.SET = ifelse(ADJ.PVAL < 0.1, paste0(GENE.SET, ' *'), GENE.SET),
+    PVAL = format(PVAL, scientific = TRUE),
+    ADJ.PVAL = format(ADJ.PVAL, scientific = TRUE)
+  ) |> 
+  rename(BUG.SET = GENE.SET)
+myDataTable(gsea_tbl)
 ```
 
 # Enrichment (ORA)
 
-Enriched in supragingival (up):
+Combine into a single table:
 
 ```{r}
+## Up
 edger_up <- edger
 rowData(edger_up)$ADJ.PVAL <- ifelse(
   rowData(edger_up)$FC < 0, 1, rowData(edger_up)$ADJ.PVAL
@@ -137,11 +143,8 @@ ora_up <- sbea(
 )
 ora_up_df <- as.data.frame(ora_up$res.tbl)
 ora_up_df$BODY.SITE <- 'Supragingival plaque'
-```
 
-Enriched in subgingival (down):
-
-```{r}
+## Down
 edger_down <- edger
 rowData(edger_down)$ADJ.PVAL <- ifelse(
   rowData(edger_down)$FC > 0, 1, rowData(edger_down)$ADJ.PVAL
@@ -152,11 +155,8 @@ ora_down <- sbea(
 )
 ora_down_df <- data.frame(ora_down$res.tbl)
 ora_down_df$BODY.SITE <- 'Subgingival plaque'
-```
 
-Combine into a single table:
-
-```{r}
+## ORA
 ora <- bind_rows(ora_up_df, ora_down_df) |> 
   arrange(BODY.SITE, PVAL) |> 
   relocate(BODY.SITE) |> 
@@ -169,32 +169,104 @@ ora <- bind_rows(ora_up_df, ora_down_df) |>
     BUG.SET = GENE.SET, NR.BUGS = NR.GENES, NR.SIG.BUGS = NR.SIG.GENES
   )
 
-caption2 <- c(
-  'Table 2. ORA results comparing subgingival vs supragingival plaque.
-  NR.BUGS = Number of annotated bugs in the reference set, 
-  NR.SIG.BUGS = Number of annotated bugs with significant differential
-  abundance (FC > 0 & ADJ.PVAL < 0.1). Bug sets marked with an asterisk (*)
-  indicate significant enrichment resuts (adjusted p-value < 0.1). 
-  Benjamini & Hochberg (BH) was used for P value adjustment.'
-)
+# caption2 <- c(
+#   'Table 2. ORA results comparing subgingival vs supragingival plaque.
+#   NR.BUGS = Number of annotated bugs in the reference set, 
+#   NR.SIG.BUGS = Number of annotated bugs with significant differential
+#   abundance (FC > 0 & ADJ.PVAL < 0.1). Bug sets marked with an asterisk (*)
+#   indicate significant enrichment resuts (adjusted p-value < 0.1). 
+#   Benjamini & Hochberg (BH) was used for P value adjustment.'
+# )
 
-datatable(
-  data = ora,
-  filter = 'top',
-  rownames = FALSE,
-  extensions = 'Buttons',
-  options = list(
-    dom = 'Bft',
-    buttons = list('copy', 'print'),
-    iDisplayLength = 10,
-    keys = TRUE,
-    autoWidth = TRUE
-  ),
-  caption = htmltools::tags$caption(
-    style = 'caption-side: top; text-align: left;',
-    caption2
-  )
+# datatable(
+#   data = ora,
+#   filter = 'top',
+#   rownames = FALSE,
+#   extensions = 'Buttons',
+#   options = list(
+#     dom = 'Bft',
+#     buttons = list('copy', 'print'),
+#     iDisplayLength = 10,
+#     keys = TRUE,
+#     autoWidth = TRUE
+#   ),
+#   caption = htmltools::tags$caption(
+#     style = 'caption-side: top; text-align: left;',
+#     caption2
+#   )
+# )
+myDataTable(ora)
+```
+
+
+# ORA - NO ASR
+
+
+```{r}
+## Up
+edger_up <- edger
+rowData(edger_up)$ADJ.PVAL <- ifelse(
+  rowData(edger_up)$FC < 0, 1, rowData(edger_up)$ADJ.PVAL
 )
+ora_up <- sbea(
+  method = 'ora', se = edger_up, gs = gn_sigs_noasr, alpha = 0.1, perm = 0, 
+  padj.method = 'BH'
+)
+ora_up_df <- as.data.frame(ora_up$res.tbl)
+ora_up_df$BODY.SITE <- 'Supragingival plaque'
+
+## Down
+edger_down <- edger
+rowData(edger_down)$ADJ.PVAL <- ifelse(
+  rowData(edger_down)$FC > 0, 1, rowData(edger_down)$ADJ.PVAL
+)
+ora_down <- sbea(
+  method = 'ora', se = edger_down, gs = gn_sigs_noasr, alpha = 0.1, perm = 0, 
+  padj.method = 'BH'
+)
+ora_down_df <- data.frame(ora_down$res.tbl)
+ora_down_df$BODY.SITE <- 'Subgingival plaque'
+
+## ORA
+ora <- bind_rows(ora_up_df, ora_down_df) |> 
+  arrange(BODY.SITE, PVAL) |> 
+  relocate(BODY.SITE) |> 
+  mutate(
+    GENE.SET = ifelse(ADJ.PVAL < 0.1, paste0(GENE.SET, ' *'), GENE.SET),
+    PVAL = format(PVAL, scientific = TRUE),
+    ADJ.PVAL = format(ADJ.PVAL, scientific = TRUE)
+  ) |> 
+  dplyr::rename(
+    BUG.SET = GENE.SET, NR.BUGS = NR.GENES, NR.SIG.BUGS = NR.SIG.GENES
+  )
+
+# caption2 <- c(
+#   'Table 2. ORA results comparing subgingival vs supragingival plaque.
+#   NR.BUGS = Number of annotated bugs in the reference set, 
+#   NR.SIG.BUGS = Number of annotated bugs with significant differential
+#   abundance (FC > 0 & ADJ.PVAL < 0.1). Bug sets marked with an asterisk (*)
+#   indicate significant enrichment resuts (adjusted p-value < 0.1). 
+#   Benjamini & Hochberg (BH) was used for P value adjustment.'
+# )
+
+# datatable(
+#   data = ora,
+#   filter = 'top',
+#   rownames = FALSE,
+#   extensions = 'Buttons',
+#   options = list(
+#     dom = 'Bft',
+#     buttons = list('copy', 'print'),
+#     iDisplayLength = 10,
+#     keys = TRUE,
+#     autoWidth = TRUE
+#   ),
+#   caption = htmltools::tags$caption(
+#     style = 'caption-side: top; text-align: left;',
+#     caption2
+#   )
+# )
+myDataTable(ora)
 ```
 
 # Quick checks
