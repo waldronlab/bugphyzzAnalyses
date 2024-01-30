@@ -229,7 +229,8 @@ en_sp_df <- en_sp |>
         col = "bsdb_sig",
         into = c("body_site", "rank", "direction", "condition"), sep = "_",
         remove = FALSE
-    )
+    ) |> 
+    mutate(condition = tolower(condition))
 myDataTable(en_sp_df, page_len = nrow(en_sp_df))
 ```
 
