@@ -1,0 +1,228 @@
+---
+title: "bsdb2 - no asr"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message=FALSE}
+library(bugphyzzAnalyses)
+library(bugphyzz)
+library(bugsigdbr)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(BiocParallel)
+```
+
+## Data
+
+TypicalMicrobiomeSignatures:
+
+```{r, message=FALSE}
+url <- "https://zenodo.org/records/7622129/files/waldronlab/TypicalMicrobiomeSignaturesExports-v1.0.1.zip?download=1"
+temp_dir <- tempdir()
+temp_file <- file.path(temp_dir, "tms.zip")
+download.file(url = url, destfile = temp_file)
+unzip(temp_file, exdir = temp_dir, junkpaths = TRUE)
+csv_files <- list.files(temp_dir, pattern = "csv", full.names = TRUE)
+l <- map(csv_files,  ~ {
+    .x |> 
+        read.csv() |> 
+        pivot_longer(
+            names_to = "Body site", values_to = "Prevalence",
+            cols = 3:last_col()
+        ) |> 
+        mutate(
+            `Body site` = sub("_(species|genus)_prevalence$", "", `Body site`)
+        )
+})
+names(l) <- sub("^.*matrix_(.*).csv$", "\\1", csv_files)
+tms <- bind_rows(l, .id = "rank_agegroup") |> 
+    separate(
+        col = "rank_agegroup", into = c("Rank", "Age group"),
+        sep = "_", remove = TRUE
+    ) |> 
+    relocate(
+        `Age group`, `Rank`, `NCBI ID` = NCBI, `Taxon name` = name,
+        `Body site`, Prevalence
+    ) |> 
+    filter(`Age group` == "adult") |> 
+    mutate(
+        `Body site` = case_when(
+            `Body site` == "stool" ~ "feces",
+            `Body site` == "oralcavity" ~ "mouth",
+            TRUE ~ `Body site`
+        )
+    ) |> 
+    filter(Prevalence > 0.01)
+head(tms)
+```
+
+BugSigDB:
+
+```{r, message=FALSE}
+bsdb <- importBugSigDB()
+bsdb <- bsdb |> 
+    filter(`Host species` == "Homo sapiens") |> 
+    filter(!is.na(`Abundance in Group 1`)) |> 
+    filter(grepl("(healthy|control)", `Group 0 name`, ignore.case = TRUE)) |> 
+    filter(!is.na(`Body site`))
+dim(bsdb)
+```
+
+BugSigDB subsets by body site:
+
+```{r, message=FALSE}
+uberon <- getOntology(onto = "uberon")
+body_sites <- unique(tms$`Body site`)
+bsdb_subsets_by_bodysite <- vector("list", length(body_sites))
+names(bsdb_subsets_by_bodysite) <- body_sites
+for (i in seq_along(bsdb_subsets_by_bodysite)) {
+    if (body_sites[i] == "skin") {
+        bsdb_subsets_by_bodysite[[i]] <- bsdb |> 
+            filter(grepl(body_sites[i], `Body site`, ignore.case = TRUE))
+    } else {
+        bsdb_subsets_by_bodysite[[i]] <- subsetByOntology(
+            bsdb, column = "Body site", term = body_sites[i], ontology = uberon 
+        )
+        
+    }
+}
+```
+
+Bugphyzz:
+
+```{r, message=FALSE}
+bp <- importBugphyzz()
+```
+
+## Signatures
+
+TypicalMicrobiomeSignatures:
+
+```{r}
+ranks <- c("genus", "species")
+tms_sigs <- vector("list", length(body_sites) * length(ranks))
+index <- 1
+for (i in seq_along(body_sites)) {
+    for (j in seq_along(ranks)) {
+        names(tms_sigs)[index] <- paste0(body_sites[i], "_", ranks[j])
+        tms_sigs[[index]] <- tms |> 
+            filter(`Body site` == body_sites[i], Rank == ranks[j]) |> 
+            pull(`NCBI ID`)
+        index <- index + 1
+    }
+}
+```
+
+BugSigDB:
+
+```{r}
+directions <- c("UP", "DOWN")
+bsdb_sigs <- vector(
+    mode = "list", 
+    length = length(body_sites) * length(ranks) * length(directions)
+)
+index <- 1
+for (i in seq_along(body_sites)) {
+    for (j in seq_along(ranks)) {
+        for (k in seq_along(directions)) {
+            names(bsdb_sigs)[index] <- paste0(
+                body_sites[i], "_", ranks[j], "_", directions[k]
+            )
+            bsdb_sigs[[index]] <- getMetaSignatures(
+                df = bsdb_subsets_by_bodysite[[body_sites[i]]],
+                colum = "Condition", direction = directions[k],
+                min.studies = 1, min.taxa = 5,
+                tax.id.type = "ncbi", tax.level = ranks[j],
+                exact.tax.level = FALSE
+            ) |> 
+                map(~ unique(names(.x)))
+            index <- index + 1
+        }
+    }
+}
+bsdb_sigs <- list_flatten(bsdb_sigs)
+```
+
+Reference signatures:
+
+```{r}
+background_sigs <- vector("list", length(bsdb_sigs)) 
+for (i in seq_along(background_sigs)) {
+    sig_name <- names(bsdb_sigs)[i]
+    names(background_sigs)[i] <- sig_name
+    bodysite_name <- sub("^(\\w+)_(species|genus)_.*$", "\\1", sig_name)
+    rank_name <- sub("^(\\w+)_(species|genus)_.*$", "\\2", sig_name)
+    tms_sig_name <- paste0(bodysite_name, "_", rank_name)
+    background_sigs[[i]] <- unique(
+        c(as.character(bsdb_sigs[[i]]), as.character(tms_sigs[[tms_sig_name]]))
+    )
+}
+```
+
+bugphyzz signatures:
+
+```{r, warning=FALSE}
+bp_sigs_gn <- map(bp, ~ {
+    makeSignatures(
+        dat = .x, tax_id_type = "NCBI_ID", tax_level = "genus", min_size = 5, 
+        evidence = c("exp", "igc", "tas", "nas", "tax")
+    )
+}) |> 
+    discard(is.null) |> 
+    list_flatten(name_spec = "{inner}") |> 
+    map(as.character)
+names(bp_sigs_gn) <- paste0(names(bp_sigs_gn), "|genus")
+    
+bp_sigs_sp <- map(bp, ~ {
+    makeSignatures(
+        dat = .x, tax_id_type = "NCBI_ID", tax_level = "species", min_size = 5,
+        evidence = c("exp", "igc", "tas", "nas", "tax")
+    )
+}) |> 
+    discard(is.null) |> 
+    list_flatten(name_spec = "{inner}") |> 
+    map(as.character)
+names(bp_sigs_sp) <- paste0(names(bp_sigs_sp), "|species")
+bp_sigs <- c(bp_sigs_gn, bp_sigs_sp)
+```
+
+## Enrichment
+
+genus:
+
+```{r}
+bsdb_sigs_gn <- bsdb_sigs[grep("_genus_", names(bsdb_sigs))]
+background_sigs_gn <- background_sigs[names(bsdb_sigs_gn)]
+en_gn <- map2(bsdb_sigs_gn, background_sigs_gn, ~ {
+    microbeSetEnrichment(set = .x, reference = .y, sigs = bp_sigs_gn)
+}) |> 
+    bind_rows(.id = "bsdb_sig") |> 
+    filter(fdr < 0.1)
+myDataTable(en_gn, nrow(en_gn))
+```
+
+species:
+
+```{r}
+bsdb_sigs_sp <- bsdb_sigs[grep("_species_", names(bsdb_sigs))]
+background_sigs_sp <- background_sigs[names(bsdb_sigs_sp)]
+en_sp <- map2(bsdb_sigs_sp, background_sigs_sp, ~ {
+    microbeSetEnrichment(set = .x, reference = .y, sigs = bp_sigs_sp)
+}) |> 
+    bind_rows(.id = "bsdb_sig") |> 
+    filter(fdr < 0.1)
+myDataTable(en_gn, page_len = nrow(en_sp))
+```
+
+## Session info
+
+```{r}
+sessioninfo::session_info()
+```
