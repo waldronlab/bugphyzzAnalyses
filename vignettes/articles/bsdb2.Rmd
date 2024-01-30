@@ -1,5 +1,8 @@
 ---
 title: "High-throughput analysis with BSDB sigs"
+output:
+    html_document:
+        toc: true
 ---
 
 ```{r, include = FALSE}
@@ -261,20 +264,38 @@ en_down <- filter(en_tbl, direction == "DOWN")
 
 ## Heatmap UP
 
+
+
+```{r}
+dat <- data.frame(bsdb_sig = names(bsdb_sigs)) |> 
+    separate(
+        col = "bsdb_sig",
+        into =  c("body_site", "rank", "direction", "condition"),
+        sep = "_"
+    ) |> 
+    mutate(condition = tolower(condition)) |> 
+    left_join(cond2cat, by = c("condition" = "Condition")) |> 
+    filter(!is.na(Category))
+dat_up <- filter(dat, direction == "UP")
+dat_down <- filter(dat, direction == "DOWN")
+```
+
 Data:
 
 ```{r}
 ## Summary for top column barplot annotations -- condition category
-summary_category_up <- en_up |> 
+summary_category_up <- dat_up |> 
     filter(!is.na(Category)) |> 
     count(Category, name = 'category_total') |> 
-    arrange(-category_total)
+    arrange(-category_total) |> 
+    filter(Category %in% en_up$Category)
 
 ## Summary for top column barplot annotations -- body site
-summary_bodysite_up <- en_up |> 
+summary_bodysite_up <- dat_up |> 
     filter(!is.na(body_site)) |> 
     count(body_site, name = 'bodysite_total') |> 
-    arrange(-bodysite_total)
+    arrange(-bodysite_total) |> 
+    filter(body_site %in% en_up$body_site)
 
 ## Frequency for row annotations -- frequency of enriched physiologies (attrbute_group) by genus
 summary_up_freq <- en_up |> 
@@ -322,14 +343,17 @@ mat_bodysite_up <- mat_bodysite_up[rownames(summary_up_freq),]
 
 Heatmap:
 
-```{r, fig.height=15, fig.width=10}
-color_fun <- circlize::colorRamp2(
-    breaks = c(0, seq(1, 100, 1)),
-    colors = c("white", viridis::viridis(
-        n = 100, begin = 0, option = "C", direction = -1
+```{r, fig.height=13, fig.width=10}
+
+color_fun <- function(x) {
+    circlize::colorRamp2(
+        breaks = c(0, seq(1, x, 1)),
+        colors = c("white", viridis::viridis(
+            n = x, begin = 0, option = "C", direction = -1
         ))
-)
-# lgd <- Legend(col_fun = color_fun, title = "%")
+    )
+}
+
 anno_width = unit(2, 'cm')
 col_anno_category <- columnAnnotation(
     "# bsdb sigs" = anno_barplot(
@@ -350,7 +374,7 @@ ht1_up <- Heatmap(
     cluster_rows = FALSE, cluster_columns = FALSE,
     row_names_side = 'left',
     show_heatmap_legend = FALSE,
-    col = color_fun,
+    col = color_fun(max(mat_condition_up)),
     column_names_rot = 45,
     column_title = "Condition category",
     row_names_max_width = max_text_width(
@@ -367,7 +391,7 @@ ht2_up <- Heatmap(
     row_names_side = 'left',
     show_heatmap_legend = TRUE,
     name = '%',
-    col = color_fun,
+    col = color_fun(max(mat_bodysite_up)),
     column_names_rot = 45,
     column_title = "Body site",
     row_names_max_width = max_text_width(
@@ -396,6 +420,7 @@ p1 <- grid.grabExpr(draw(
     heatmap_legend_side = 'right',
     heatmap_legend_list = lgd_list
 ))
+grid.arrange(p1)
 ```
 
 ## Heatmap Down
@@ -404,16 +429,18 @@ Data:
 
 ```{r}
 ## Summary for top column barplot annotations -- condition category
-summary_category_down <- en_down |> 
+summary_category_down <- dat_down |> 
     filter(!is.na(Category)) |> 
     count(Category, name = 'category_total') |> 
-    arrange(-category_total)
+    arrange(-category_total) |> 
+    filter(Category %in% en_down$Category)
 
 ## Summary for top column barplot annotations -- body site
-summary_bodysite_down <- en_down |> 
+summary_bodysite_down <- dat_down |> 
     filter(!is.na(body_site)) |> 
     count(body_site, name = 'bodysite_total') |> 
-    arrange(-bodysite_total)
+    arrange(-bodysite_total) |> 
+    filter(body_site %in% en_down$body_site)
 
 ## Frequency for row annotations -- frequency of enriched physiologies (attrbute_grodown) by genus
 summary_down_freq <- en_down |> 
@@ -461,7 +488,7 @@ mat_bodysite_down <- mat_bodysite_down[rownames(summary_down_freq),]
 
 Heatmap:
 
-```{r, fig.height=11, fig.width=10}
+```{r, fig.height=10, fig.width=9}
 # lgd <- Legend(col_fun = color_fun, title = "% (col)")
 anno_width = unit(2, 'cm')
 col_anno_category <- columnAnnotation(
@@ -483,7 +510,7 @@ ht1_down <- Heatmap(
     cluster_rows = FALSE, cluster_columns = FALSE,
     row_names_side = 'left',
     show_heatmap_legend = FALSE,
-    col = color_fun,
+    col = color_fun(max(mat_condition_down)),
     column_names_rot = 45,
     column_title = "Condition category",
     row_names_max_width = max_text_width(
@@ -500,7 +527,7 @@ ht2_down <- Heatmap(
     row_names_side = 'left',
     show_heatmap_legend = TRUE,
     name = '%',
-    col = color_fun,
+    col = color_fun(max(mat_condition_down)),
     column_names_rot = 45,
     column_title = "Body site",
     row_names_max_width = max_text_width(
@@ -523,6 +550,7 @@ p2 <- grid.grabExpr(draw(
     heatmap_legend_side = 'right',
     heatmap_legend_list = lgd_list
 ))
+grid.arrange(p2)
 ```
 
 
