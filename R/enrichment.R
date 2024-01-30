@@ -31,7 +31,9 @@ microbeSetEnrichment <- function(set, reference, sigs) {
         stop('List of signatures must be named.', call. = FALSE)
 
     cols_order <- c(
-        'sig_name', 'n_sig', 'n_background', 'p_value', 'fdr', 'odds_ratio',
+        'sig_name', 'n_set_annotated', 'n_background_annotated',
+        "set_size", "background_size",
+        'p_value', 'fdr', 'odds_ratio',
         'upper_ci', 'lower_ci'
     )
 
