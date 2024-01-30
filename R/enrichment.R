@@ -38,11 +38,12 @@ microbeSetEnrichment <- function(set, reference, sigs) {
     vct_list <- vector('list', length(sigs))
     for (i in seq_along(sigs)) {
         ct <- .contingencyTable(set, reference, sigs[[i]])
-        n_sig <- ct[1]
-        n_background <- ct[1] + ct[2]
-        p_value <- stats::fisher.test(ct, alternative = 'g')$p.value
+        n_set_annotated <- ct[1]
+        n_background_annotated <- ct[1] + ct[2]
+        set_size <- ct[1] + ct[3]
+        background_size <- ct[1] + ct[2] + ct[3] + ct[4]
 
-        ## Calculate by hand and compare.
+        p_value <- stats::fisher.test(ct, alternative = 'g')$p.value
 
         odds_ratio <- suppressWarnings(
             epitools::oddsratio.wald(ct + 0.5)$measure[2,1]
@@ -51,7 +52,11 @@ microbeSetEnrichment <- function(set, reference, sigs) {
         lower_ci <- exp(log(odds_ratio) - 1.96 * sqrt(sum(1 / (ct + 1) )))
 
         vct_list[[i]] <- data.frame(
-            n_sig = n_sig, n_background = n_background, p_value = p_value,
+            n_set_annotated = n_set_annotated,
+            n_background_annotated = n_background_annotated,
+            set_size = set_size,
+            background_size = background_size,
+            p_value = p_value,
             odds_ratio = odds_ratio, upper_ci = upper_ci, lower_ci = lower_ci
         )
     }
