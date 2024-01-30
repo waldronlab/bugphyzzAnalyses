@@ -19,5 +19,3 @@ navbar:
       href: articles/validation.html
     - text: "BSDB 2"
       href: articles/bsdb2.html
-    - text: "BSDB 2 - no asr"
-      href: articles/bsdb2noasr.html
