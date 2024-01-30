@@ -202,10 +202,16 @@ bsdb_sigs_gn <- bsdb_sigs[grep("_genus_", names(bsdb_sigs))]
 background_sigs_gn <- background_sigs[names(bsdb_sigs_gn)]
 en_gn <- map2(bsdb_sigs_gn, background_sigs_gn, ~ {
     microbeSetEnrichment(set = .x, reference = .y, sigs = bp_sigs_gn)
-}) |> 
+}) 
+en_gn_df <- en_gn |> 
     bind_rows(.id = "bsdb_sig") |> 
-    filter(fdr < 0.1)
-myDataTable(en_gn, nrow(en_gn))
+    filter(fdr < 0.1) |> 
+    separate(
+        col = "bsdb_sig", into = c("body_site", "rank", "direction", "condition"), sep = "_",
+        remove = FALSE
+    ) |> 
+    mutate(condition = tolower(condition))
+myDataTable(en_gn_df, nrow(en_gn_df))
 ```
 
 species:
@@ -215,11 +221,44 @@ bsdb_sigs_sp <- bsdb_sigs[grep("_species_", names(bsdb_sigs))]
 background_sigs_sp <- background_sigs[names(bsdb_sigs_sp)]
 en_sp <- map2(bsdb_sigs_sp, background_sigs_sp, ~ {
     microbeSetEnrichment(set = .x, reference = .y, sigs = bp_sigs_sp)
-}) |> 
+})
+en_sp_df <- en_sp |> 
     bind_rows(.id = "bsdb_sig") |> 
-    filter(fdr < 0.1)
-myDataTable(en_gn, page_len = nrow(en_sp))
+    filter(fdr < 0.1) |> 
+    separate(
+        col = "bsdb_sig",
+        into = c("body_site", "rank", "direction", "condition"), sep = "_",
+        remove = FALSE
+    )
+myDataTable(en_sp_df, page_len = nrow(en_sp_df))
 ```
+
+
+## Grouping
+
+```{r}
+fname <- system.file(
+    'extdata', 'condition2category.tsv', package = 'bugphyzzAnalyses',
+    mustWork = TRUE
+)
+cond2cat <- read.table(fname, header = TRUE, sep = '\t')
+```
+
+
+
+```{r}
+gn_tbl <- left_join(en_gn_df, cond2cat, by = c("condition" = "Condition"))
+sp_tbl <- left_join(en_sp_df, cond2cat, by = c("condition" = "Condition"))
+```
+
+
+
+
+
+
+
+
+
 
 ## Session info
 
