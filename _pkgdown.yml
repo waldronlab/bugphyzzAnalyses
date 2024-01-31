@@ -17,5 +17,5 @@ navbar:
       href: articles/high_throughput_bsea_bsdb.html
     - text: "Cross-validation"
       href: articles/validation.html
-    - text: "BSDB 2"
+    - text: "High-throughput ORA with BSDB meta-signatures"
       href: articles/bsdb2.html
