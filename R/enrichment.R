@@ -46,12 +46,15 @@ microbeSetEnrichment <- function(set, reference, sigs) {
         background_size <- ct[1] + ct[2] + ct[3] + ct[4]
 
         p_value <- stats::fisher.test(ct, alternative = 'g')$p.value
-
-        odds_ratio <- suppressWarnings(
-            epitools::oddsratio.wald(ct + 0.5)$measure[2,1]
+        res <- suppressWarnings(
+            epitools::oddsratio.wald(ct + 0.5)$measure[2,]
         )
-        upper_ci <- exp(log(odds_ratio) + 1.96 * sqrt(sum(1 / (ct + 1) )))
-        lower_ci <- exp(log(odds_ratio) - 1.96 * sqrt(sum(1 / (ct + 1) )))
+        odds_ratio <- res[["estimate"]]
+        lower_ci <- res[["lower"]]
+        upper_ci <- res[["upper"]]
+
+        # upper_ci <- exp(log(odds_ratio) + 1.96 * sqrt(sum(1 / (ct + 0.5) )))
+        # lower_ci <- exp(log(odds_ratio) - 1.96 * sqrt(sum(1 / (ct + 0.5) )))
 
         vct_list[[i]] <- data.frame(
             n_set_annotated = n_set_annotated,
