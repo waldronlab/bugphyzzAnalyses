@@ -1,0 +1,177 @@
+---
+title: "up_vs_down"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(bugphyzzAnalyses)
+library(bugphyzz)
+library(bugsigdbr)
+library(dplyr)
+library(purrr)
+library(tidyr)
+```
+
+## I need two parallel lists of signatures (UP and DOWN)
+## For each study with matching up and down.
+
+```{r}
+## "10.5281/zenodo.1040766" v1.2.0
+## "10.5281/zenodo.6468009" v1.1.0
+bsdb <- importBugSigDB(version = "10.5281/zenodo.6468009" , cache = FALSE)
+# bsdb <- importBugSigDB(version = "devel" , cache = FALSE)
+bsdb <- bsdb |> 
+    filter(`Host species` == "Homo sapiens") |> 
+    filter(!is.na(`Abundance in Group 1`)) |> 
+    filter(!is.na(`Body site`)) |> 
+    filter(`Study design` == "case-control" ) |> 
+    mutate(
+        `BSDB ID` = paste0(
+            "bsdb:",
+            sub("Study ", "", Study), "/",
+            sub("Experiment ", "", Experiment), "/",
+            sub("Signature ", "", `Signature page name`)
+        )
+    ) |> 
+    mutate(
+        custom_id = paste0(
+            "bsdb:",
+            sub("Study ", "", Study), "/",
+            sub("Experiment ", "", Experiment)
+        )
+    ) |> 
+    relocate(custom_id, `BSDB ID`)
+dim(bsdb)
+```
+
+
+```{r}
+## Study, Experiment, Signature page name
+x <- bsdb |> 
+    select(
+        Study, Experiment, `Signature page name`, `Abundance in Group 1`
+    ) |> 
+    mutate(xcol = paste0(`Abundance in Group 1`, " (", `Signature page name`, ")")) |> 
+    # select(-`Abundance in Group 1`, -`Signature page name`) |> 
+    group_by(Study, Experiment) |> 
+    mutate(ycol = sort(paste0(xcol, collapse = "; "))) |> 
+    mutate(n_sig = n()) |> 
+    ungroup() |> 
+    select(-xcol) |> 
+    filter(n_sig == 2) |> 
+    filter(grepl("decreased", ycol), grepl("increased", ycol)) |> 
+    filter(grepl("Signature 1", ycol), grepl("Signature 2", ycol)) |> 
+    mutate(
+        `BSDB ID` = paste0(
+            "bsdb:",
+            sub("Study ", "", Study), "/",
+            sub("Experiment ", "", Experiment), "/",
+            sub("Signature ", "", `Signature page name`)
+        )
+    ) |> 
+    mutate(
+        custom_id = paste0(
+            "bsdb:",
+            sub("Study ", "", Study), "/",
+            sub("Experiment ", "", Experiment)
+        )
+    ) |> 
+    relocate(custom_id, `BSDB ID`)
+
+l <- split(x, x$`Abundance in Group 1`) |> 
+    map(~ pull(arrange(.x, custom_id), `BSDB ID`))
+
+l2 <- map(l, ~ {
+    bsdb |> 
+        filter(`BSDB ID` %in% .x) |> 
+        getSignatures(
+            tax.id.type = "ncbi", tax.level = "genus", exact.tax.level = FALSE,
+            min.size = 5
+        )
+})
+
+df1 <- data.frame(
+    x = paste0(sub("/\\d_.*", "", names(l2$decreased)), "---", names(l2$decreased))
+) |> 
+    separate(col = "x", into = c("custom_id", "sig_down"), sep = "---")
+
+df2 <- data.frame(
+    x = paste0(sub("/\\d_.*", "", names(l2$increased)), "---", names(l2$increased))
+) |> 
+    separate(col = "x", into = c("custom_id", "sig_up"), sep = "---")
+
+df <- full_join(df1, df2, by = "custom_id") |> 
+    drop_na()
+dim(df)
+```
+
+
+## Genus
+
+```{r}
+lg <- map(l, ~ {
+    bsdb |> 
+        filter(`BSDB ID` %in% .x) |> 
+        getSignatures(
+            tax.id.type = "ncbi", tax.level = "genus", exact.tax.level = FALSE,
+            min.size = 5
+        )
+})
+
+df_gn_1 <- data.frame(
+    x = paste0(sub("/\\d_.*", "", names(lg$decreased)), "---", names(lg$decreased))
+) |> 
+    separate(col = "x", into = c("custom_id", "sig_down"), sep = "---")
+
+df_gn_2 <- data.frame(
+    x = paste0(sub("/\\d_.*", "", names(lg$increased)), "---", names(lg$increased))
+) |> 
+    separate(col = "x", into = c("custom_id", "sig_up"), sep = "---")
+
+df_gn <- full_join(df_gn_1, df_gn_2, by = "custom_id") |> 
+    drop_na()
+dim(df_gn)    
+```
+
+## Species
+
+```{r}
+ls <- map(l, ~ {
+    bsdb |> 
+        filter(`BSDB ID` %in% .x) |> 
+        getSignatures(
+            tax.id.type = "ncbi", tax.level = "species", exact.tax.level = FALSE,
+            min.size = 5
+        )
+})
+df_sp_1 <- data.frame(
+    x = paste0(sub("/\\d_.*", "", names(ls$decreased)), "---", names(ls$decreased))
+) |> 
+    separate(col = "x", into = c("custom_id", "sig_down"), sep = "---")
+
+df_sp_2 <- data.frame(
+    x = paste0(sub("/\\d_.*", "", names(ls$increased)), "---", names(ls$increased))
+) |> 
+    separate(col = "x", into = c("custom_id", "sig_up"), sep = "---")
+
+df_sp <- full_join(df_sp_1, df_sp_2, by = "custom_id") |> 
+    drop_na()
+dim(df_sp)
+```
+
+## Session information
+
+```{r}
+sessioninfo::session_info()
+```
+
+
+
+
+
