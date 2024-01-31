@@ -70,7 +70,7 @@ head(tms)
 BugSigDB:
 
 ```{r, message=FALSE}
-bsdb <- importBugSigDB()
+bsdb <- importBugSigDB(version = "10.5281/zenodo.10407666", cache = FALSE)
 bsdb <- bsdb |> 
     filter(`Host species` == "Homo sapiens") |> 
     filter(!is.na(`Abundance in Group 1`)) |> 
@@ -572,14 +572,6 @@ lay <- matrix(x, ncol = 100, byrow = FALSE)
 lay[9:10,52:100] <- NA
 grid.arrange(p1, p2, layout_matrix = lay)
 ```
-
-
-##
-
-
-
-
-
 
 
 ## Session info
