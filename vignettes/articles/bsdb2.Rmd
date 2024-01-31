@@ -1,5 +1,5 @@
 ---
-title: "High-throughput analysis with BSDB sigs"
+title: "High-throughput analysis with BSDB meta-signatures"
 output:
     html_document:
         toc: true
