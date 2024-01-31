@@ -74,8 +74,9 @@ bsdb <- importBugSigDB(version = "10.5281/zenodo.10407666", cache = FALSE)
 bsdb <- bsdb |> 
     filter(`Host species` == "Homo sapiens") |> 
     filter(!is.na(`Abundance in Group 1`)) |> 
-    filter(grepl("(healthy|control)", `Group 0 name`, ignore.case = TRUE)) |> 
-    filter(!is.na(`Body site`))
+    # filter(grepl("(healthy|control)", `Group 0 name`, ignore.case = TRUE)) |> 
+    filter(!is.na(`Body site`)) |> 
+      filter(`Study design` == "case-control" )
 dim(bsdb)
 ```
 
