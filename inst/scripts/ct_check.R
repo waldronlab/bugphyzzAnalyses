@@ -4,7 +4,7 @@ an <- bp_sigs$`bugphyzz:habitat|free-living|species`
 
 
 
-ct <- .contingencyTable(set = target_set, reference = back_set, sig = an)
+ct <- bugphyzzAnalyses:::.contingencyTable(set = target_set, reference = back_set, sig = an)
 
 ## CT checked
 # sum(target_set %in% an)
@@ -20,3 +20,8 @@ epitools::oddsratio.wald(x = ct + 0.5)$measure[2,]
 (p_value <- stats::fisher.test(ct, alternative = 'g')$p.value)
 
 
+inBSDB_annotated
+inBSDB_noAnnotated
+
+notInBSDB_annotated
+notInBSDB_noAnnotated

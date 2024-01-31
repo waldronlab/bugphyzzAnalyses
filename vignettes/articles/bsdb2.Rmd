@@ -218,7 +218,9 @@ en_gn_df <- en_gn |>
     mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
     mutate_at(
         .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
-    )
+    ) |> 
+    mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
+colnames(en_gn_df) <- sub("Set", "BSDB", colnames(en_gn_df))
 myDataTable(en_gn_df, nrow(en_gn_df))
 ```
 
@@ -242,7 +244,9 @@ en_sp_df <- en_sp |>
     mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
     mutate_at(
         .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
-    )
+    ) |> 
+    mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
+colnames(en_gn_df) <- sub("Set", "BSDB", colnames(en_gn_df))
 myDataTable(en_sp_df, page_len = nrow(en_sp_df))
 ```
 
