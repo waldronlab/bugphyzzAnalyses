@@ -31,24 +31,44 @@ microbeSetEnrichment <- function(set, reference, sigs) {
         stop('List of signatures must be named.', call. = FALSE)
 
     cols_order <- c(
-        'sig_name', 'n_set_annotated', 'n_background_annotated',
-        "set_size", "background_size",
+        'sig_name',
+        # 'n_set_annotated', 'n_background_annotated',
+        # "set_size", "background_size",
+        "inSet_annotated", "inSet_noAnnotated",
+        "notInSet_annotated", "notInSet_noAnnotated",
         'p_value', 'fdr', 'odds_ratio',
-        'upper_ci', 'lower_ci'
+        'lower_ci', 'upper_ci', "HA"
     )
 
     vct_list <- vector('list', length(sigs))
     for (i in seq_along(sigs)) {
         ct <- .contingencyTable(set, reference, sigs[[i]])
-        n_set_annotated <- ct[1]
-        n_background_annotated <- ct[1] + ct[2]
-        set_size <- ct[1] + ct[3]
-        background_size <- ct[1] + ct[2] + ct[3] + ct[4]
 
         p_value <- stats::fisher.test(ct, alternative = 'g')$p.value
-        res <- suppressWarnings(
-            epitools::oddsratio.wald(ct + 0.5)$measure[2,]
-        )
+
+        if (any(ct == 0)) {
+            HA <- "*"
+            res <- suppressWarnings(
+                epitools::oddsratio.wald(ct + 0.5)$measure[2,]
+            )
+        } else {
+            HA <- ""
+            res <- suppressWarnings(
+                epitools::oddsratio.wald(ct)$measure[2,]
+            )
+        }
+
+        inSet_annotated <- ct[1]
+        notInSet_annotated <- ct[2]
+
+        inSet_noAnnotated <- ct[3]
+        notInSet_noAnnotated <- ct[4]
+
+        # n_set_annotated <- ct[1]
+        # n_background_annotated <- ct[1] + ct[2]
+        # set_size <- ct[1] + ct[3]
+        # background_size <- ct[1] + ct[2] + ct[3] + ct[4]
+
         odds_ratio <- res[["estimate"]]
         lower_ci <- res[["lower"]]
         upper_ci <- res[["upper"]]
@@ -57,12 +77,17 @@ microbeSetEnrichment <- function(set, reference, sigs) {
         # lower_ci <- exp(log(odds_ratio) - 1.96 * sqrt(sum(1 / (ct + 0.5) )))
 
         vct_list[[i]] <- data.frame(
-            n_set_annotated = n_set_annotated,
-            n_background_annotated = n_background_annotated,
-            set_size = set_size,
-            background_size = background_size,
+            # n_set_annotated = n_set_annotated,
+            # n_background_annotated = n_background_annotated,
+            # set_size = set_size,
+            # background_size = background_size,
+            inSet_annotated = inSet_annotated,
+            notInSet_annotated = notInSet_annotated,
+            inSet_noAnnotated = inSet_noAnnotated,
+            notInSet_noAnnotated = notInSet_noAnnotated,
             p_value = p_value,
-            odds_ratio = odds_ratio, upper_ci = upper_ci, lower_ci = lower_ci
+            odds_ratio = odds_ratio, lower_ci = lower_ci, upper_ci = upper_ci,
+            HA = HA
         )
     }
     df <- do.call(rbind, vct_list)
