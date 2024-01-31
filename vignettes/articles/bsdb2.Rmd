@@ -214,7 +214,11 @@ en_gn_df <- en_gn |>
         col = "bsdb_sig", into = c("body_site", "rank", "direction", "condition"), sep = "_",
         remove = FALSE
     ) |> 
-    mutate(condition = tolower(condition))
+    mutate(condition = tolower(condition)) |> 
+    mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
+    mutate_at(
+        .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+    )
 myDataTable(en_gn_df, nrow(en_gn_df))
 ```
 
@@ -234,7 +238,11 @@ en_sp_df <- en_sp |>
         into = c("body_site", "rank", "direction", "condition"), sep = "_",
         remove = FALSE
     ) |> 
-    mutate(condition = tolower(condition))
+    mutate(condition = tolower(condition)) |> 
+    mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
+    mutate_at(
+        .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+    )
 myDataTable(en_sp_df, page_len = nrow(en_sp_df))
 ```
 
@@ -560,6 +568,15 @@ lay <- matrix(x, ncol = 100, byrow = FALSE)
 lay[9:10,52:100] <- NA
 grid.arrange(p1, p2, layout_matrix = lay)
 ```
+
+
+##
+
+
+
+
+
+
 
 ## Session info
 
