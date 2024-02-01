@@ -52,7 +52,7 @@ Use "case-control" study design only:
 ```{r, message=FALSE}
 ## "10.5281/zenodo.1040766" v1.2.0
 ## "10.5281/zenodo.6468009" v1.1.0
-bsdb <- importBugSigDB(version = "10.5281/zenodo.6468009" , cache = FALSE)
+bsdb <- importBugSigDB(version = "10.5281/zenodo.1040766" , cache = FALSE)
 # bsdb <- importBugSigDB(version = "devel" , cache = FALSE)
 bsdb <- bsdb |> 
     filter(`Host species` == "Homo sapiens") |> 
