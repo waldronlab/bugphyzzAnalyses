@@ -5,19 +5,17 @@ navbar:
     menu:
     - text: "Data integration and stats"
       href: articles/data_integration_and_stats.html
+    - text: "Cross-validation"
+      href: articles/validation.html
     - text: "Known ground truth - Subgingival vs supragingival plaque"
       href: articles/subgingival_plaque.html
+    - text: "High-throughput ORA with BSDB meta-signatures"
+      href: articles/bsdb2.html
+    - text: "Odds Ratio - Up vs Down"
+      href: articles/up_vs_down.html
     - text: "Reproducibility of previous study - NYCHANES study - bugphyzz"
       href: articles/nychanes.html
     - text: "Reproducibility of previous study - NYCHANES study - original annotations"
       href: articles/nychanes2.html
     - text: "Enrichment in IBD samples"
       href: articles/ibd_enrichment.html
-    - text: "High-throughput BSEA with BugSigDB sets"
-      href: articles/high_throughput_bsea_bsdb.html
-    - text: "Cross-validation"
-      href: articles/validation.html
-    - text: "High-throughput ORA with BSDB meta-signatures"
-      href: articles/bsdb2.html
-    - text: "Odds Ratio - Up vs Down"
-      href: articles/up_vs_down.html
