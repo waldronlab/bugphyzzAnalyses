@@ -42,27 +42,27 @@ url <- "https://raw.githubusercontent.com/waldronlab/taxPProValidation/main/vali
 dat <- read.table(file = url, header = TRUE, sep = "\t", row.names = NULL) |> 
     arrange(method, rank, physiology, attribute)
     
-dat |>
-    DT::datatable(
-        rownames = FALSE,
-        extensions = "Buttons",
-        filter = "top",
-        options = list(
-            dom = 'lBfrtip',
-            paging = TRUE,
-            pageLength = nrow(dat),
-            searchCols = list(
-                NULL, # first column
-                list(search = 'all'), # secound column
-                NULL # other columns
-            ),
-            buttons = list(
-                list(extend = "copy", title = NULL),
-                list(extend = "print", title = NULL),
-                list(extend = "csv", title = NULL)
-            )
-        )
-)
+# dat |>
+#     DT::datatable(
+#         rownames = FALSE,
+#         extensions = "Buttons",
+#         filter = "top",
+#         options = list(
+#             dom = 'lBfrtip',
+#             paging = TRUE,
+#             pageLength = nrow(dat),
+#             searchCols = list(
+#                 NULL, # first column
+#                 list(search = 'all'), # secound column
+#                 NULL # other columns
+#             ),
+#             buttons = list(
+#                 list(extend = "copy", title = NULL),
+#                 list(extend = "print", title = NULL),
+#                 list(extend = "csv", title = NULL)
+#             )
+#         )
+# )
 ```
 
 
@@ -86,11 +86,6 @@ output <- dat |>
     select(-method)
 myDataTable(output, page_len = nrow(output))
 ```
-
-
-
-
-
 
 
 ## Session information
