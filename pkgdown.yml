@@ -3,14 +3,12 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   bsdb2: bsdb2.html
-  bsdb2noasr: bsdb2noasr.html
   data_integration_and_stats: data_integration_and_stats.html
-  high_throughput_bsea_bsdb: high_throughput_bsea_bsdb.html
   ibd_enrichment: ibd_enrichment.html
   nychanes: nychanes.html
   nychanes2: nychanes2.html
   subgingival_plaque: subgingival_plaque.html
   up_vs_down: up_vs_down.html
   validation: validation.html
-last_built: 2024-02-01T20:45Z
+last_built: 2024-02-01T21:28Z
 
