@@ -19,3 +19,5 @@ navbar:
       href: articles/validation.html
     - text: "High-throughput ORA with BSDB meta-signatures"
       href: articles/bsdb2.html
+    - text: "Odds Ratio - Up vs Down"
+      href: articles/up_vs_down.html

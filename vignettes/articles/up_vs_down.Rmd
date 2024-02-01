@@ -1,5 +1,5 @@
 ---
-title: "Odds ratio - Up vs Down"
+title: "Odds Ratio - Up vs Down"
 output:
     html_document:
         toc: true
