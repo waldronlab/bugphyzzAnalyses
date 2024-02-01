@@ -1,5 +1,8 @@
 ---
-title: "up_vs_down"
+title: "Odds ratio - Up vs Down"
+output:
+    html_document:
+        toc: true
 ---
 
 ```{r, include = FALSE}
@@ -18,10 +21,35 @@ library(purrr)
 library(tidyr)
 ```
 
-## I need two parallel lists of signatures (UP and DOWN)
-## For each study with matching up and down.
 
-```{r}
+## Import BugPhyzz
+
+```{r, warning=FALSE, message=FALSE}
+bp <- importBugphyzz()
+bp_sigs_gn <- map(bp, ~ {
+    makeSignatures(
+        dat = .x, tax_id_type = "NCBI_ID", tax_level = "genus", min_size = 5
+    )
+}) |> 
+    list_flatten(name_spec = "{inner}") |> 
+    discard(is.null) |> 
+    map(as.character)
+
+bp_sigs_sp <- map(bp, ~ {
+    makeSignatures(
+        dat = .x, tax_id_type = "NCBI_ID", tax_level = "species", min_size = 5
+    )
+}) |> 
+    list_flatten(name_spec = "{inner}") |> 
+    discard(is.null) |> 
+    map(as.character)
+```
+
+## Import data
+
+Use "case-control" study design only:
+
+```{r, message=FALSE}
 ## "10.5281/zenodo.1040766" v1.2.0
 ## "10.5281/zenodo.6468009" v1.1.0
 bsdb <- importBugSigDB(version = "10.5281/zenodo.6468009" , cache = FALSE)
@@ -50,15 +78,18 @@ bsdb <- bsdb |>
 dim(bsdb)
 ```
 
+Create a list with signature ids (BSDB ID) that have both UP and DOWN 
+outcomes per study:
 
 ```{r}
-## Study, Experiment, Signature page name
-x <- bsdb |> 
+## Columns that make BSDB ID: Study, Experiment, Signature page name
+l <- bsdb |> 
     select(
         Study, Experiment, `Signature page name`, `Abundance in Group 1`
     ) |> 
-    mutate(xcol = paste0(`Abundance in Group 1`, " (", `Signature page name`, ")")) |> 
-    # select(-`Abundance in Group 1`, -`Signature page name`) |> 
+    mutate(
+        xcol = paste0(`Abundance in Group 1`, " (", `Signature page name`, ")")
+    ) |> 
     group_by(Study, Experiment) |> 
     mutate(ycol = sort(paste0(xcol, collapse = "; "))) |> 
     mutate(n_sig = n()) |> 
@@ -82,37 +113,17 @@ x <- bsdb |>
             sub("Experiment ", "", Experiment)
         )
     ) |> 
-    relocate(custom_id, `BSDB ID`)
-
-l <- split(x, x$`Abundance in Group 1`) |> 
+    relocate(custom_id, `BSDB ID`) |> 
+    {\(y) split(y, y$`Abundance in Group 1`)}() |> 
     map(~ pull(arrange(.x, custom_id), `BSDB ID`))
-
-l2 <- map(l, ~ {
-    bsdb |> 
-        filter(`BSDB ID` %in% .x) |> 
-        getSignatures(
-            tax.id.type = "ncbi", tax.level = "genus", exact.tax.level = FALSE,
-            min.size = 5
-        )
-})
-
-df1 <- data.frame(
-    x = paste0(sub("/\\d_.*", "", names(l2$decreased)), "---", names(l2$decreased))
-) |> 
-    separate(col = "x", into = c("custom_id", "sig_down"), sep = "---")
-
-df2 <- data.frame(
-    x = paste0(sub("/\\d_.*", "", names(l2$increased)), "---", names(l2$increased))
-) |> 
-    separate(col = "x", into = c("custom_id", "sig_up"), sep = "---")
-
-df <- full_join(df1, df2, by = "custom_id") |> 
-    drop_na()
-dim(df)
+map(l, length)
 ```
 
-
 ## Genus
+
+Create signatures for both decrease and increase at the **genus** level. 
+Only keep the signature names (stored in a data.frame) that have enough taxa in
+both increased and decreased sets.
 
 ```{r}
 lg <- map(l, ~ {
@@ -123,46 +134,188 @@ lg <- map(l, ~ {
             min.size = 5
         )
 })
-
 df_gn_1 <- data.frame(
-    x = paste0(sub("/\\d_.*", "", names(lg$decreased)), "---", names(lg$decreased))
+    x = paste0(
+        sub("/\\d_.*", "", names(lg$decreased)), "---", names(lg$decreased)
+    )
 ) |> 
     separate(col = "x", into = c("custom_id", "sig_down"), sep = "---")
 
 df_gn_2 <- data.frame(
-    x = paste0(sub("/\\d_.*", "", names(lg$increased)), "---", names(lg$increased))
+    x = paste0(
+        sub("/\\d_.*", "", names(lg$increased)), "---", names(lg$increased)
+    )
 ) |> 
     separate(col = "x", into = c("custom_id", "sig_up"), sep = "---")
 
 df_gn <- full_join(df_gn_1, df_gn_2, by = "custom_id") |> 
-    drop_na()
+    drop_na() |> 
+    mutate(
+        check = sub("bsdb:\\d+/\\d+/\\d+_(.*)_UP", "\\1", sig_up) ==
+           sub("bsdb:\\d+/\\d+/\\d+_(.*)_DOWN", "\\1", sig_down)
+    )
 dim(df_gn)    
 ```
 
 ## Species
+
+Create signatures for both decrease and increase at the **species** level.
+Only keep the signature names (stored in a data.frame) that have enough taxa in
+both increased and decreased sets.
 
 ```{r}
 ls <- map(l, ~ {
     bsdb |> 
         filter(`BSDB ID` %in% .x) |> 
         getSignatures(
-            tax.id.type = "ncbi", tax.level = "species", exact.tax.level = FALSE,
-            min.size = 5
+            tax.id.type = "ncbi", tax.level = "species",
+            exact.tax.level = FALSE, min.size = 5
         )
 })
 df_sp_1 <- data.frame(
-    x = paste0(sub("/\\d_.*", "", names(ls$decreased)), "---", names(ls$decreased))
+    x = paste0(
+        sub("/\\d_.*", "", names(ls$decreased)), "---", names(ls$decreased)
+    )
 ) |> 
     separate(col = "x", into = c("custom_id", "sig_down"), sep = "---")
 
 df_sp_2 <- data.frame(
-    x = paste0(sub("/\\d_.*", "", names(ls$increased)), "---", names(ls$increased))
+    x = paste0(
+        sub("/\\d_.*", "", names(ls$increased)), "---", names(ls$increased)
+    )
 ) |> 
     separate(col = "x", into = c("custom_id", "sig_up"), sep = "---")
 
 df_sp <- full_join(df_sp_1, df_sp_2, by = "custom_id") |> 
-    drop_na()
+    drop_na() |> 
+    mutate(
+        check = sub("bsdb:\\d+/\\d+/\\d+_(.*)_UP", "\\1", sig_up) ==
+            sub("bsdb:\\d+/\\d+/\\d+_(.*)_DOWN", "\\1", sig_down)
+    )
 dim(df_sp)
+```
+
+## Get lists of BSDB signatures
+
+```{r}
+sigs_list_gn <- list()
+sigs_list_gn[["up"]] <- lg$increased[df_gn$sig_up]
+sigs_list_gn[["down"]] <- lg$decreased[df_gn$sig_down]
+
+sigs_list_sp <- list()
+sigs_list_sp[["up"]] <- ls$increased[df_sp$sig_up]
+sigs_list_sp[["down"]] <- ls$decreased[df_sp$sig_down]
+```
+
+## Odds ratio - function
+
+```{r}
+or <- function(x, y, s) {
+    a <- sum(x %in% s)
+    b <- sum(!x %in% s)
+    c <- sum(y %in% s)
+    d <- sum(!y %in% s)
+    ct <- matrix(
+        data = c(a, b, c, d), byrow = TRUE, nrow = 2, ncol = 2,
+        dimnames = list(exposure = c("yes", "no"), event = c("yes", "no"))
+    
+    )
+    if (any(ct == 0)) {
+        HA <- "*"
+        suppressWarnings({
+            res <- epitools::oddsratio.wald(ct + 0.5)$measure[2,]
+        })
+    } else {
+        HA <- ""
+        suppressWarnings({
+            res <- epitools::oddsratio.wald(ct)$measure[2,]
+        })
+    }
+    DF <- data.frame(
+       odds_ratio = round(res["estimate"], 2),
+       lower_ci = round(res["lower"], 2),
+       upper_ci = round(res["upper"], 2),
+       HA = HA,
+       up_annotated = a,
+       up_noAnnotated = b,
+       down_annotated = c,
+       down_noAnnotated = d
+    )
+    return(DF)
+}
+
+```
+
+## Odds ratio - genus
+
+```{r}
+gn <- vector("list", length(sigs_list_gn$up) * length(bp_sigs_gn))
+counter <- 1
+for (i in seq_along(sigs_list_gn$up)) {
+    for(j in seq_along(bp_sigs_gn)) {
+        odds_ratio <- or(
+            x = sigs_list_gn$up[[i]],
+            y = sigs_list_gn$down[[i]],
+            s = bp_sigs_gn[[j]]
+        )
+        names(gn)[counter] <- paste0(
+            names(sigs_list_gn$up)[i], "---", names(bp_sigs_gn)[j], "---genus"
+        )
+        gn[[counter]] <- odds_ratio
+        counter <- counter + 1
+    }
+}
+gn <- gn |> 
+    bind_rows(.id = "name") |> 
+    separate(
+        col = "name", into = c("bsdb_sig", "bp_sig", "rank"), sep = "---"
+    ) |> 
+    mutate(
+        `BSDB ID` = sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", bsdb_sig),
+        bp_sig = sub("^bugphyzz:(.*)$", "\\1", bp_sig)
+    ) |> 
+    left_join(select(bsdb, `BSDB ID`, Condition), by = "BSDB ID") |> 
+    relocate(`BSDB ID`, Condition) |> 
+    relocate(bsdb_sig, .after = down_noAnnotated) |> 
+    filter(odds_ratio > 1, lower_ci > 1) |> 
+    arrange(-odds_ratio)
+myDataTable(gn, nrow(gn))
+```
+
+## odds ratio - species
+
+```{r}
+sp <- vector("list", length(sigs_list_sp$up) * length(bp_sigs_sp))
+counter <- 1
+for (i in seq_along(sigs_list_sp$up)) {
+    for(j in seq_along(bp_sigs_sp)) {
+        odds_ratio <- or(
+            x = sigs_list_sp$up[[i]],
+            y = sigs_list_sp$down[[i]],
+            s = bp_sigs_sp[[j]]
+        )
+        names(sp)[counter] <- paste0(
+            names(sigs_list_sp$up)[i], "---", names(bp_sigs_sp)[j], "---species"
+        )
+        sp[[counter]] <- odds_ratio
+        counter <- counter + 1
+    }
+}
+sp <- sp |> 
+    bind_rows(.id = "name") |> 
+    separate(
+        col = "name", into = c("bsdb_sig", "bp_sig", "rank"), sep = "---"
+    ) |> 
+    mutate(
+        `BSDB ID` = sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", bsdb_sig),
+        bp_sig = sub("^bugphyzz:(.*)$", "\\1", bp_sig)
+    ) |> 
+    left_join(select(bsdb, `BSDB ID`, Condition), by = "BSDB ID") |> 
+    relocate(`BSDB ID`, Condition) |> 
+    relocate(bsdb_sig, .after = down_noAnnotated) |> 
+    filter(odds_ratio > 1, lower_ci > 1) |> 
+    arrange(-odds_ratio)
+myDataTable(sp, nrow(sp))
 ```
 
 ## Session information
