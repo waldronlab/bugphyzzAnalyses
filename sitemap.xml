@@ -13,7 +13,13 @@
     <loc>/articles/bsdb2.html</loc>
   </url>
   <url>
+    <loc>/articles/bsdb2noasr.html</loc>
+  </url>
+  <url>
     <loc>/articles/data_integration_and_stats.html</loc>
+  </url>
+  <url>
+    <loc>/articles/high_throughput_bsea_bsdb.html</loc>
   </url>
   <url>
     <loc>/articles/ibd_enrichment.html</loc>
