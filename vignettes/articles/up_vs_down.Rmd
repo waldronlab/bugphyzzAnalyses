@@ -21,6 +21,7 @@ library(purrr)
 library(tidyr)
 library(ComplexHeatmap)
 ```
+
 ## Import BugPhyzz
 
 ```{r, warning=FALSE, message=FALSE}
@@ -242,7 +243,6 @@ or <- function(x, y, s) {
     )
     return(DF)
 }
-
 ```
 
 ## Odds ratio - genus
@@ -331,7 +331,6 @@ gn_hp <- Heatmap(
 )
 gn_hp
 ```
-
 
 ## Odds ratio - species
 

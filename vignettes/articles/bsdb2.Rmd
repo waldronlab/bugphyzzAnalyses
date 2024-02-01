@@ -364,7 +364,8 @@ color_fun <- function(x) {
     circlize::colorRamp2(
         breaks = c(0, seq(1, x, 1)),
         colors = c("white", viridis::viridis(
-            n = x, begin = 0, option = "C", direction = -1
+            n = x
+            # n = x, begin = 0, option = "C", direction = -1
         ))
     )
 }
@@ -398,7 +399,7 @@ ht1_up <- Heatmap(
     ),
     top_annotation = col_anno_category,
     border = TRUE,
-    rect_gp = gpar(col = "black", lwd = 1)
+    rect_gp = gpar(col = "gray50", lwd = 1)
 )
 ht2_up <- Heatmap(
     matrix = mat_bodysite_up,
@@ -415,7 +416,7 @@ ht2_up <- Heatmap(
     ),
     top_annotation = col_anno_bodysite,
     border = TRUE,
-    rect_gp = gpar(col = "black", lwd = 1)
+    rect_gp = gpar(col = "gray50", lwd = 1)
 )
 rank_col <- c(genus = 'gray50', species = 'gray80')
 
@@ -534,7 +535,7 @@ ht1_down <- Heatmap(
     ),
     top_annotation = col_anno_category,
     border = TRUE,
-    rect_gp = gpar(col = "black", lwd = 1)
+    rect_gp = gpar(col = "gray50", lwd = 1)
 )
 ht2_down <- Heatmap(
     matrix = mat_bodysite_down,
@@ -551,7 +552,7 @@ ht2_down <- Heatmap(
     ),
     top_annotation = col_anno_bodysite,
     border = TRUE,
-    rect_gp = gpar(col = "black", lwd = 1)
+    rect_gp = gpar(col = "gray50", lwd = 1)
 )
 row_anno_down <- rowAnnotation(
     "# bsdb sigs" = anno_barplot(
@@ -570,10 +571,10 @@ grid.arrange(p2)
 
 
 ```{r, fig.height=13, fig.width=20}
-x <- c(rep(1, 520), rep(2, 480))
-lay <- matrix(x, ncol = 100, byrow = FALSE)
-lay[9:10,52:100] <- NA
-grid.arrange(p1, p2, layout_matrix = lay)
+# x <- c(rep(1, 520), rep(2, 480))
+# lay <- matrix(x, ncol = 100, byrow = FALSE)
+# lay[9:10,52:100] <- NA
+# grid.arrange(p1, p2, layout_matrix = lay)
 ```
 
 
