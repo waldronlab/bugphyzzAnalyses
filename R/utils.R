@@ -322,8 +322,8 @@ myDataTable <- function(dat, page_len = NULL) {
                         list(extend = "copy", title = NULL),
                         list(extend = "print", title = NULL),
                         list(extend = "csv", title = NULL)
-                    )
-
+                    ),
+                    scrollX = TRUE
                 )
             )
     } else {
@@ -339,8 +339,8 @@ myDataTable <- function(dat, page_len = NULL) {
                         list(extend = "copy", title = NULL),
                         list(extend = "print", title = NULL),
                         list(extend = "csv", title = NULL)
-                    )
-
+                    ),
+                    scrollX = TRUE
                 )
             )
     }
