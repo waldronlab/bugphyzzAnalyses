@@ -282,7 +282,7 @@ gn <- gn |>
 myDataTable(gn, nrow(gn))
 ```
 
-## odds ratio - species
+## Odds ratio - species
 
 ```{r}
 sp <- vector("list", length(sigs_list_sp$up) * length(bp_sigs_sp))
