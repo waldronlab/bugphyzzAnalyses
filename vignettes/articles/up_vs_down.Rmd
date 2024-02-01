@@ -19,9 +19,8 @@ library(bugsigdbr)
 library(dplyr)
 library(purrr)
 library(tidyr)
+library(ComplexHeatmap)
 ```
-
-
 ## Import BugPhyzz
 
 ```{r, warning=FALSE, message=FALSE}
@@ -249,6 +248,14 @@ or <- function(x, y, s) {
 ## Odds ratio - genus
 
 ```{r}
+fname <- system.file(
+    'extdata', 'condition2category.tsv', package = 'bugphyzzAnalyses',
+    mustWork = TRUE
+)
+cond2cat <- read.table(fname, header = TRUE, sep = '\t')
+```
+
+```{r}
 gn <- vector("list", length(sigs_list_gn$up) * length(bp_sigs_gn))
 counter <- 1
 for (i in seq_along(sigs_list_gn$up)) {
@@ -265,7 +272,7 @@ for (i in seq_along(sigs_list_gn$up)) {
         counter <- counter + 1
     }
 }
-gn <- gn |> 
+gn_df <- gn |> 
     bind_rows(.id = "name") |> 
     separate(
         col = "name", into = c("bsdb_sig", "bp_sig", "rank"), sep = "---"
@@ -278,9 +285,53 @@ gn <- gn |>
     relocate(`BSDB ID`, Condition) |> 
     relocate(bsdb_sig, .after = down_noAnnotated) |> 
     filter(odds_ratio > 1, lower_ci > 1) |> 
-    arrange(-odds_ratio)
-myDataTable(gn, nrow(gn))
+    arrange(-odds_ratio) |> 
+    mutate(Condition = tolower(Condition)) |> 
+    left_join(cond2cat, by = "Condition") |> 
+    relocate(Category, .after = `BSDB ID`) |> 
+    filter(!is.na(Category))
+dim(gn_df)
 ```
+
+```{r}
+myDataTable(gn_df, nrow(gn_df))
+```
+
+## Odds ratio - genus - heatmap
+
+```{r, fig.height=9}
+gn_mat <- gn_df |> 
+    count(Category, bp_sig) |>
+    pivot_wider(
+        names_from = "Category", values_from = "n", values_fill = 0
+    ) |>
+    tibble::column_to_rownames(var = "bp_sig") |>
+    as.matrix()
+
+
+color_fun <- function(x) {
+    circlize::colorRamp2(
+        breaks = c(0, seq(1, max(x))),
+        colors = c("white", viridis::viridis(max(x)))
+    )
+}
+
+gn_hp <- Heatmap(
+    matrix = gn_mat,
+    col = color_fun(gn_mat), 
+    border = TRUE,
+    show_row_dend = FALSE, show_column_dend = FALSE,
+    row_names_side = "left",
+    name = "# sigs",
+    rect_gp = gpar(col = "gray50", lwd = 1), 
+        row_names_max_width = max_text_width(
+        rownames(gn_mat),
+        gp = gpar(fontsize = 12)
+    ),
+)
+gn_hp
+```
+
 
 ## Odds ratio - species
 
@@ -301,7 +352,7 @@ for (i in seq_along(sigs_list_sp$up)) {
         counter <- counter + 1
     }
 }
-sp <- sp |> 
+sp_df <- sp |> 
     bind_rows(.id = "name") |> 
     separate(
         col = "name", into = c("bsdb_sig", "bp_sig", "rank"), sep = "---"
@@ -314,8 +365,43 @@ sp <- sp |>
     relocate(`BSDB ID`, Condition) |> 
     relocate(bsdb_sig, .after = down_noAnnotated) |> 
     filter(odds_ratio > 1, lower_ci > 1) |> 
-    arrange(-odds_ratio)
-myDataTable(sp, nrow(sp))
+    arrange(-odds_ratio) |> 
+    mutate(Condition = tolower(Condition)) |> 
+    left_join(cond2cat, by = "Condition") |> 
+    relocate(Category, .after = `BSDB ID`) |> 
+    filter(!is.na(Category))
+dim(sp_df)
+```
+
+```{r}
+myDataTable(sp_df, nrow(sp_df))
+```
+
+## Odds ratio - species - heatmap
+
+```{r, fig.height=9}
+sp_mat <- sp_df |> 
+    count(Category, bp_sig) |>
+    pivot_wider(
+        names_from = "Category", values_from = "n", values_fill = 0
+    ) |>
+    tibble::column_to_rownames(var = "bp_sig") |>
+    as.matrix()
+
+sp_hp <- Heatmap(
+    matrix = sp_mat,
+    col = color_fun(sp_mat), 
+    border = TRUE,
+    show_row_dend = FALSE, show_column_dend = FALSE,
+    row_names_side = "left",
+    name = "# sigs",
+    rect_gp = gpar(col = "gray50", lwd = 1), 
+        row_names_max_width = max_text_width(
+        rownames(sp_mat),
+        gp = gpar(fontsize = 12)
+    ),
+)
+sp_hp
 ```
 
 ## Session information
