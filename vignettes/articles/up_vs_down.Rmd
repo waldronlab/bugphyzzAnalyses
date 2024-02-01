@@ -323,8 +323,3 @@ myDataTable(sp, nrow(sp))
 ```{r}
 sessioninfo::session_info()
 ```
-
-
-
-
-
