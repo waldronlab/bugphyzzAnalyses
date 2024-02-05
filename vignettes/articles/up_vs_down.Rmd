@@ -132,7 +132,8 @@ lg <- map(l, ~ {
         getSignatures(
             tax.id.type = "ncbi", tax.level = "genus", exact.tax.level = FALSE,
             min.size = 5
-        )
+        ) |> 
+        keep(~ length(.x) >= 5)
 })
 df_gn_1 <- data.frame(
     x = paste0(
@@ -170,7 +171,8 @@ ls <- map(l, ~ {
         getSignatures(
             tax.id.type = "ncbi", tax.level = "species",
             exact.tax.level = FALSE, min.size = 5
-        )
+        ) |> 
+        keep(~ length(.x) >= 5)
 })
 df_sp_1 <- data.frame(
     x = paste0(
@@ -220,28 +222,37 @@ or <- function(x, y, s) {
         dimnames = list(exposure = c("yes", "no"), event = c("yes", "no"))
     
     )
+    # suppressWarnings({
+    #     res <- epitools::oddsratio.wald(ct)
+    # })
+
     if (any(ct == 0)) {
         HA <- "*"
         suppressWarnings({
-            res <- epitools::oddsratio.wald(ct + 0.5)$measure[2,]
+            # res <- epitools::oddsratio.small(ct)
+            res <- epitools::oddsratio.wald(ct + 0.5) # I get a lot of caution messages about not using this funcion
+
         })
     } else {
         HA <- ""
         suppressWarnings({
-            res <- epitools::oddsratio.wald(ct)$measure[2,]
+            res <- epitools::oddsratio.wald(ct)
         })
     }
-    DF <- data.frame(
-       odds_ratio = round(res["estimate"], 2),
-       lower_ci = round(res["lower"], 2),
-       upper_ci = round(res["upper"], 2),
+    
+    output <- data.frame(
+       odds_ratio = round(res$measure[2, "estimate"], 2),
+       lower_ci = round(res$measure[2, "lower"], 2),
+       upper_ci = round(res$measure[2, "upper"], 2),
+       p_value = res$p.value[2, "fisher.exact"],
+       # method = method,
        HA = HA,
        up_annotated = a,
        up_noAnnotated = b,
        down_annotated = c,
        down_noAnnotated = d
     )
-    return(DF)
+    return(output)
 }
 ```
 
@@ -284,7 +295,13 @@ gn_df <- gn |>
     left_join(select(bsdb, `BSDB ID`, Condition), by = "BSDB ID") |> 
     relocate(`BSDB ID`, Condition) |> 
     relocate(bsdb_sig, .after = down_noAnnotated) |> 
-    filter(odds_ratio > 1, lower_ci > 1) |> 
+    # filter(odds_ratio > 1, lower_ci > 1) |> 
+    mutate(
+        FDR = round(p.adjust(p_value, method = "fdr"), 3),
+        p_value = round(p_value, 3)
+    ) |> 
+    # filter(FDR < 0.1) |> 
+    # filter(p_value < 0.001)
     arrange(-odds_ratio) |> 
     mutate(Condition = tolower(Condition)) |> 
     left_join(cond2cat, by = "Condition") |> 
@@ -293,21 +310,26 @@ gn_df <- gn |>
 dim(gn_df)
 ```
 
+## odds ratio - genus - table up
+
 ```{r}
-myDataTable(gn_df, nrow(gn_df))
+gn_df |> 
+    filter(p_value < 0.05, odds_ratio > 1) |> 
+    arrange(-odds_ratio) |> 
+    {\(y) myDataTable(y, 30)}()
 ```
 
-## Odds ratio - genus - heatmap
+## Odds ratio - genus - heatmap up
 
 ```{r, fig.height=9}
-gn_mat <- gn_df |> 
+gn_mat_up <- gn_df |> 
+    filter(p_value < 0.05, odds_ratio > 1) |> 
     count(Category, bp_sig) |>
     pivot_wider(
         names_from = "Category", values_from = "n", values_fill = 0
     ) |>
     tibble::column_to_rownames(var = "bp_sig") |>
     as.matrix()
-
 
 color_fun <- function(x) {
     circlize::colorRamp2(
@@ -316,20 +338,57 @@ color_fun <- function(x) {
     )
 }
 
-gn_hp <- Heatmap(
-    matrix = gn_mat,
-    col = color_fun(gn_mat), 
+gn_hp_up <- Heatmap(
+    matrix = gn_mat_up,
+    col = color_fun(gn_mat_up), 
     border = TRUE,
     show_row_dend = FALSE, show_column_dend = FALSE,
     row_names_side = "left",
     name = "# sigs",
     rect_gp = gpar(col = "gray50", lwd = 1), 
         row_names_max_width = max_text_width(
-        rownames(gn_mat),
+        rownames(gn_mat_up),
         gp = gpar(fontsize = 12)
     ),
 )
-gn_hp
+gn_hp_up
+```
+
+
+## odds ratio - genus - table down
+
+```{r}
+gn_df |> 
+    filter(p_value < 0.05, odds_ratio < 1) |> 
+    arrange(odds_ratio) |> 
+    {\(y) myDataTable(y, length(y))}()
+```
+
+## odds ratio - genus - heatmap down
+
+```{r fig.height=9}
+gn_mat_down <- gn_df |> 
+    filter(p_value < 0.05, odds_ratio < 1) |> 
+    count(Category, bp_sig) |>
+    pivot_wider(
+        names_from = "Category", values_from = "n", values_fill = 0
+    ) |>
+    tibble::column_to_rownames(var = "bp_sig") |>
+    as.matrix()
+gn_hp_down <- Heatmap(
+    matrix = gn_mat_down,
+    col = color_fun(gn_mat_down), 
+    border = TRUE,
+    show_row_dend = FALSE, show_column_dend = FALSE,
+    row_names_side = "left",
+    name = "# sigs",
+    rect_gp = gpar(col = "gray50", lwd = 1), 
+        row_names_max_width = max_text_width(
+        rownames(gn_mat_down),
+        gp = gpar(fontsize = 12)
+    ),
+)
+gn_hp_down
 ```
 
 ## Odds ratio - species
@@ -363,7 +422,11 @@ sp_df <- sp |>
     left_join(select(bsdb, `BSDB ID`, Condition), by = "BSDB ID") |> 
     relocate(`BSDB ID`, Condition) |> 
     relocate(bsdb_sig, .after = down_noAnnotated) |> 
-    filter(odds_ratio > 1, lower_ci > 1) |> 
+    mutate(
+        FDR = round(p.adjust(p_value, method = "fdr"), 3),
+        p_value = round(p_value, 3)
+    ) |> 
+    # filter(odds_ratio > 1, lower_ci > 1) |> 
     arrange(-odds_ratio) |> 
     mutate(Condition = tolower(Condition)) |> 
     left_join(cond2cat, by = "Condition") |> 
@@ -372,14 +435,21 @@ sp_df <- sp |>
 dim(sp_df)
 ```
 
+
+## odds ratio - species - table up
+
 ```{r}
-myDataTable(sp_df, nrow(sp_df))
+sp_df |> 
+    filter(p_value < 0.05, odds_ratio > 1) |> 
+    arrange(-odds_ratio) |> 
+    {\(y) myDataTable(y, nrow(y))}()
 ```
 
-## Odds ratio - species - heatmap
+## Odds ratio - species - heatmap up
 
 ```{r, fig.height=9}
-sp_mat <- sp_df |> 
+sp_mat_up <- sp_df |> 
+    filter(p_value < 0.05, odds_ratio > 1) |> 
     count(Category, bp_sig) |>
     pivot_wider(
         names_from = "Category", values_from = "n", values_fill = 0
@@ -387,21 +457,59 @@ sp_mat <- sp_df |>
     tibble::column_to_rownames(var = "bp_sig") |>
     as.matrix()
 
-sp_hp <- Heatmap(
-    matrix = sp_mat,
-    col = color_fun(sp_mat), 
+sp_hp_up <- Heatmap(
+    matrix = sp_mat_up,
+    col = color_fun(sp_mat_up), 
     border = TRUE,
     show_row_dend = FALSE, show_column_dend = FALSE,
     row_names_side = "left",
     name = "# sigs",
     rect_gp = gpar(col = "gray50", lwd = 1), 
         row_names_max_width = max_text_width(
-        rownames(sp_mat),
+        rownames(sp_mat_up),
         gp = gpar(fontsize = 12)
     ),
 )
-sp_hp
+sp_hp_up
 ```
+
+## Odds ratio - species - table down
+
+```{r}
+sp_df |> 
+    filter(p_value < 0.05, odds_ratio < 1) |> 
+    arrange(odds_ratio) |> 
+    {\(y) myDataTable(y, length(y))}()
+```
+
+## Odds ratio - species - heatmap down
+
+```{r, fig.height=9}
+sp_mat_down <- sp_df |> 
+    filter(p_value < 0.05, odds_ratio < 1) |> 
+    count(Category, bp_sig) |>
+    pivot_wider(
+        names_from = "Category", values_from = "n", values_fill = 0
+    ) |>
+    tibble::column_to_rownames(var = "bp_sig") |>
+    as.matrix()
+
+sp_hp_down <- Heatmap(
+    matrix = sp_mat_down,
+    col = color_fun(sp_mat_down), 
+    border = TRUE,
+    show_row_dend = FALSE, show_column_dend = FALSE,
+    row_names_side = "left",
+    name = "# sigs",
+    rect_gp = gpar(col = "gray50", lwd = 1), 
+        row_names_max_width = max_text_width(
+        rownames(sp_mat_down),
+        gp = gpar(fontsize = 12)
+    ),
+)
+sp_hp_down
+```
+
 
 ## Session information
 
