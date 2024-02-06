@@ -149,7 +149,8 @@ for (i in seq_along(body_sites)) {
                 tax.id.type = "ncbi", tax.level = ranks[j],
                 exact.tax.level = FALSE
             ) |> 
-                map(~ unique(names(.x)))
+                map(~ unique(names(.x))) |> 
+                discard(~ length(.x) < 5)
             index <- index + 1
         }
     }
@@ -213,7 +214,7 @@ en_gn <- map2(bsdb_sigs_gn, background_sigs_gn, ~ {
 en_gn_df <- en_gn |> 
     bind_rows(.id = "bsdb_sig") |> 
     ## Let's re calculate FRR (not just the output of microheSEtEnrichment)
-    mutate(fdr = p.adjust(p_value, method = "fdr")) |> 
+    # mutate(fdr = p.adjust(p_value, method = "fdr")) |> 
     filter(fdr < 0.1) |> 
     separate(
         col = "bsdb_sig",
@@ -227,7 +228,7 @@ en_gn_df <- en_gn |>
     ) |> 
     mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
 colnames(en_gn_df) <- sub("Set", "BSDB", colnames(en_gn_df))
-myDataTable(en_gn_df, nrow(en_gn_df))
+# myDataTable(en_gn_df, nrow(en_gn_df))
 ```
 
 species:
@@ -241,7 +242,7 @@ en_sp <- map2(bsdb_sigs_sp, background_sigs_sp, ~ {
 en_sp_df <- en_sp |> 
     bind_rows(.id = "bsdb_sig") |> 
     ## Let's re calculate FRR (not just the output of microheSEtEnrichment)
-    mutate(fdr = p.adjust(p_value, method = "fdr")) |>
+    # mutate(fdr = p.adjust(p_value, method = "fdr")) |>
     filter(fdr < 0.1) |> 
     separate(
         col = "bsdb_sig",
@@ -255,7 +256,7 @@ en_sp_df <- en_sp |>
     ) |> 
     mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
 colnames(en_gn_df) <- sub("Set", "BSDB", colnames(en_gn_df))
-myDataTable(en_sp_df, page_len = nrow(en_sp_df))
+# myDataTable(en_sp_df, page_len = nrow(en_sp_df))
 ```
 
 ```{r}
@@ -281,10 +282,13 @@ en_up <- filter(en_tbl, direction == "UP")
 en_down <- filter(en_tbl, direction == "DOWN")
 ```
 
+## Table up
+
+```{r}
+myDataTable(en_up, page_len = 30)
+```
 
 ## Heatmap UP
-
-
 
 ```{r}
 dat <- data.frame(bsdb_sig = names(bsdb_sigs)) |> 
@@ -443,6 +447,12 @@ p1 <- grid.grabExpr(draw(
     heatmap_legend_list = lgd_list
 ))
 grid.arrange(p1)
+```
+
+## Table Down
+
+```{r}
+myDataTable(en_down, page_len = 30)
 ```
 
 ## Heatmap Down
