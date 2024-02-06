@@ -212,6 +212,8 @@ en_gn <- map2(bsdb_sigs_gn, background_sigs_gn, ~ {
 }) 
 en_gn_df <- en_gn |> 
     bind_rows(.id = "bsdb_sig") |> 
+    ## Let's re calculate FRR (not just the output of microheSEtEnrichment)
+    mutate(fdr = p.adjust(p_value, method = "fdr")) |> 
     filter(fdr < 0.1) |> 
     separate(
         col = "bsdb_sig", into = c("body_site", "rank", "direction", "condition"), sep = "_",
@@ -237,6 +239,8 @@ en_sp <- map2(bsdb_sigs_sp, background_sigs_sp, ~ {
 })
 en_sp_df <- en_sp |> 
     bind_rows(.id = "bsdb_sig") |> 
+    ## Let's re calculate FRR (not just the output of microheSEtEnrichment)
+    mutate(fdr = p.adjust(p_value, method = "fdr")) |>
     filter(fdr < 0.1) |> 
     separate(
         col = "bsdb_sig",
