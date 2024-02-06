@@ -44,17 +44,17 @@ microbeSetEnrichment <- function(set, reference, sigs) {
     for (i in seq_along(sigs)) {
         ct <- .contingencyTable(set, reference, sigs[[i]])
 
-        # p_value <- stats::fisher.test(ct, alternative = 'g')$p.value
+        p_value <- stats::fisher.test(ct, alternative = 'g')$p.value
 
         if (any(ct == 0)) {
             HA <- "*"
-            p_value <- stats::fisher.test(ct + 0.5, alternative = 'g')$p.value
+            # p_value <- stats::fisher.test(ct + 0.5, alternative = 'g')$p.value
             res <- suppressWarnings(
                 epitools::oddsratio.wald(ct + 0.5)$measure[2,]
             )
         } else {
             HA <- ""
-            p_value <- stats::fisher.test(ct, alternative = 'g')$p.value
+            # p_value <- stats::fisher.test(ct, alternative = 'g')$p.value
             res <- suppressWarnings(
                 epitools::oddsratio.wald(ct)$measure[2,]
             )

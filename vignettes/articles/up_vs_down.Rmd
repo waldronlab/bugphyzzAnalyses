@@ -224,7 +224,7 @@ or <- function(x, y, s) {
     # suppressWarnings({
     #     res <- epitools::oddsratio.wald(ct)
     # })
-    # p_value = fisher.test(x = ct, alternative = "two.sided")$p.value
+    p_value = fisher.test(x = ct, alternative = "two.sided")$p.value
     
     if (any(ct == 0)) {
         HA <- "*"
@@ -245,8 +245,8 @@ or <- function(x, y, s) {
        odds_ratio = round(res$measure[2, "estimate"], 2),
        lower_ci = round(res$measure[2, "lower"], 2),
        upper_ci = round(res$measure[2, "upper"], 2),
-       p_value = res$p.value[2, "fisher.exact"],
-       # p_value = p_value,
+       # p_value = res$p.value[2, "fisher.exact"],
+       p_value = p_value,
        # method = method,
        HA = HA,
        up_annotated = a,
@@ -258,7 +258,7 @@ or <- function(x, y, s) {
 }
 ```
 
-## Odds ratio - genus
+## Calculate odds ratio and p values
 
 ```{r}
 fname <- system.file(
@@ -297,16 +297,6 @@ gn_df <- gn |>
     left_join(select(bsdb, `BSDB ID`, Condition), by = "BSDB ID") |> 
     relocate(`BSDB ID`, Condition) |> 
     relocate(bsdb_sig, .after = down_noAnnotated) |> 
-    # filter(odds_ratio > 1, lower_ci > 1) |>
-    # group_by(`BSDB ID`) |> 
-    mutate(
-        FDR = round(p.adjust(p_value, method = "fdr"), 3)
-        # p_value = round(p_value, 3)
-    ) |> 
-    # ungroup() |> 
-    mutate(p_value = round(p_value, 3)) |> 
-    # filter(FDR < 0.1) |> 
-    # filter(p_value < 0.001)
     arrange(-odds_ratio) |> 
     mutate(Condition = tolower(Condition)) |> 
     left_join(cond2cat, by = "Condition") |> 
@@ -315,10 +305,55 @@ gn_df <- gn |>
 dim(gn_df)
 ```
 
+```{r}
+sp <- vector("list", length(sigs_list_sp$up) * length(bp_sigs_sp))
+counter <- 1
+for (i in seq_along(sigs_list_sp$up)) {
+    for(j in seq_along(bp_sigs_sp)) {
+        odds_ratio <- or(
+            x = sigs_list_sp$up[[i]],
+            y = sigs_list_sp$down[[i]],
+            s = bp_sigs_sp[[j]]
+        )
+        names(sp)[counter] <- paste0(
+            names(sigs_list_sp$up)[i], "---", names(bp_sigs_sp)[j], "---species"
+        )
+        sp[[counter]] <- odds_ratio
+        counter <- counter + 1
+    }
+}
+sp_df <- sp |> 
+    bind_rows(.id = "name") |> 
+    separate(
+        col = "name", into = c("bsdb_sig", "bp_sig", "rank"), sep = "---"
+    ) |> 
+    mutate(
+        `BSDB ID` = sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", bsdb_sig),
+        bp_sig = sub("^bugphyzz:(.*)$", "\\1", bp_sig)
+    ) |> 
+    left_join(select(bsdb, `BSDB ID`, Condition), by = "BSDB ID") |> 
+    relocate(`BSDB ID`, Condition) |> 
+    relocate(bsdb_sig, .after = down_noAnnotated) |> 
+    arrange(-odds_ratio) |> 
+    mutate(Condition = tolower(Condition)) |> 
+    left_join(cond2cat, by = "Condition") |> 
+    relocate(Category, .after = `BSDB ID`) |> 
+    filter(!is.na(Category))
+dim(sp_df)
+```
+
+## Merge gn and sp
+
+```{r}
+mainDF <- bind_rows(gn_df, sp_df)
+dim(mainDF)
+```
+
 ## odds ratio - genus - table up
 
 ```{r}
-gn_df |> 
+mainDF |> 
+    filter(rank == "genus") |> 
     filter(p_value < 0.05, odds_ratio > 1) |> 
     arrange(-odds_ratio) |> 
     {\(y) myDataTable(y, 30)}()
@@ -327,7 +362,8 @@ gn_df |>
 ## Odds ratio - genus - heatmap up
 
 ```{r, fig.height=9}
-gn_mat_up <- gn_df |> 
+gn_mat_up <- mainDF |> 
+    filter(rank == "genus") |> 
     filter(p_value < 0.05, odds_ratio > 1) |> 
     count(Category, bp_sig) |>
     pivot_wider(
@@ -371,7 +407,8 @@ gn_df |>
 ## odds ratio - genus - heatmap down
 
 ```{r fig.height=9}
-gn_mat_down <- gn_df |> 
+gn_mat_down <- mainDF |> 
+    filter(rank == "genus") |> 
     filter(p_value < 0.05, odds_ratio < 1) |> 
     count(Category, bp_sig) |>
     pivot_wider(
@@ -395,61 +432,11 @@ gn_hp_down <- Heatmap(
 gn_hp_down
 ```
 
-## Odds ratio - species
-
-```{r}
-sp <- vector("list", length(sigs_list_sp$up) * length(bp_sigs_sp))
-counter <- 1
-for (i in seq_along(sigs_list_sp$up)) {
-    for(j in seq_along(bp_sigs_sp)) {
-        odds_ratio <- or(
-            x = sigs_list_sp$up[[i]],
-            y = sigs_list_sp$down[[i]],
-            s = bp_sigs_sp[[j]]
-        )
-        names(sp)[counter] <- paste0(
-            names(sigs_list_sp$up)[i], "---", names(bp_sigs_sp)[j], "---species"
-        )
-        sp[[counter]] <- odds_ratio
-        counter <- counter + 1
-    }
-}
-sp_df <- sp |> 
-    bind_rows(.id = "name") |> 
-    separate(
-        col = "name", into = c("bsdb_sig", "bp_sig", "rank"), sep = "---"
-    ) |> 
-    mutate(
-        `BSDB ID` = sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", bsdb_sig),
-        bp_sig = sub("^bugphyzz:(.*)$", "\\1", bp_sig)
-    ) |> 
-    left_join(select(bsdb, `BSDB ID`, Condition), by = "BSDB ID") |> 
-    relocate(`BSDB ID`, Condition) |> 
-    relocate(bsdb_sig, .after = down_noAnnotated) |> 
-    # group_by(`BSDB ID`) |> 
-    mutate(
-        FDR = round(p.adjust(p_value, method = "fdr"), 3)
-        # p_value = round(p_value, 3)
-    ) |> 
-    # ungroup() |> 
-    mutate(p_value = round(p_value, 3)) |> 
-    # mutate(
-    #     FDR = round(p.adjust(p_value, method = "fdr"), 3),
-    #     p_value = round(p_value, 3)
-    # ) |> 
-    # filter(odds_ratio > 1, lower_ci > 1) |> 
-    arrange(-odds_ratio) |> 
-    mutate(Condition = tolower(Condition)) |> 
-    left_join(cond2cat, by = "Condition") |> 
-    relocate(Category, .after = `BSDB ID`) |> 
-    filter(!is.na(Category))
-dim(sp_df)
-```
-
 ## odds ratio - species - table up
 
 ```{r}
-sp_df |> 
+mainDF |> 
+    filter(rank == "species") |> 
     filter(p_value < 0.05, odds_ratio > 1) |> 
     arrange(-odds_ratio) |> 
     {\(y) myDataTable(y, nrow(y))}()
@@ -458,7 +445,8 @@ sp_df |>
 ## Odds ratio - species - heatmap up
 
 ```{r, fig.height=9}
-sp_mat_up <- sp_df |> 
+sp_mat_up <- mainDF |> 
+    filter(rank == "species") |> 
     filter(p_value < 0.05, odds_ratio > 1) |> 
     count(Category, bp_sig) |>
     pivot_wider(
@@ -486,7 +474,8 @@ sp_hp_up
 ## Odds ratio - species - table down
 
 ```{r}
-sp_df |> 
+mainDF |> 
+    filter(rank == "species") |> 
     filter(p_value < 0.05, odds_ratio < 1) |> 
     arrange(-odds_ratio) |> 
     {\(y) myDataTable(y, length(y))}()
@@ -495,7 +484,8 @@ sp_df |>
 ## Odds ratio - species - heatmap down
 
 ```{r, fig.height=9}
-sp_mat_down <- sp_df |> 
+sp_mat_down <- mainDF |> 
+    filter(rank == "species") |> 
     filter(p_value < 0.05, odds_ratio < 1) |> 
     count(Category, bp_sig) |>
     pivot_wider(
