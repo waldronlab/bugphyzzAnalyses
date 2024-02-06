@@ -129,7 +129,7 @@ attr_asr_default_names <- map(bp, ~ {
 
 attr_asr_default <- length(attr_asr_default_names)
 
-attr_asr_all <- importVal() |>
+attr_asr_all <- bugphyzz:::.validationData() |>
     filter(rank == "all") |> 
     select(physiology, mcc_mean, r2_mean) |> 
     pull(physiology) |> 
@@ -268,7 +268,8 @@ p_count_types
 ## 10-fold cross-validation and counts per evidence type (species)
 
 ```{r validation discrete}
-val <- importVal()
+val <- bugphyzz:::.validationData() |> 
+    filter(rank == "all")
 dis_phys_names <- val |> 
     filter(!is.na(mcc_mean)) |> 
     group_by(physiology) |> 
