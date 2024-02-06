@@ -216,7 +216,8 @@ en_gn_df <- en_gn |>
     mutate(fdr = p.adjust(p_value, method = "fdr")) |> 
     filter(fdr < 0.1) |> 
     separate(
-        col = "bsdb_sig", into = c("body_site", "rank", "direction", "condition"), sep = "_",
+        col = "bsdb_sig",
+        into = c("body_site", "rank", "direction", "condition"), sep = "_",
         remove = FALSE
     ) |> 
     mutate(condition = tolower(condition)) |> 
@@ -385,7 +386,8 @@ col_anno_category <- columnAnnotation(
 )
 col_anno_bodysite <- columnAnnotation(
     "bs" = anno_barplot(
-        summary_bodysite_up$bodysite_total, bar_width = 1, gp = gpar(fill = "#009E73"),
+        summary_bodysite_up$bodysite_total, bar_width = 1, 
+        gp = gpar(fill = "#009E73"),
         height = anno_width),
     show_annotation_name = FALSE
 )
@@ -521,7 +523,8 @@ col_anno_category <- columnAnnotation(
 )
 col_anno_bodysite <- columnAnnotation(
     "bs" = anno_barplot(
-        summary_bodysite_down$bodysite_total, bar_width = 1, gp = gpar(fill = "#009E73"),
+        summary_bodysite_down$bodysite_total, bar_width = 1,
+        gp = gpar(fill = "#009E73"),
         height = anno_width),
     show_annotation_name = FALSE
 )
