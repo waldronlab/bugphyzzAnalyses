@@ -230,14 +230,14 @@ or <- function(x, y, s) {
         HA <- "*"
         suppressWarnings({
             # res <- epitools::oddsratio.small(ct)
-            p_value = fisher.test(x = ct, alternative = "two.sided")$p.value
-            res <- epitools::oddsratio.small(ct + 0.5) # I get a lot of caution messages about not using this funcion
+            # p_value = fisher.test(x = ct + 0.5, alternative = "two.sided")$p.value
+            res <- epitools::oddsratio.wald(ct + 0.5) # I get a lot of caution messages about not using this funcion
         })
     } else {
         HA <- ""
         suppressWarnings({
-            p_value = fisher.test(x = ct, alternative = "two.sided")$p.value
-            res <- epitools::oddsratio.small(ct)
+            # p_value = fisher.test(x = ct, alternative = "two.sided")$p.value
+            res <- epitools::oddsratio.wald(ct)
         })
     }
     
@@ -245,8 +245,8 @@ or <- function(x, y, s) {
        odds_ratio = round(res$measure[2, "estimate"], 2),
        lower_ci = round(res$measure[2, "lower"], 2),
        upper_ci = round(res$measure[2, "upper"], 2),
-       # p_value = res$p.value[2, "fisher.exact"],
-       p_value = p_value,
+       p_value = res$p.value[2, "fisher.exact"],
+       # p_value = p_value,
        # method = method,
        HA = HA,
        up_annotated = a,
@@ -364,7 +364,7 @@ gn_hp_up
 ```{r}
 gn_df |> 
     filter(p_value < 0.05, odds_ratio < 1) |> 
-    arrange(odds_ratio) |> 
+    arrange(-odds_ratio) |> 
     {\(y) myDataTable(y, length(y))}()
 ```
 
@@ -488,7 +488,7 @@ sp_hp_up
 ```{r}
 sp_df |> 
     filter(p_value < 0.05, odds_ratio < 1) |> 
-    arrange(odds_ratio) |> 
+    arrange(-odds_ratio) |> 
     {\(y) myDataTable(y, length(y))}()
 ```
 
