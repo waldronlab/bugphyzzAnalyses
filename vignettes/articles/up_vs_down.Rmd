@@ -224,18 +224,20 @@ or <- function(x, y, s) {
     # suppressWarnings({
     #     res <- epitools::oddsratio.wald(ct)
     # })
-    p_value = fisher.test(x = ct, alternative = "two.sided")$p.value
+    # p_value = fisher.test(x = ct, alternative = "two.sided")$p.value
     
     if (any(ct == 0)) {
         HA <- "*"
         suppressWarnings({
             # res <- epitools::oddsratio.small(ct)
-            res <- epitools::oddsratio.wald(ct + 0.5) # I get a lot of caution messages about not using this funcion
+            p_value = fisher.test(x = ct, alternative = "two.sided")$p.value
+            res <- epitools::oddsratio.small(ct + 0.5) # I get a lot of caution messages about not using this funcion
         })
     } else {
         HA <- ""
         suppressWarnings({
-            res <- epitools::oddsratio.wald(ct)
+            p_value = fisher.test(x = ct, alternative = "two.sided")$p.value
+            res <- epitools::oddsratio.small(ct)
         })
     }
     
