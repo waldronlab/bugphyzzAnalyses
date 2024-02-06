@@ -220,18 +220,17 @@ or <- function(x, y, s) {
     ct <- matrix(
         data = c(a, b, c, d), byrow = TRUE, nrow = 2, ncol = 2,
         dimnames = list(exposure = c("yes", "no"), event = c("yes", "no"))
-    
     )
     # suppressWarnings({
     #     res <- epitools::oddsratio.wald(ct)
     # })
-
+    p_value = fisher.test(x = ct, alternative = "two.sided")$p.value
+    
     if (any(ct == 0)) {
         HA <- "*"
         suppressWarnings({
             # res <- epitools::oddsratio.small(ct)
             res <- epitools::oddsratio.wald(ct + 0.5) # I get a lot of caution messages about not using this funcion
-
         })
     } else {
         HA <- ""
@@ -244,7 +243,8 @@ or <- function(x, y, s) {
        odds_ratio = round(res$measure[2, "estimate"], 2),
        lower_ci = round(res$measure[2, "lower"], 2),
        upper_ci = round(res$measure[2, "upper"], 2),
-       p_value = res$p.value[2, "fisher.exact"],
+       # p_value = res$p.value[2, "fisher.exact"],
+       p_value = p_value,
        # method = method,
        HA = HA,
        up_annotated = a,
@@ -295,11 +295,14 @@ gn_df <- gn |>
     left_join(select(bsdb, `BSDB ID`, Condition), by = "BSDB ID") |> 
     relocate(`BSDB ID`, Condition) |> 
     relocate(bsdb_sig, .after = down_noAnnotated) |> 
-    # filter(odds_ratio > 1, lower_ci > 1) |> 
+    # filter(odds_ratio > 1, lower_ci > 1) |>
+    # group_by(`BSDB ID`) |> 
     mutate(
-        FDR = round(p.adjust(p_value, method = "fdr"), 3),
-        p_value = round(p_value, 3)
+        FDR = round(p.adjust(p_value, method = "fdr"), 3)
+        # p_value = round(p_value, 3)
     ) |> 
+    # ungroup() |> 
+    mutate(p_value = round(p_value, 3)) |> 
     # filter(FDR < 0.1) |> 
     # filter(p_value < 0.001)
     arrange(-odds_ratio) |> 
@@ -353,7 +356,6 @@ gn_hp_up <- Heatmap(
 )
 gn_hp_up
 ```
-
 
 ## odds ratio - genus - table down
 
@@ -422,10 +424,17 @@ sp_df <- sp |>
     left_join(select(bsdb, `BSDB ID`, Condition), by = "BSDB ID") |> 
     relocate(`BSDB ID`, Condition) |> 
     relocate(bsdb_sig, .after = down_noAnnotated) |> 
+    # group_by(`BSDB ID`) |> 
     mutate(
-        FDR = round(p.adjust(p_value, method = "fdr"), 3),
-        p_value = round(p_value, 3)
+        FDR = round(p.adjust(p_value, method = "fdr"), 3)
+        # p_value = round(p_value, 3)
     ) |> 
+    # ungroup() |> 
+    mutate(p_value = round(p_value, 3)) |> 
+    # mutate(
+    #     FDR = round(p.adjust(p_value, method = "fdr"), 3),
+    #     p_value = round(p_value, 3)
+    # ) |> 
     # filter(odds_ratio > 1, lower_ci > 1) |> 
     arrange(-odds_ratio) |> 
     mutate(Condition = tolower(Condition)) |> 
@@ -434,7 +443,6 @@ sp_df <- sp |>
     filter(!is.na(Category))
 dim(sp_df)
 ```
-
 
 ## odds ratio - species - table up
 
@@ -509,7 +517,6 @@ sp_hp_down <- Heatmap(
 )
 sp_hp_down
 ```
-
 
 ## Session information
 

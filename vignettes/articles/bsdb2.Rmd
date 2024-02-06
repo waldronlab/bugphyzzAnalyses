@@ -215,7 +215,7 @@ en_gn_df <- en_gn |>
     bind_rows(.id = "bsdb_sig") |> 
     ## Let's re calculate FRR (not just the output of microheSEtEnrichment)
     # mutate(fdr = p.adjust(p_value, method = "fdr")) |> 
-    filter(fdr < 0.1) |> 
+    # filter(fdr < 0.1) |> 
     separate(
         col = "bsdb_sig",
         into = c("body_site", "rank", "direction", "condition"), sep = "_",
@@ -243,7 +243,7 @@ en_sp_df <- en_sp |>
     bind_rows(.id = "bsdb_sig") |> 
     ## Let's re calculate FRR (not just the output of microheSEtEnrichment)
     # mutate(fdr = p.adjust(p_value, method = "fdr")) |>
-    filter(fdr < 0.1) |> 
+    # filter(fdr < 0.1) |> 
     separate(
         col = "bsdb_sig",
         into = c("body_site", "rank", "direction", "condition"), sep = "_",
@@ -255,12 +255,15 @@ en_sp_df <- en_sp |>
         .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
     ) |> 
     mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
-colnames(en_gn_df) <- sub("Set", "BSDB", colnames(en_gn_df))
+colnames(en_sp_df) <- sub("Set", "BSDB", colnames(en_sp_df))
 # myDataTable(en_sp_df, page_len = nrow(en_sp_df))
 ```
 
 ```{r}
-en_df <- bind_rows(en_gn_df, en_sp_df)
+# en_df <- bind_rows(en_gn_df, en_sp_df) |>
+#     mutate(
+#         fdr = p.adjust(p_value, method = "fdr")
+#     )
 ```
 
 ## Grouping
@@ -274,15 +277,32 @@ cond2cat <- read.table(fname, header = TRUE, sep = '\t')
 ```
 
 ```{r}
-gn_tbl <- left_join(en_gn_df, cond2cat, by = c("condition" = "Condition"))
-sp_tbl <- left_join(en_sp_df, cond2cat, by = c("condition" = "Condition"))
-en_tbl <- left_join(en_df, cond2cat, by = c("condition" = "Condition")) |> 
-    mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)", "\\1", sig_name))
-en_up <- filter(en_tbl, direction == "UP")
-en_down <- filter(en_tbl, direction == "DOWN")
+en_tbl <- bind_rows(en_gn_df, en_sp_df) |>
+    # group_by(rank) |>
+    mutate(
+        fdr = round(p.adjust(p_value, method = "fdr"), 3)
+    ) |>
+    # ungroup() |>
+    left_join(cond2cat, by = c("condition" = "Condition")) |> 
+    mutate(
+        sig_name = sub("^bugphyzz:(.*)\\|(genus|species)", "\\1", sig_name),
+        Category = ifelse(is.na(Category), "other", Category)
+    )
+en_up <- filter(en_tbl, direction == "UP") |> 
+    filter(fdr < 0.1)
+en_down <- filter(en_tbl, direction == "DOWN") |> 
+    filter(fdr < 0.1)
 ```
 
 ## Table up
+
+```{r}
+length(unique(en_up$bsdb_sig))
+length(unique(en_up$sig_name))
+count(en_up, Category)
+```
+
+
 
 ```{r}
 myDataTable(en_up, page_len = 30)
@@ -291,15 +311,21 @@ myDataTable(en_up, page_len = 30)
 ## Heatmap UP
 
 ```{r}
-dat <- data.frame(bsdb_sig = names(bsdb_sigs)) |> 
-    separate(
-        col = "bsdb_sig",
-        into =  c("body_site", "rank", "direction", "condition"),
-        sep = "_"
-    ) |> 
-    mutate(condition = tolower(condition)) |> 
-    left_join(cond2cat, by = c("condition" = "Condition")) |> 
-    filter(!is.na(Category))
+dat <- en_tbl |> 
+    select(body_site, rank, direction, condition, Category) |> 
+    unique() |> 
+    arrange()
+# dat <- data.frame(bsdb_sig = names(bsdb_sigs)) |> 
+#     separate(
+#         col = "bsdb_sig",
+#         into =  c("body_site", "rank", "direction", "condition"),
+#         sep = "_"
+#     ) |> 
+#     mutate(condition = tolower(condition)) |> 
+#     left_join(cond2cat, by = c("condition" = "Condition")) |> 
+#     mutate(Category = ifelse(is.na(Category), "other", Category)) |> 
+#     filter(!is.na(Category)) |> 
+#     arrange()
 dat_up <- filter(dat, direction == "UP")
 dat_down <- filter(dat, direction == "DOWN")
 ```
@@ -450,6 +476,12 @@ grid.arrange(p1)
 ```
 
 ## Table Down
+
+```{r}
+length(unique(en_down$bsdb_sig))
+length(unique(en_down$sig_name))
+count(en_down, Category)
+```
 
 ```{r}
 myDataTable(en_down, page_len = 30)
