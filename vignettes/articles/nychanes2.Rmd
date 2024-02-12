@@ -16,14 +16,11 @@ knitr::opts_chunk$set(
 
 ```{r setup, message=FALSE}
 library(bugphyzzAnalyses)
-# library(bugphyzz)
 library(mia)
 library(dplyr)
 library(EnrichmentBrowser)
+library(purrr)
 ```
-
-For the sake of reproducibility, I'm running this analysis with the
-original annotations from the NYCHANES study.
 
 # Expected results
 
@@ -37,9 +34,13 @@ p = 0.004)."
 
 **GSEA**
 
+Significant:
+
 >"...aerobic OTUs were significantly depleted among current smokers relative to never
 smokers (Enrichment Score test statistic ES = −0.75, p = 0.002, GSEA permutation
 test)."
+
+Non-significant:
 
 >"Anaerobic OTUs were enriched in smokers relative to never smokers but the
 difference was not statistically significant (ES = 0.36, p = 0.14, GSEA 
@@ -49,9 +50,7 @@ permutation test)."
 among never smokers compared to current smokers but this result was not
 statistically significant (ES = −0.29, p = 0.48, GSEA permutation test)."
 
-# Analysis at the genus level with biosis signatures
-
-## Microbiome data
+# Data
 
 Data used here is a subset of the original data used for the
 [NYCHANES study](https://pubmed.ncbi.nlm.nih.gov/31076212/).
@@ -63,38 +62,167 @@ The data subset presented here only contains abundance values for
 
 ```{r import nychanes data, message=FALSE}
 tse <- importNYCHANES()
+tse
+```
+
+```{r nychanes genus summary}
+table(tse$smokingstatus)
+```
+
+Summarize by genus:
+
+```{r}
 tse_gn <- splitByRanks(tse)$Genus
 tse_gn
 ```
 
-```{r nychanes genus summary}
-table(tse_gn$smokingstatus)
-```
-
-## Biosis data
-
+Biosis data:
 
 ```{r}
 biosis <- importBiosis()
+head(biosis)
+```
+
+## Signatures
+
+Signatures at the genus level:
+
+```{r}
 gn_sigs <- split(biosis, factor(biosis$Attribute)) |> 
   lapply(function(x) unique(x$Genus))
-lapply(gn_sigs, head)
+gn_sigs_bk <- c(gn_sigs, list(background = rownames(tse_gn)))
+map(gn_sigs_bk, head)
 ```
-## Differential expression
+
+Signatures at the OTU level:
+
+```{r}
+genera <- rowData(tse)$Genus 
+names(genera) <- rownames(tse)
+otu_sigs <- map(gn_sigs, function(x) names(genera)[which(genera %in% x)])
+otu_sigs_bk <- c(otu_sigs, list(background = rownames(tse)))
+map(otu_sigs_bk, head)
+```
+
+```{r}
+max_sig_size <- max(map_int(c(otu_sigs_bk, gn_sigs_bk), length))
+max_sig_size
+```
+
+Current value:
+
+```{r}
+configEBrowser(key="GS.MAX.SIZE")
+```
+
+New max.size value:
+
+```{r}
+configEBrowser(key="GS.MAX.SIZE", value = max_sig_size)
+configEBrowser(key="GS.MAX.SIZE")
+```
+
+## Analysis at the OTU level
+
+### Differential abundance
+
+```{r}
+tse$GROUP <- ifelse(
+  tse$smokingstatus == 'Never smoker', 0, 1
+)
+edger <- deAna(
+  expr = tse, de.method = 'edgeR', padj.method = 'fdr', 
+  filter.by.expr = FALSE
+)
+```
+
+### Enrichment (GSEA)
+
+```{r, message=FALSE}
+design2 = model.matrix(~smokingstatus, data = data.frame(colData(tse)))
+assay.voom2 <- limma::voom(
+  SummarizedExperiment::assay(edger), design = design2, plot = FALSE
+)
+SummarizedExperiment::assay(edger) <- assay.voom2$E
+class(SummarizedExperiment::assay(edger)) <- "matrix"
+
+gsea <- sbea(
+  method = 'gsea', se = edger, gs = otu_sigs, perm = 1000,
+  alpha = 0.1  # this is for DA taxa
+)
+gsea_res <- as.data.frame(gsea$res.tbl) |> 
+    mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET )) |> 
+    filter(GENE.SET != "background")
+    
+myDataTable(gsea_res)
+```
+
+### Enrichment (ORA)
+
+Significant (mixed) vs Non-Significant:
+
+```{r, message=FALSE}
+ora <- sbea(
+  method = 'ora', se = edger, gs = otu_sigs_bk, perm = 0, 
+  alpha = 0.1 # This is for DA taxa
+)
+ora_res <- as.data.frame(ora$res.tbl) |> 
+    mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET )) |> 
+    filter(GENE.SET != "background")
+myDataTable(ora_res)
+```
+
+Significant over-abundant vs Reference:
+
+```{r}
+edger_up <- edger
+rowData(edger_up)$ADJ.PVAL <- ifelse(
+  rowData(edger_up)$FC < 0, 1, rowData(edger_up)$ADJ.PVAL
+)
+ora_up <- sbea(
+  method = 'ora', se = edger_up, gs = otu_sigs_bk, perm = 0,
+  alpha = 0.1 # this is for DA taxa
+)
+ora_up_res <- as.data.frame(ora_up$res.tbl) |> 
+    mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET )) |> 
+    filter(GENE.SET != "background")
+myDataTable(ora_up_res)
+```
+
+Significant under-abundant vs Reference:
+
+```{r}
+edger_down <- edger
+rowData(edger_down)$ADJ.PVAL <- ifelse(
+  rowData(edger_down)$FC < 1, 0, rowData(edger_down)$ADJ.PVAL
+)
+ora_down <- sbea(
+  method = 'ora', se = edger_down, gs = otu_sigs_bk, perm = 0, 
+  alpha = 0.1
+)
+ora_down_res <- as.data.frame(ora_down$res.tbl) |> 
+    mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET )) |> 
+    filter(GENE.SET != "background")
+myDataTable(ora_down_res)
+```
+
+## Analysis at the genus level
+
+### Differential expression
 
 ```{r}
 tse_gn$GROUP <- ifelse(
   tse_gn$smokingstatus == 'Never smoker', 0, 1
 )
 edger_gn <- deAna(
-    expr = tse_gn, de.method = 'edgeR', padj.method = 'BH', 
+   expr = tse_gn, de.method = 'edgeR', padj.method = 'fdr', 
     filter.by.expr = FALSE, 
 )
 ```
 
-## Enrichment GSEA
+### Enrichment GSEA
 
-```{r}
+```{r, message=FALSE}
 design1 <- model.matrix(~ smokingstatus, data = data.frame(colData(tse_gn)))
 assay.voom1 <- limma::voom(
   SummarizedExperiment::assay(edger_gn), design = design1, plot = FALSE
@@ -104,28 +232,31 @@ class(SummarizedExperiment::assay(edger_gn)) <- "matrix"
 
 gsea_gn <- sbea(
   method = 'gsea', se = edger_gn, gs = gn_sigs, perm = 1000,
-  padj.method = 'BH',  alpha = 0.1
+  alpha = 0.1 # This is for DA taxa
   
 )
-gsea_gn_res <- as.data.frame(gsea_gn$res.tbl)
-caption1 <- 'caption1'
-myDT(gsea_gn_res, caption1)
+gsea_gn_res <- as.data.frame(gsea_gn$res.tbl) |> 
+    mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET )) |> 
+    filter(GENE.SET != "background")
+myDataTable(gsea_gn_res)
 ```
 
-## Enrichment ORA
+### Enrichment ORA
 
-### Significant (mixed) vs Non-Significant
+Significant (mixed) vs Non-Significant
 
 ```{r}
 ora_gn <- sbea(
-  method = 'ora', se = edger_gn, gs = gn_sigs, perm = 0, 
+  method = 'ora', se = edger_gn, gs = gn_sigs_bk, perm = 0, 
   padj.method = 'BH', alpha = 0.1
 )
-ora_gn_res <- as.data.frame(ora_gn$res.tbl)
-myDT(ora_gn_res)
+ora_gn_res <- as.data.frame(ora_gn$res.tbl) |> 
+    mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET )) |> 
+    filter(GENE.SET != "background")
+myDataTable(ora_gn_res)
 ```
 
-### Significant over-abundant vs Reference
+Significant over-abundant vs Reference
 
 ```{r}
 edger_gn_up <- edger_gn
@@ -133,14 +264,16 @@ rowData(edger_gn_up)$ADJ.PVAL <- ifelse(
   rowData(edger_gn_up)$FC < 0, 1, rowData(edger_gn_up)$ADJ.PVAL
 )
 ora_gn_up <- sbea(
-  method = 'ora', se = edger_gn_up, gs = gn_sigs, alpha = 0.1, perm = 0, 
+  method = 'ora', se = edger_gn_up, gs = gn_sigs_bk, alpha = 0.1, perm = 0, 
   padj.method = 'BH'
 )
-ora_gn_up_res <- as.data.frame(ora_gn_up$res.tbl)
-myDT(ora_gn_up_res)
+ora_gn_up_res <- as.data.frame(ora_gn_up$res.tbl) |> 
+    mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET )) |> 
+    filter(GENE.SET != "background")
+myDataTable(ora_gn_up_res)
 ```
 
-### Significant under-abundant vs Reference
+Significant under-abundant vs Reference
 
 ```{r}
 edger_gn_down <- edger_gn
@@ -148,111 +281,17 @@ rowData(edger_gn_down)$ADJ.PVAL <- ifelse(
   rowData(edger_gn_down)$FC < 1, 0, rowData(edger_gn_down)$ADJ.PVAL
 )
 ora_gn_down <- sbea(
-  method = 'ora', se = edger_gn_down, gs = gn_sigs, alpha = 0.1, perm = 0, 
+  method = 'ora', se = edger_gn_down, gs = gn_sigs_bk, alpha = 0.1, perm = 0, 
   padj.method = 'BH'
 )
-ora_gn_down_res <- as.data.frame(ora_gn_down$res.tbl)
-myDT(ora_gn_down_res)
+ora_gn_down_res <- as.data.frame(ora_gn_down$res.tbl) |> 
+    mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET )) |> 
+    filter(GENE.SET != "background")
+myDataTable(ora_gn_down_res)
 ```
-
-
-# Analysis at the OTU level with biosis signatures
-
-## Microbiome data
-
-```{r}
-tse
-```
-
-## otu signatures (biosis)
-
-```{r}
-genera <- rowData(tse)$Genus 
-names(genera) <- rownames(tse)
-otu_sigs <- lapply(gn_sigs, function(x) names(genera)[which(genera %in% x)])
-lapply(otu_sigs, head)
-```
-
-## Differential abundance
-
-```{r}
-tse$GROUP <- ifelse(
-  tse$smokingstatus == 'Never smoker', 0, 1
-)
-edger <- deAna(
-  expr = tse, de.method = 'edgeR', padj.method = 'BH', 
-  filter.by.expr = FALSE
-)
-
-```
-
-## Enrichment (GSEA)
-
-```{r}
-design2 = model.matrix(~smokingstatus, data = data.frame(colData(tse)))
-assay.voom2 <- limma::voom(
-  SummarizedExperiment::assay(edger), design = design2, plot = FALSE
-)
-SummarizedExperiment::assay(edger) <- assay.voom2$E
-class(SummarizedExperiment::assay(edger)) <- "matrix"
-
-gsea <- sbea(
-  method = 'gsea', se = edger, gs = otu_sigs, perm = 1000, padj.method = 'BH',
-  alpha = 0.1
-)
-gsea_res <- as.data.frame(gsea$res.tbl)
-myDT(gsea_res, 'caption2')
-```
-
-## Enrichment (ORA)
-
-### Significant (mixed) vs Non-Significant
-
-```{r, message=FALSE}
-ora <- sbea(
-  method = 'ora', se = edger, gs = otu_sigs, perm = 0, 
-  padj.method = 'BH', alpha = 0.1
-)
-ora_res <- as.data.frame(ora$res.tbl)
-myDT(ora_res, 'caption')
-```
-
-
-### Significant over-abundant vs Reference
-
-```{r}
-edger_up <- edger
-rowData(edger_up)$ADJ.PVAL <- ifelse(
-  rowData(edger_up)$FC < 0, 1, rowData(edger_up)$ADJ.PVAL
-)
-ora_up <- sbea(
-  method = 'ora', se = edger_up, gs = otu_sigs, alpha = 0.1, perm = 0, 
-  padj.method = 'BH'
-)
-ora_up_res <- as.data.frame(ora_up$res.tbl)
-myDT(ora_up_res)
-```
-
-### Significant under-abundant vs Reference
-
-```{r}
-edger_down <- edger
-rowData(edger_down)$ADJ.PVAL <- ifelse(
-  rowData(edger_down)$FC < 1, 0, rowData(edger_down)$ADJ.PVAL
-)
-ora_down <- sbea(
-  method = 'ora', se = edger_down, gs = otu_sigs, alpha = 0.1, perm = 0, 
-  padj.method = 'BH'
-)
-ora_down_res <- as.data.frame(ora_down$res.tbl)
-myDT(ora_down_res)
-```
-
 
 # Session information
 
 ```{r}
 sessioninfo::session_info()
 ```
-
-
