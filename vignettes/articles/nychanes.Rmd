@@ -158,7 +158,8 @@ gsea <- sbea(
   method = 'gsea', se = edger_norm, gs = otu_sigs, perm = 1000, alpha = 0.1 # This is for DA taxa
 )
 gsea_res <- as.data.frame(gsea$res.tbl) |> 
-    mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET))
+    mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET)) |> 
+    mutate(PVAL = round(PVAL, 3))
 myDataTable(gsea_res)
 ```
 
@@ -173,7 +174,8 @@ ora <- sbea(
 )
 ora_res <- as.data.frame(ora$res.tbl) |> 
     mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET)) |> 
-    filter(GENE.SET != "background")
+    filter(GENE.SET != "background") |> 
+    mutate(PVAL = round(PVAL, 3))
 myDataTable(ora_res)
 ```
 
@@ -189,7 +191,8 @@ ora_up <- sbea(
 )
 ora_up_res <- as.data.frame(ora_up$res.tbl) |> 
     mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET)) |> 
-    filter(GENE.SET != "background")
+    filter(GENE.SET != "background") |> 
+    mutate(PVAL = round(PVAL, 3))
 myDataTable(ora_up_res)
 ```
 
@@ -206,7 +209,8 @@ ora_down <- sbea(
 )
 ora_down_res <- as.data.frame(ora_down$res.tbl) |> 
     mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET)) |> 
-    filter(GENE.SET != "background")
+    filter(GENE.SET != "background") |> 
+    mutate(PVAL = round(PVAL, 3))
 myDataTable(ora_down_res)
 ```
 
@@ -252,7 +256,8 @@ ora_gn <- sbea(
 )
 ora_gn_res <- as.data.frame(ora_gn$res.tbl) |> 
     mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET)) |> 
-    filter(GENE.SET != "background")
+    filter(GENE.SET != "background") |> 
+    mutate(PVAL = round(PVAL, 3))
 myDataTable(ora_gn_res)
 ```
 
@@ -269,7 +274,8 @@ ora_gn_up <- sbea(
 )
 ora_gn_up_res <- as.data.frame(ora_gn_up$res.tbl) |> 
     mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET)) |> 
-    filter(GENE.SET != "background")
+    filter(GENE.SET != "background") |> 
+    mutate(PVAL = round(PVAL, 3))
 myDataTable(ora_gn_up_res)
 ```
 
@@ -286,7 +292,8 @@ ora_gn_down <- sbea(
 )
 ora_gn_down_res <- as.data.frame(ora_gn_down$res.tbl) |> 
     mutate(GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, "*"), GENE.SET)) |> 
-    filter(GENE.SET != "background")
+    filter(GENE.SET != "background") |> 
+    mutate(PVAL = round(PVAL, 3))
 myDataTable(ora_gn_down_res)
 ```
 
