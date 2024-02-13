@@ -28,7 +28,7 @@ library(tidyr)
 library(ggplot2)
 ```
 
-# Microbiome data
+## Data
 
 ```{r import tse data, message=FALSE}
 dat_name <- 'HMP_2012_16S_gingival_V35'
@@ -46,7 +46,7 @@ Number of samples per condition
 table(tse_subset$body_subsite)
 ```
 
-# bugphyzz signatures
+## bugphyzz signatures
 
 Signatures at the genus level:
 
@@ -57,7 +57,9 @@ gn_sigs <- makeSignatures(
     dat = aer, tax_id_type = 'Taxon_name', tax_level = 'genus'
 )
 ## Only one genus is missing  (TG5), which is ambiguous in the ncbi taxonomy
-mean(as.integer(rownames(tse_subset) %in% unique(unlist(gn_sigs, use.names = FALSE ))))
+mean(as.integer(
+    rownames(tse_subset) %in% unique(unlist(gn_sigs, use.names = FALSE ))
+))
 ```
 
 Without ASR some annotations are missing:
@@ -67,41 +69,39 @@ gn_sigs_noasr <- makeSignatures(
     dat = aer, tax_id_type = 'Taxon_name', tax_level = 'genus',
     evidence = c("exp", "igc", "tas", "nas", "tax")
 )
-mean(as.integer(rownames(tse_subset) %in% unique(unlist(gn_sigs_noasr, use.names = FALSE ))))
+mean(as.integer(
+    rownames(tse_subset) %in% unique(unlist(gn_sigs_noasr, use.names = FALSE))
+))
 ```
 
-
-# Differential abundance
+## Differential abundance
 
 ```{r}
 tse_subset$GROUP <- ifelse(
   tse_subset$body_subsite == 'subgingival_plaque', 0, 1
 )
 edger <- deAna(
-    expr = tse_subset, de.method = 'edgeR', padj.method = 'BH', 
+    expr = tse_subset, de.method = 'edgeR', padj.method = 'fdr', 
     filter.by.expr = FALSE, 
 )
+edger <- limmaVoom(edger)
 ```
 
-# Enrichment (GSEA)
+## Enrichment (GSEA)
 
--   `*` significant (FDR \< 0.1)
+-   `*` significant (Pvalue < 0.05)
 -   `+` enriched in supragingival plaque
 -   `-` enriched in subgingival plaque
 
 ```{r, message=FALSE}
-edger <- limmaVoom(edger)
 gsea <- sbea(
-  method = 'gsea', se = edger, gs = gn_sigs, perm = 1000, padj.method = 'BH',
-  alpha = 0.1
+  method = 'gsea', se = edger, gs = gn_sigs, perm = 1000,
+  alpha = 0.1 # This is for DA taxa
 )
-gsea_tbl <- as.data.frame(gsea$res.tbl)
-gsea_tbl <- gsea_tbl |> 
-  arrange(PVAL) |> 
+gsea_tbl <- as.data.frame(gsea$res.tbl) |> 
   mutate(
-    GENE.SET = ifelse(ADJ.PVAL < 0.1, paste0(GENE.SET, ' *'), GENE.SET),
-    PVAL = format(PVAL, scientific = TRUE),
-    ADJ.PVAL = format(ADJ.PVAL, scientific = TRUE)
+    GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, ' *'), GENE.SET),
+    PVAL = round(PVAL, 3),
   ) |> 
   rename(BUG.SET = GENE.SET)
 myDataTable(gsea_tbl)
@@ -109,165 +109,99 @@ myDataTable(gsea_tbl)
 
 ## Enrichment (GSEA) no asr
 
+Even without ASR annotations, the  enrichment results are still the same.
+
 ```{r}
-edger <- limmaVoom(edger)
+# edger <- limmaVoom(edger)
 gsea <- sbea(
-  method = 'gsea', se = edger, gs = gn_sigs_noasr, perm = 1000, padj.method = 'BH',
-  alpha = 0.1
+  method = 'gsea', se = edger, gs = gn_sigs_noasr, perm = 1000,
+  alpha = 0.1 # This is for DA taxa
 )
-gsea_tbl <- as.data.frame(gsea$res.tbl)
-gsea_tbl <- gsea_tbl |> 
-  arrange(PVAL) |> 
+gsea_tbl <- as.data.frame(gsea$res.tbl) |> 
   mutate(
-    GENE.SET = ifelse(ADJ.PVAL < 0.1, paste0(GENE.SET, ' *'), GENE.SET),
-    PVAL = format(PVAL, scientific = TRUE),
-    ADJ.PVAL = format(ADJ.PVAL, scientific = TRUE)
+    GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, ' *'), GENE.SET),
+    PVAL = round(PVAL, 3),
   ) |> 
   rename(BUG.SET = GENE.SET)
 myDataTable(gsea_tbl)
 ```
 
-# Enrichment (ORA)
+## Enrichment (ORA)
 
 Combine into a single table:
 
 ```{r}
-## Up
 edger_up <- edger
+gn_sigs_bk <- c(gn_sigs, list(background = rownames(edger)))
 rowData(edger_up)$ADJ.PVAL <- ifelse(
   rowData(edger_up)$FC < 0, 1, rowData(edger_up)$ADJ.PVAL
 )
 ora_up <- sbea(
-  method = 'ora', se = edger_up, gs = gn_sigs, alpha = 0.1, perm = 0, 
-  padj.method = 'BH'
+  method = 'ora', se = edger_up, gs = gn_sigs_bk, perm = 0,
+  alpha = 0.1 # This is for DA taxa
 )
 ora_up_df <- as.data.frame(ora_up$res.tbl)
 ora_up_df$BODY.SITE <- 'Supragingival plaque'
 
-## Down
 edger_down <- edger
 rowData(edger_down)$ADJ.PVAL <- ifelse(
   rowData(edger_down)$FC > 0, 1, rowData(edger_down)$ADJ.PVAL
 )
 ora_down <- sbea(
-  method = 'ora', se = edger_down, gs = gn_sigs, alpha = 0.1, perm = 0, 
-  padj.method = 'BH'
+  method = 'ora', se = edger_down, gs = gn_sigs_bk, perm = 0, 
+  alpha = 0.1,
 )
 ora_down_df <- data.frame(ora_down$res.tbl)
 ora_down_df$BODY.SITE <- 'Subgingival plaque'
 
-## ORA
 ora <- bind_rows(ora_up_df, ora_down_df) |> 
   arrange(BODY.SITE, PVAL) |> 
   relocate(BODY.SITE) |> 
   mutate(
-    GENE.SET = ifelse(ADJ.PVAL < 0.1, paste0(GENE.SET, ' *'), GENE.SET),
-    PVAL = format(PVAL, scientific = TRUE),
-    ADJ.PVAL = format(ADJ.PVAL, scientific = TRUE)
+    GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, ' *'), GENE.SET),
+    PVAL = round(PVAL, 3),
   ) |> 
   dplyr::rename(
     BUG.SET = GENE.SET, NR.BUGS = NR.GENES, NR.SIG.BUGS = NR.SIG.GENES
-  )
-
-# caption2 <- c(
-#   'Table 2. ORA results comparing subgingival vs supragingival plaque.
-#   NR.BUGS = Number of annotated bugs in the reference set, 
-#   NR.SIG.BUGS = Number of annotated bugs with significant differential
-#   abundance (FC > 0 & ADJ.PVAL < 0.1). Bug sets marked with an asterisk (*)
-#   indicate significant enrichment resuts (adjusted p-value < 0.1). 
-#   Benjamini & Hochberg (BH) was used for P value adjustment.'
-# )
-
-# datatable(
-#   data = ora,
-#   filter = 'top',
-#   rownames = FALSE,
-#   extensions = 'Buttons',
-#   options = list(
-#     dom = 'Bft',
-#     buttons = list('copy', 'print'),
-#     iDisplayLength = 10,
-#     keys = TRUE,
-#     autoWidth = TRUE
-#   ),
-#   caption = htmltools::tags$caption(
-#     style = 'caption-side: top; text-align: left;',
-#     caption2
-#   )
-# )
+  ) |> 
+    filter(BUG.SET != "background")
 myDataTable(ora)
 ```
 
 
 # ORA - NO ASR
 
-
 ```{r}
-## Up
-edger_up <- edger
-rowData(edger_up)$ADJ.PVAL <- ifelse(
-  rowData(edger_up)$FC < 0, 1, rowData(edger_up)$ADJ.PVAL
+gn_sigs_noasr_bk <- c(gn_sigs_noasr, list(background = rownames(edger)))
+ora_up_noasr <- sbea(
+  method = 'ora', se = edger_up, gs = gn_sigs_noasr_bk, perm = 0, 
+  alpha = 0.1 # This is for DA taxa
 )
-ora_up <- sbea(
-  method = 'ora', se = edger_up, gs = gn_sigs_noasr, alpha = 0.1, perm = 0, 
-  padj.method = 'BH'
-)
-ora_up_df <- as.data.frame(ora_up$res.tbl)
-ora_up_df$BODY.SITE <- 'Supragingival plaque'
+ora_up_df_noasr <- as.data.frame(ora_up_noasr$res.tbl)
+ora_up_df_noasr$BODY.SITE <- 'Supragingival plaque'
 
-## Down
-edger_down <- edger
-rowData(edger_down)$ADJ.PVAL <- ifelse(
-  rowData(edger_down)$FC > 0, 1, rowData(edger_down)$ADJ.PVAL
+ora_down_noasr <- sbea(
+  method = 'ora', se = edger_down, gs = gn_sigs_noasr_bk, perm = 0, 
+  alpha = 0.1 # This is for DA taxa
 )
-ora_down <- sbea(
-  method = 'ora', se = edger_down, gs = gn_sigs_noasr, alpha = 0.1, perm = 0, 
-  padj.method = 'BH'
-)
-ora_down_df <- data.frame(ora_down$res.tbl)
-ora_down_df$BODY.SITE <- 'Subgingival plaque'
+ora_down_df_noasr <- data.frame(ora_down_noasr$res.tbl)
+ora_down_df_noasr$BODY.SITE <- 'Subgingival plaque'
 
-## ORA
-ora <- bind_rows(ora_up_df, ora_down_df) |> 
+ora_noasr <- bind_rows(ora_up_df_noasr, ora_down_df_noasr) |> 
   arrange(BODY.SITE, PVAL) |> 
   relocate(BODY.SITE) |> 
   mutate(
-    GENE.SET = ifelse(ADJ.PVAL < 0.1, paste0(GENE.SET, ' *'), GENE.SET),
-    PVAL = format(PVAL, scientific = TRUE),
-    ADJ.PVAL = format(ADJ.PVAL, scientific = TRUE)
+    GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, ' *'), GENE.SET),
+    PVAL = round(PVAL, 3),
   ) |> 
   dplyr::rename(
     BUG.SET = GENE.SET, NR.BUGS = NR.GENES, NR.SIG.BUGS = NR.SIG.GENES
-  )
+  ) |> 
+    filter(BUG.SET != "background")
 
-# caption2 <- c(
-#   'Table 2. ORA results comparing subgingival vs supragingival plaque.
-#   NR.BUGS = Number of annotated bugs in the reference set, 
-#   NR.SIG.BUGS = Number of annotated bugs with significant differential
-#   abundance (FC > 0 & ADJ.PVAL < 0.1). Bug sets marked with an asterisk (*)
-#   indicate significant enrichment resuts (adjusted p-value < 0.1). 
-#   Benjamini & Hochberg (BH) was used for P value adjustment.'
-# )
-
-# datatable(
-#   data = ora,
-#   filter = 'top',
-#   rownames = FALSE,
-#   extensions = 'Buttons',
-#   options = list(
-#     dom = 'Bft',
-#     buttons = list('copy', 'print'),
-#     iDisplayLength = 10,
-#     keys = TRUE,
-#     autoWidth = TRUE
-#   ),
-#   caption = htmltools::tags$caption(
-#     style = 'caption-side: top; text-align: left;',
-#     caption2
-#   )
-# )
-myDataTable(ora)
+myDataTable(ora_noasr)
 ```
+
 
 # Quick checks
 
