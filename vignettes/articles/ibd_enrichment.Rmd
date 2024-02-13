@@ -69,6 +69,15 @@ edger <- deAna(
 dim(edger)
 ```
 
+
+>Almost all bacteria found in the SummarizedExperiment are anaerobic.
+Maybe a different approach would be more convenient, like merging several
+datasets in CuratedMetagenomicData.
+
+```{r}
+lapply(sp_sigs, function(x) sum(x %in% rownames(edger)))
+```
+
 # Enrichment (GSEA) - bugphyzz:
 
 ```{r, message=FALSE, warning=FALSE}
