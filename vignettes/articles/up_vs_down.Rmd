@@ -345,26 +345,31 @@ dim(sp_df)
 ## Merge gn and sp
 
 ```{r}
-mainDF <- bind_rows(gn_df, sp_df)
+mainDF <- bind_rows(gn_df, sp_df) |> 
+    mutate(
+        fdr = round(p.adjust(p_value, method = "fdr"), 3),
+        p_value = round(p_value, 3),
+    ) |> 
+    relocate(fdr, .after = p_value)
 dim(mainDF)
 ```
 
 ## odds ratio - genus - table up
 
 ```{r}
-mainDF |> 
+genus_table_up <- mainDF |> 
     filter(rank == "genus") |> 
     filter(p_value < 0.05, odds_ratio > 1) |> 
-    arrange(-odds_ratio) |> 
-    {\(y) myDataTable(y, 30)}()
+    arrange(-odds_ratio)
+myDataTable(genus_table_up, 30)
 ```
 
 ## Odds ratio - genus - heatmap up
 
 ```{r, fig.height=9}
-gn_mat_up <- mainDF |> 
-    filter(rank == "genus") |> 
-    filter(p_value < 0.05, odds_ratio > 1) |> 
+gn_mat_up <- genus_table_up |> 
+    # filter(rank == "genus") |> 
+    # filter(p_value < 0.05, odds_ratio > 1) |> 
     count(Category, bp_sig) |>
     pivot_wider(
         names_from = "Category", values_from = "n", values_fill = 0
@@ -398,17 +403,18 @@ gn_hp_up
 ## odds ratio - genus - table down
 
 ```{r}
-gn_df |> 
+genus_table_down <- mainDF |> 
+    filter(rank == "genus") |> 
     filter(p_value < 0.05, odds_ratio < 1) |> 
-    arrange(-odds_ratio) |> 
-    {\(y) myDataTable(y, length(y))}()
+    arrange(-odds_ratio)
+myDataTable(genus_table_down, 30)
 ```
 
 ## odds ratio - genus - heatmap down
 
 ```{r fig.height=9}
-gn_mat_down <- mainDF |> 
-    filter(rank == "genus") |> 
+gn_mat_down <- genus_table_down |> 
+    # filter(rank == "genus") |> 
     filter(p_value < 0.05, odds_ratio < 1) |> 
     count(Category, bp_sig) |>
     pivot_wider(
@@ -435,18 +441,18 @@ gn_hp_down
 ## odds ratio - species - table up
 
 ```{r}
-mainDF |> 
+species_table_up <- mainDF |> 
     filter(rank == "species") |> 
     filter(p_value < 0.05, odds_ratio > 1) |> 
-    arrange(-odds_ratio) |> 
-    {\(y) myDataTable(y, nrow(y))}()
+    arrange(-odds_ratio)
+myDataTable(species_table_up, 30)
 ```
 
 ## Odds ratio - species - heatmap up
 
 ```{r, fig.height=9}
-sp_mat_up <- mainDF |> 
-    filter(rank == "species") |> 
+sp_mat_up <- species_table_up |> 
+    # filter(rank == "species") |> 
     filter(p_value < 0.05, odds_ratio > 1) |> 
     count(Category, bp_sig) |>
     pivot_wider(
@@ -474,18 +480,19 @@ sp_hp_up
 ## Odds ratio - species - table down
 
 ```{r}
-mainDF |> 
+species_table_down <- mainDF |> 
     filter(rank == "species") |> 
     filter(p_value < 0.05, odds_ratio < 1) |> 
-    arrange(-odds_ratio) |> 
-    {\(y) myDataTable(y, length(y))}()
+    arrange(-odds_ratio)
+
+myDataTable(species_table_down, 30)
 ```
 
 ## Odds ratio - species - heatmap down
 
 ```{r, fig.height=9}
-sp_mat_down <- mainDF |> 
-    filter(rank == "species") |> 
+sp_mat_down <- species_table_down |> 
+    # filter(rank == "species") |> 
     filter(p_value < 0.05, odds_ratio < 1) |> 
     count(Category, bp_sig) |>
     pivot_wider(
