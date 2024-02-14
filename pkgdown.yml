@@ -3,6 +3,7 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   bsdb_metasignatures: bsdb_metasignatures.html
+  bsdb_signatures: bsdb_signatures.html
   data_integration_and_stats: data_integration_and_stats.html
   ibd_enrichment: ibd_enrichment.html
   nychanes: nychanes.html
@@ -10,5 +11,5 @@ articles:
   subgingival_plaque: subgingival_plaque.html
   up_vs_down: up_vs_down.html
   validation: validation.html
-last_built: 2024-02-14T19:12Z
+last_built: 2024-02-14T21:52Z
 
