@@ -10,9 +10,15 @@ navbar:
     - text: "Known ground truth - Subgingival vs supragingival plaque"
       href: articles/subgingival_plaque.html
     - text: "High-throughput ORA with BSDB meta-signatures"
-      href: articles/bsdb2.html
-    - text: "Odds Ratio - Up vs Down"
-      href: articles/up_vs_down.html
+      href: articles/bsdb_metasignatures.html
+    - text: "High-throughput ORA with BSDB meta-signatures (no intersect)"
+      href: articles/bsdb_metasignatures_nointersect.html
+    - text: "High-throughput ORA with BSDB signatures"
+      href: articles/bsdb_signatures.html
+    - text: "Odds Ratio - Up vs Down - signatures"
+      href: articles/up_vs_down_signatures.html
+    - text: "Odds Ratio - Up vs Down - metasignatures"
+      href: articles/up_vs_down_metasignatures_nointersect.html
     - text: "Reproducibility of previous study - NYCHANES study - bugphyzz"
       href: articles/nychanes.html
     - text: "Reproducibility of previous study - NYCHANES study - original annotations"
