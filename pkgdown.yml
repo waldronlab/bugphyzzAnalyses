@@ -2,6 +2,7 @@ pandoc: 3.1.1
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
+  TypicalMicrobiomeSignatures: TypicalMicrobiomeSignatures.html
   bsdb_metasignatures: bsdb_metasignatures.html
   bsdb_metasignatures_nointersect: bsdb_metasignatures_nointersect.html
   bsdb_signatures: bsdb_signatures.html
@@ -13,5 +14,5 @@ articles:
   up_vs_down_metasignatures_nointersect: up_vs_down_metasignatures_nointersect.html
   up_vs_down_signatures: up_vs_down_signatures.html
   validation: validation.html
-last_built: 2024-02-15T23:12Z
+last_built: 2024-02-15T23:16Z
 
