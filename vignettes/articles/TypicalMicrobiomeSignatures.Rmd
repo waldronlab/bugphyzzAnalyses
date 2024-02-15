@@ -132,22 +132,23 @@ y <- x |>
         pull(.x[row_n,], p)
     })
 
-(exp(y) - 1) * 100
+print((exp(y) - 1) * 100)
+```
 
+```{r}
 pl <- map2(x, y,  ~ {
     .x |>
         ggplot(aes(p, ranking)) +
         geom_point(shape = 21) +
         ggtitle(paste0(unique(.x$`Body site`), "_", unique(.x$Rank))) +
         geom_vline(xintercept = .y, color = "red") +
+        labs(y = "Ranking", x = "log(Prevalence + 1)") +
         theme_bw()
 })
 
 plottt <- ggpubr::ggarrange(plotlist = pl)
 plottt
-
 ```
-
 
 ## Session info
 
