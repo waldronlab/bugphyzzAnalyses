@@ -1,0 +1,157 @@
+---
+title: "TypicalMicrobiomeSignatures"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(bugphyzzAnalyses)
+library(dplyr)
+library(ggplot2)
+library(purrr)
+library(tidyr)
+```
+
+## Data
+
+```{r}
+url <- "https://zenodo.org/records/7622129/files/waldronlab/TypicalMicrobiomeSignaturesExports-v1.0.1.zip?download=1"
+temp_dir <- tempdir()
+temp_file <- file.path(temp_dir, "tms.zip")
+download.file(url = url, destfile = temp_file)
+unzip(temp_file, exdir = temp_dir, junkpaths = TRUE)
+csv_files <- list.files(temp_dir, pattern = "csv", full.names = TRUE)
+l <- map(csv_files,  ~ {
+    .x |> 
+        read.csv() |> 
+        pivot_longer(
+            names_to = "body site", values_to = "prevalence",
+            cols = 3:last_col()
+        ) |> 
+        mutate(
+            `body site` = sub("_(species|genus)_prevalence$", "", `body site`)
+        )
+})
+names(l) <- sub("^.*matrix_(.*).csv$", "\\1", csv_files)
+tms <- bind_rows(l, .id = "rank_agegroup") |> 
+    separate(
+        col = "rank_agegroup", into = c("rank", "age group"),
+        sep = "_", remove = TRUE
+    ) |> 
+    relocate(
+        `Age group` = `age group`, Rank = rank, `NCBI ID` = NCBI, `Taxon name` = name,
+        `Body site` = `body site`, Prevalence = prevalence
+    ) |> 
+    filter(`Age group` == "adult") |> 
+    mutate(
+        `Body site` = case_when(
+            `Body site` == "stool" ~ "feces",
+            `Body site` == "oralcavity" ~ "mouth",
+            TRUE ~ `Body site`
+        )
+    )
+
+thr <- c(0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3, 0.5)
+body_site <- unique(tms$`Body site`)
+
+
+tmsl <- split(tms, tms$`Body site`)
+
+
+
+dat <- map(tmsl, ~ {
+    output <- vector("list", length(thr))
+    for (i in seq_along(output)) {
+        names(output)[i] <- as.character(thr[i])
+        output[[i]] <- count(.x[which(.x$Prevalence > thr[i]),], `Body site`, Rank)
+    }
+    bind_rows(output, .id = "thr")
+}) |> 
+    bind_rows() |> 
+    mutate(thr = as.double(thr) * 100)
+head(dat)    
+```
+
+```{r, fig.height=10, fig.width=15}
+(
+    p <- dat |> 
+        mutate(thr = factor(
+            thr, levels = thr, labels = paste0(thr, "%")
+        )) |> 
+        # filter(thr != "0%") |> 
+        # ggplot(aes(`Body site`, n)) +
+        ggplot(aes(`thr`, n)) +
+        # geom_col(aes(fill = thr), position = position_dodge2(0.9), alpha = 1) + 
+        geom_col(position = position_dodge2(0.9), alpha = 1) + 
+        geom_text(aes(label = n), position = position_dodge2(0.9), vjust = -0.5) +
+        # scale_fill_manual(
+        #     values = viridis::viridis(n = length(thr), option = "plasma"),
+        # ) +
+        facet_grid(Rank ~ `Body site`, scales = "free", space = "free", ) +
+        # facet_wrap(~ Rank, nrow = 2, scales = "free") +
+        labs(x = "Prevalence threshold", y = "Number of taxa") +
+        theme_bw()
+)
+```
+
+
+
+
+
+
+
+
+
+```{r}
+
+x <- tms |> 
+    {\(y) split(y, y$`Body site`)}() |> 
+    map(~ split(.x, .x$Rank)) |> 
+    list_flatten() |> 
+    map(~ {
+        .x |> 
+            arrange(-Prevalence) |> 
+            mutate(
+                ranking = row_number(),
+                p = log(Prevalence + 1)
+            )
+    })
+
+
+
+y <- x |> 
+    map_dbl(~ {
+        row_n <- .x |> 
+            select(p, ranking) |> 
+            pathviewr::find_curve_elbow()
+        pull(.x[row_n,], p)
+    })
+
+(exp(y) - 1) * 100
+
+pl <- map2(x, y,  ~ {
+    .x |>
+        ggplot(aes(p, ranking)) +
+        geom_point(shape = 21) +
+        ggtitle(paste0(unique(.x$`Body site`), "_", unique(.x$Rank))) +
+        geom_vline(xintercept = .y, color = "red") +
+        theme_bw()
+})
+
+plottt <- ggpubr::ggarrange(plotlist = pl)
+plottt
+
+```
+
+
+## Session info
+
+```{r}
+sessioninfo::session_info()
+```
+
