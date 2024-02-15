@@ -65,7 +65,7 @@ tms <- bind_rows(l, .id = "rank_agegroup") |>
             TRUE ~ `Body site`
         )
     ) |> 
-    filter(Prevalence > 0.01)
+    filter(Prevalence > 0.04)
 head(tms)
 ```
 
@@ -572,12 +572,12 @@ mat_bodysite_down <- en_down |>
     select(-n_enrich, -bodysite_total) |> 
     pivot_wider(
         names_from = 'body_site', values_from = 'per', values_fill = 0
-    ) |> 
+    ) |>  
     as.data.frame() |> 
     tibble::column_to_rownames(var = 'sig_name') |> 
     as.matrix()
-mat_bodysite_down <- mat_bodysite_down[,summary_bodysite_down$body_site]
-mat_bodysite_down <- mat_bodysite_down[rownames(summary_down_freq),]
+mat_bodysite_down <- mat_bodysite_down[,summary_bodysite_down$body_site, drop = FALSE]
+mat_bodysite_down <- mat_bodysite_down[rownames(summary_down_freq), ,drop = FALSE]
 ```
 
 Heatmap:

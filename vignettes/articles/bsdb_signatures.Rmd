@@ -63,7 +63,7 @@ tms <- bind_rows(l, .id = "rank_agegroup") |>
             TRUE ~ `Body site`
         )
     ) |> 
-    filter(Prevalence > 0.01)
+    filter(Prevalence > 0.05)
 head(tms)
 ```
 
