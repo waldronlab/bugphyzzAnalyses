@@ -62,8 +62,8 @@ tms <- bind_rows(l, .id = "rank_agegroup") |>
             `Body site` == "oralcavity" ~ "mouth",
             TRUE ~ `Body site`
         )
-    ) |> 
-    filter(Prevalence > 0.01)
+    )
+    # filter(Prevalence > 0.01)
 head(tms)
 ```
 
@@ -113,14 +113,19 @@ bp <- importBugphyzz()
 TypicalMicrobiomeSignatures:
 
 ```{r}
+body_sites <- c("skin", "vagina", "mouth", "feces")
 ranks <- c("genus", "species")
+thrs <- elbows()
 tms_sigs <- vector("list", length(body_sites) * length(ranks))
 index <- 1
 for (i in seq_along(body_sites)) {
     for (j in seq_along(ranks)) {
-        names(tms_sigs)[index] <- paste0(body_sites[i], "_", ranks[j])
+        tms_name <- paste0(body_sites[i], "_", ranks[j])
+        names(tms_sigs)[index] <- tms_name
+        print(tms_name)
         tms_sigs[[index]] <- tms |> 
             filter(`Body site` == body_sites[i], Rank == ranks[j]) |> 
+            filter(Prevalence >= thrs[tms_name]) |> 
             pull(`NCBI ID`)
         index <- index + 1
     }
