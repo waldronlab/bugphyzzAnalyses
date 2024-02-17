@@ -1,20 +1,26 @@
 ---
-title: "TypicalMicrobiomeSignatures"
+title: "Choosing thresholds for TypicalMicrobiomeSignatures"
+output:
+    html_document:
+        toc: true
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  message = FALSE
 )
 ```
 
-```{r setup}
+```{r setup, message=FALSE}
 library(bugphyzzAnalyses)
 library(dplyr)
 library(ggplot2)
 library(purrr)
 library(tidyr)
+library(pathviewr)
+library(ggpubr)
 ```
 
 ## Data
@@ -26,7 +32,7 @@ temp_file <- file.path(temp_dir, "tms.zip")
 download.file(url = url, destfile = temp_file)
 unzip(temp_file, exdir = temp_dir, junkpaths = TRUE)
 csv_files <- list.files(temp_dir, pattern = "csv", full.names = TRUE)
-l <- map(csv_files,  ~ {
+csv_data <- map(csv_files,  ~ {
     .x |> 
         read.csv() |> 
         pivot_longer(
@@ -37,8 +43,8 @@ l <- map(csv_files,  ~ {
             `body site` = sub("_(species|genus)_prevalence$", "", `body site`)
         )
 })
-names(l) <- sub("^.*matrix_(.*).csv$", "\\1", csv_files)
-tms <- bind_rows(l, .id = "rank_agegroup") |> 
+names(csv_data) <- sub("^.*matrix_(.*).csv$", "\\1", csv_files)
+tms <- bind_rows(csv_data, .id = "rank_agegroup") |> 
     separate(
         col = "rank_agegroup", into = c("rank", "age group"),
         sep = "_", remove = TRUE
@@ -47,7 +53,7 @@ tms <- bind_rows(l, .id = "rank_agegroup") |>
         `Age group` = `age group`, Rank = rank, `NCBI ID` = NCBI, `Taxon name` = name,
         `Body site` = `body site`, Prevalence = prevalence
     ) |> 
-    filter(`Age group` == "adult") |> 
+    # filter(`Age group` == "adult") |>x
     mutate(
         `Body site` = case_when(
             `Body site` == "stool" ~ "feces",
@@ -55,100 +61,189 @@ tms <- bind_rows(l, .id = "rank_agegroup") |>
             TRUE ~ `Body site`
         )
     )
-
-thr <- c(0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3, 0.5)
-body_site <- unique(tms$`Body site`)
-
-
-tmsl <- split(tms, tms$`Body site`)
-
-
-
-dat <- map(tmsl, ~ {
-    output <- vector("list", length(thr))
-    for (i in seq_along(output)) {
-        names(output)[i] <- as.character(thr[i])
-        output[[i]] <- count(.x[which(.x$Prevalence > thr[i]),], `Body site`, Rank)
-    }
-    bind_rows(output, .id = "thr")
-}) |> 
-    bind_rows() |> 
-    mutate(thr = as.double(thr) * 100)
-head(dat)    
+glimpse(tms, width = 50)
 ```
-
-```{r, fig.height=10, fig.width=15}
-(
-    p <- dat |> 
-        mutate(thr = factor(
-            thr, levels = thr, labels = paste0(thr, "%")
-        )) |> 
-        # filter(thr != "0%") |> 
-        # ggplot(aes(`Body site`, n)) +
-        ggplot(aes(`thr`, n)) +
-        # geom_col(aes(fill = thr), position = position_dodge2(0.9), alpha = 1) + 
-        geom_col(position = position_dodge2(0.9), alpha = 1) + 
-        geom_text(aes(label = n), position = position_dodge2(0.9), vjust = -0.5) +
-        # scale_fill_manual(
-        #     values = viridis::viridis(n = length(thr), option = "plasma"),
-        # ) +
-        facet_grid(Rank ~ `Body site`, scales = "free", space = "free", ) +
-        # facet_wrap(~ Rank, nrow = 2, scales = "free") +
-        labs(x = "Prevalence threshold", y = "Number of taxa") +
-        theme_bw()
-)
-```
-
-
-
-
-
-
-
-
 
 ```{r}
+vars <- c("Body site", "Rank", "Age group")
+map_at(tms[,vars], .at = cols, ~ unique(.x)) 
+```
 
-x <- tms |> 
+Separate by body site, rank, and age group
+
+```{r}
+tms_sets_ac <- tms |> 
     {\(y) split(y, y$`Body site`)}() |> 
     map(~ split(.x, .x$Rank)) |> 
     list_flatten() |> 
-    map(~ {
-        .x |> 
-            arrange(-Prevalence) |> 
-            mutate(
-                ranking = row_number(),
-                p = log(Prevalence + 1)
-            )
-    })
+    map(~ split(.x, .x$`Age group`)) |> 
+    list_flatten()
+data.frame(n_taxa = map_int(tms_sets_ac, nrow))
+```
+
+Let's compare using the same prevalence threshold:
+
+```{r}
+body_sites <- c("feces", "skin", "vagina", "mouth")
+ranks <- c("genus", "species")
+grid <- expand.grid(body_site = body_sites, rank = ranks)
+combined_vars <- sprintf('%s_%s', grid$body_site, grid$rank)
+output <- vector("list", length(combined_vars))
+for (i in seq_along(combined_vars)) {
+    l <- tms_sets_ac[grep(combined_vars[i], names(tms_sets_ac))]
+    l <- map(l, ~ filter(.x, Prevalence > 0.01))
+    names(output)[i] <- combined_vars[i]
+    if (length(l) == 2) {
+        output[[i]] <- data.frame(
+            adult = nrow(l[[1]]),
+            child = nrow(l[[2]]),
+            inter = length(intersect(l[[1]]$`Taxon name`, l[[2]]$`Taxon name`))
+        )
+    } else {
+        output[[i]] <- data.frame(
+            adult = nrow(l[[1]])
+            # child = nrow(l[[2]]),
+            # inter = length(intersect(l[[1]]$`Taxon name`, l[[2]]$`Taxon name`))
+        )
+    }
+}
+bind_rows(output, .id = "body_site.rank")
+```
+
+Let's use adult signatures only
+
+```{r}
+thr <- c(0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09)
+tms_sets <- tms_sets_ac[grep("adult$", names(tms_sets_ac))]
+names(tms_sets) <- sub("_adult$", "", names(tms_sets))
+
+output <- vector("list", length(tms_sets) * length(thr))
+counter <- 1
+for (i in seq_along(tms_sets)) {
+    for (j in seq_along(thr)) {
+        res <- tms_sets[[i]] |> 
+            filter(Prevalence > thr[j]) |> 
+            count(`Body site`, Rank, name = "n_taxa")
+        res$thr <- thr[j] * 100
+        output[[counter]] <- res
+        counter <- counter  + 1
+    }
+}
+dat <- bind_rows(output)
+head(dat)
+```
+
+
+```{r, fig.height=10, fig.width=15}
+p <- dat |> 
+    mutate(thr = factor(
+        thr, levels = thr, labels = paste0(thr, "%")
+    )) |> 
+    ggplot(aes(thr, n_taxa)) +
+    geom_col(position = position_dodge2(0.9), alpha = 1) + 
+    geom_text(aes(label = n_taxa), position = position_dodge2(0.9), vjust = -0.5) +
+    facet_grid(Rank ~ `Body site`, scales = "free", space = "free", ) +
+    labs(x = "Prevalence threshold", y = "Number of taxa") +
+    theme_bw()
+p
+```
 
 
 
-y <- x |> 
-    map_dbl(~ {
-        row_n <- .x |> 
-            select(p, ranking) |> 
-            pathviewr::find_curve_elbow()
-        pull(.x[row_n,], p)
-    })
+## Normalized prevalence
 
-print((exp(y) - 1) * 100)
+I probably don't need to normalize, since prevalence was obtained from
+normalized abundance data already.
+
+```{r}
+tms_rankings <- map(tms_sets,  ~ {
+    .x |> 
+        mutate(norm_p =  Prevalence / sum(Prevalence) ) |> 
+        # arrange(-Prevalence) |> 
+        arrange(-norm_p) |> 
+        mutate(
+            r = row_number(),
+            log_p = log(norm_p + 1)
+            # log_p = log(Prevalence + 1)
+        )
+})
+
+elbows <- map(tms_rankings, ~ {
+    row_n <- .x |> 
+        select(log_p, r) |>
+        find_curve_elbow(export_type = "row_num") |> 
+        as.integer()
+    .x |> 
+        slice(row_n) |> 
+        select(Prevalence, norm_p, log_p)
+})
 ```
 
 ```{r}
-pl <- map2(x, y,  ~ {
+pl <- map2(tms_rankings, elbows,  ~ {
     .x |>
-        ggplot(aes(p, ranking)) +
+        ggplot(aes(log_p, r)) +
         geom_point(shape = 21) +
-        ggtitle(paste0(unique(.x$`Body site`), "_", unique(.x$Rank))) +
-        geom_vline(xintercept = .y, color = "red") +
-        labs(y = "Ranking", x = "log(Prevalence + 1)") +
+        geom_vline(xintercept = .y$log_p, color = "red") +
+        labs(
+            title = paste0(unique(.x$`Body site`), "_", unique(.x$Rank)),
+            subtitle = paste0("Threshold = ", round(.y$Prevalence * 100), "%"),
+            y = "ranking", x = "log(normalized prevalence + 1)"
+        ) +
         theme_bw()
 })
 
 plottt <- ggpubr::ggarrange(plotlist = pl)
 plottt
 ```
+
+## Not normalized prevalence
+
+```{r}
+tms_rankings <- map(tms_sets,  ~ {
+    .x |> 
+        # mutate(norm_p =  Prevalence / sum(Prevalence) ) |> 
+        arrange(-Prevalence) |>
+        # arrange(-norm_p) |> 
+        mutate(
+            r = row_number(),
+            # log_p = log(norm_p + 1)
+            log_p = log(Prevalence + 1)
+        )
+})
+
+elbows <- map(tms_rankings, ~ {
+    row_n <- .x |> 
+        select(log_p, r) |>
+        find_curve_elbow(export_type = "row_num") |> 
+        as.integer()
+    .x |> 
+        slice(row_n) |> 
+        select(Prevalence, log_p)
+})
+
+pl <- map2(tms_rankings, elbows,  ~ {
+    .x |>
+        ggplot(aes(log_p, r)) +
+        geom_point(shape = 21) +
+        geom_vline(xintercept = .y$log_p, color = "red") +
+        labs(
+            title = paste0(unique(.x$`Body site`), "_", unique(.x$Rank)),
+            subtitle = paste0("Threshold = ", round(.y$Prevalence * 100), "%"),
+            y = "ranking", x = "log(prevalence + 1)"
+        ) +
+        theme_bw()
+})
+
+plottt <- ggpubr::ggarrange(plotlist = pl)
+plottt
+
+```
+```{r}
+map_dbl(elbows, ~ .x$Prevalence)
+```
+
+
 
 ## Session info
 

@@ -3,6 +3,7 @@
 export(calcPredStats)
 export(classif2Table)
 export(createDT)
+export(elbows)
 export(filterTaxa)
 export(getSets)
 export(importBiosis)

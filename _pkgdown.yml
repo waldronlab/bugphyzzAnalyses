@@ -25,3 +25,5 @@ navbar:
       href: articles/nychanes2.html
     - text: "Enrichment in IBD samples"
       href: articles/ibd_enrichment.html
+    - text: "Threhold for TypicalMicrobiomeSignatures"
+      href: articles/TypicalMicrobiomeSignatures.html
