@@ -4,9 +4,6 @@ bp_sigs |> length()
 bsdb_sigs |> length()
 tms_sigs |> names() |> head()
 
-
-
-
 taxids <- unique(unlist(c(bp_sigs, bsdb_sigs, tms_sigs), recursive = TRUE, use.names = FALSE))
 
 ## Get names
@@ -50,10 +47,15 @@ y <- list2df(bp_sigs) |>
 z <- list2df(tms_sigs) |>
     rename(tms_sig = sig_name)
 
-sigTbl <- reduce(list(myDat, x, y, z), ~ left_join(.x, .y,  by = "taxid", relationship = "many-to-many")) |>
+sigTbl <- reduce(
+    .x = list(myDat, x, y, z),
+    .f = ~ left_join(.x, .y,  by = "taxid", relationship = "many-to-many")
+) |>
     filter(!(is.na(bsdb_sig) & is.na(tms_sig)))
 
+fname <- "inst/extdata/sig_table_signatures.tsv"
+
 write.table(
-    sigTbl, quote = FALSE, row.names = FALSE, sep = "\t", file = "inst/extdata/sig_table_metasignatures_nointeresect.tsv"
+    sigTbl, quote = FALSE, row.names = FALSE, sep = "\t", file = fname
 )
 
