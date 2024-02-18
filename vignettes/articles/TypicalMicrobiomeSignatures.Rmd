@@ -179,7 +179,7 @@ elbows <- map(tms_rankings, ~ {
 })
 ```
 
-```{r, fig.height = 10, fit.width = 9}
+```{r, fig.height = 8, fit.width = 12}
 pl <- map2(tms_rankings, elbows,  ~ {
     .x |>
         ggplot(aes(log_p, r)) +
@@ -199,7 +199,7 @@ plottt
 
 ## Not normalized prevalence
 
-```{r, fig.height = 10, fit.width = 9}
+```{r, fig.height = 8, fit.width = 12}
 tms_rankings <- map(tms_sets,  ~ {
     .x |> 
         # mutate(norm_p =  Prevalence / sum(Prevalence) ) |> 
