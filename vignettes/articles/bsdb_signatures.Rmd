@@ -21,6 +21,7 @@ library(purrr)
 library(tidyr)
 library(ComplexHeatmap)
 library(gridExtra)
+# library(VennDiagram)
 ```
 
 ## Data
@@ -636,6 +637,90 @@ p2 <- grid.grabExpr(draw(
 grid.arrange(p2)
 ```
 
+
+## Individual examples
+
+Union:
+
+```{r}
+bsdb_ <- bsdb_sigs$`feces---genus---decreased---obesity---bsdb:74/3/2_obesity:high-BMI_vs_low-BMI_DOWN`
+tms_ <- tms_sigs$feces_genus
+bp_sig_ <- bp_sigs$`bugphyzz:gram stain|gram stain negative|genus`
+bk_ <- unique(c(tms_, bsdb_))
+mse <- microbeSetEnrichment(set = bsdb_, reference = bk_, sigs = list(bp_sig = bp_sig_))
+mse |> 
+    select(ends_with("ted"), p_value, odds_ratio) |> 
+    as.list()
+```
+
+
+```{r, eval=FALSE, echo=FALSE}
+L <- list(
+    `bsdb_74_3_2_feces_down` = bsdb_,
+    `tms_feces` = tms_,
+    `bugphyzz_gram_negative` = bp_sig_
+)
+display_venn <- function(x, ...){
+  grid.newpage()
+  venn_object <- venn.diagram(x, filename = NULL, ...)
+  grid.draw(venn_object)
+}
+
+display_venn(L)
+```
+
+```{r, eval=FALSE, echo=FALSE}
+v <- venn.diagram(
+    x = L, filename = NULL,
+    width = 300, height = 300, resolution = 150
+    # cat.col = c("blue", "red", "darkgreen"),
+    # fill = c("blue", "red", "darkgreen")
+)
+ggsave(v, filename = "my_plot.svg", device = "svg")
+
+```
+
+
+Intersection:
+
+```{r}
+bsdb_ <- bsdb_sigs$`feces---genus---decreased---obesity---bsdb:74/1/2_obesity:obese_vs_non-obese_DOWN`
+tms_ <- tms_sigs$feces_genus
+bp_sig_ <- bp_sigs$`bugphyzz:gram stain|gram stain negative|genus`
+bk_ <- unique(intersect(tms_, bsdb_))
+mse <- microbeSetEnrichment(set = bsdb_, reference = bk_, sigs = list(bp_sig = bp_sig_))
+mse |> 
+    select(ends_with("ted"), p_value, odds_ratio) |> 
+    as.list()
+```
+
+Super BSDB intersect set:
+
+```{r}
+bsdb_ <- bsdb_sigs$`feces---genus---decreased---obesity---bsdb:74/1/2_obesity:obese_vs_non-obese_DOWN`
+tms_ <- tms_sigs$feces_genus
+bp_sig_ <- bp_sigs$`bugphyzz:gram stain|gram stain negative|genus`
+x_ <- unique(unlist(bsdb_sigs[grep("^feces---genus", names(bsdb_sigs))]))
+bk_ <- unique(intersect(tms_, x_))
+mse <- microbeSetEnrichment(set = bsdb_, reference = bk_, sigs = list(bp_sig = bp_sig_))
+mse |> 
+    select(ends_with("ted"), p_value, odds_ratio) |> 
+    as.list()
+```
+
+Super BSDB union set
+
+```{r}
+bsdb_ <- bsdb_sigs$`feces---genus---decreased---obesity---bsdb:74/1/2_obesity:obese_vs_non-obese_DOWN`
+tms_ <- tms_sigs$feces_genus
+bp_sig_ <- bp_sigs$`bugphyzz:gram stain|gram stain negative|genus`
+x_ <- unique(unlist(bsdb_sigs[grep("^feces---genus", names(bsdb_sigs))]))
+bk_ <- unique(tms_, x_)
+mse <- microbeSetEnrichment(set = bsdb_, reference = bk_, sigs = list(bp_sig = bp_sig_))
+mse |> 
+    select(ends_with("ted"), p_value, odds_ratio) |> 
+    as.list()
+```
 
 ```{r, fig.height=13, fig.width=20}
 # x <- c(rep(1, 520), rep(2, 480))
