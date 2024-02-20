@@ -361,23 +361,23 @@ myDataTable <- function(dat, page_len = NULL) {
 #'
 elbows <- function() {
     c(
-        feces_genus = 0.01,
-        feces_species = 0.01,
-        mouth_genus = 0.01,
-        mouth_species = 0.01,
-        skin_genus = 0.01,
-        skin_species = 0.01,
-        vagina_genus = 0.01,
-        vagina_species = 0.01
+        # feces_genus = 0.01,
+        # feces_species = 0.01,
+        # mouth_genus = 0.01,
+        # mouth_species = 0.01,
+        # skin_genus = 0.01,
+        # skin_species = 0.01,
+        # vagina_genus = 0.01,
+        # vagina_species = 0.01
     )
-    # c(
-    #     feces_genus = 0.04097764,
-    #     feces_species = 0.04430577,
-    #     mouth_genus = 0.01363636,
-    #     mouth_species = 0.01363636,
-    #     skin_genus = 0.07048458,
-    #     skin_species = 0.07488987,
-    #     vagina_genus = 0.02105263,
-    #     vagina_species = 0.01052632
-    # )
+    c(
+        feces_genus = 0.04097764,
+        feces_species = 0.04430577,
+        mouth_genus = 0.01363636,
+        mouth_species = 0.01363636,
+        skin_genus = 0.07048458,
+        skin_species = 0.07488987,
+        vagina_genus = 0.02105263,
+        vagina_species = 0.01052632
+    )
 }

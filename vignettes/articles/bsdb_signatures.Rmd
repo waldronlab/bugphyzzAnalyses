@@ -150,9 +150,8 @@ for (i in seq_along(body_sites)) {
                 df = myDF,
                 tax.id.type = "ncbi", tax.level = ranks[j],
                 exact.tax.level = FALSE, min.size = 5
-            ) |> 
+            ) |>  
                 discard(~ length(.x) < 5)
-            
             if (!length(sigs)) {
                 index <- index + 1
                 next
@@ -162,11 +161,13 @@ for (i in seq_along(body_sites)) {
                 replacement = "\\1",
                 x = names(sigs)
             )
-            pos <- match(myDF$`BSDB ID`, bsdb_id)
-            pos <- pos[!is.na(pos)]
+            
+            pos <- map_int(bsdb_id, ~ which(myDF$`BSDB ID` == .x))
+            # pos <- match(myDF$`BSDB ID`, bsdb_id)
+            # pos <- pos[!is.na(pos)]
             new_sigs_names <- paste0(
                 body_sites[i], "---", ranks[j], "---", directions[k], "---",
-                tolower(bsdb$Condition[pos]), "---",
+                tolower(myDF$Condition[pos]), "---",
                 names(sigs)
             )
             names(sigs) <- new_sigs_names

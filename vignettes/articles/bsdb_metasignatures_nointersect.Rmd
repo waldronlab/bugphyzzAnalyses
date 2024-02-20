@@ -186,14 +186,6 @@ bsdb_sigs <- c(new_sigs, other_sigs)
 bsdb_sigs <- discard(bsdb_sigs, ~ length(.x) < 5)
 ```
 
-
-
-
-
-
-
-
-
 Reference signatures:
 
 ```{r}
