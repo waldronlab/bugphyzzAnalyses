@@ -245,6 +245,10 @@ TypicalMicrobiomeSignatures</h1>
 <span><span class="co">#&gt; 6   skin_species   582    20    20</span></span>
 <span><span class="co">#&gt; 7 vagina_species   194    NA    NA</span></span>
 <span><span class="co">#&gt; 8  mouth_species   308   365   262</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="thresholds-for-adult-age-group">Thresholds for adult age group<a class="anchor" aria-label="anchor" href="#thresholds-for-adult-age-group"></a>
+</h2>
 <p>Let’s use adult signatures only</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">thr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.01</span>, <span class="fl">0.02</span>, <span class="fl">0.03</span>, <span class="fl">0.04</span>, <span class="fl">0.05</span>, <span class="fl">0.06</span>, <span class="fl">0.07</span>, <span class="fl">0.08</span>, <span class="fl">0.09</span><span class="op">)</span></span>
@@ -289,52 +293,51 @@ TypicalMicrobiomeSignatures</h1>
 <p><img src="TypicalMicrobiomeSignatures_files/figure-html/unnamed-chunk-7-1.png" width="1440"></p>
 </div>
 <div class="section level2">
-<h2 id="normalized-prevalence">Normalized prevalence<a class="anchor" aria-label="anchor" href="#normalized-prevalence"></a>
+<h2 id="thresholds-for-child-age-group">Thresholds for child age group<a class="anchor" aria-label="anchor" href="#thresholds-for-child-age-group"></a>
 </h2>
-<p>I probably don’t need to normalize, since prevalence was obtained
-from normalized abundance data already.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tms_rankings</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">tms_sets</span>,  <span class="op">~</span> <span class="op">{</span></span>
-<span>    <span class="va">.x</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>norm_p <span class="op">=</span>  <span class="va">Prevalence</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">Prevalence</span><span class="op">)</span> <span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="co"># arrange(-Prevalence) |&gt; </span></span>
-<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="op">-</span><span class="va">norm_p</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
-<span>            r <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/row_number.html" class="external-link">row_number</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>            log_p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">norm_p</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span></span>
-<span>            <span class="co"># log_p = log(Prevalence + 1)</span></span>
-<span>        <span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tms_sets_ch</span> <span class="op">&lt;-</span> <span class="va">tms_sets_ac</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"child$"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tms_sets_ac</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tms_sets_ch</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"_child$"</span>, <span class="st">""</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">tms_sets_ch</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">elbows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">tms_rankings</span>, <span class="op">~</span> <span class="op">{</span></span>
-<span>    <span class="va">row_n</span> <span class="op">&lt;-</span> <span class="va">.x</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">log_p</span>, <span class="va">r</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>        <span class="fu"><a href="https://docs.ropensci.org/pathviewr/reference/find_curve_elbow.html" class="external-link">find_curve_elbow</a></span><span class="op">(</span>export_type <span class="op">=</span> <span class="st">"row_num"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>    <span class="va">.x</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice</a></span><span class="op">(</span><span class="va">row_n</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">Prevalence</span>, <span class="va">norm_p</span>, <span class="va">log_p</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">tms_sets_ch</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">thr</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">counter</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">tms_sets_ch</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">thr</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">res</span> <span class="op">&lt;-</span> <span class="va">tms_sets_ch</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Prevalence</span> <span class="op">&gt;</span> <span class="va">thr</span><span class="op">[</span><span class="va">j</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">`Body site`</span>, <span class="va">Rank</span>, name <span class="op">=</span> <span class="st">"n_taxa"</span><span class="op">)</span></span>
+<span>        <span class="va">res</span><span class="op">$</span><span class="va">thr</span> <span class="op">&lt;-</span> <span class="va">thr</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">*</span> <span class="fl">100</span></span>
+<span>        <span class="va">output</span><span class="op">[[</span><span class="va">counter</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">res</span></span>
+<span>        <span class="va">counter</span> <span class="op">&lt;-</span> <span class="va">counter</span>  <span class="op">+</span> <span class="fl">1</span></span>
+<span>    <span class="op">}</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">dat_ch</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">output</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">dat_ch</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
+<span><span class="co">#&gt;   `Body site` Rank  n_taxa   thr</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> feces       genus    321     0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> feces       genus    142     1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> feces       genus    111     2</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> feces       genus     97     3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> feces       genus     90     4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> feces       genus     83     5</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html" class="external-link">map2</a></span><span class="op">(</span><span class="va">tms_rankings</span>, <span class="va">elbows</span>,  <span class="op">~</span> <span class="op">{</span></span>
-<span>    <span class="va">.x</span> <span class="op">|&gt;</span></span>
-<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">log_p</span>, <span class="va">r</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">21</span><span class="op">)</span> <span class="op">+</span></span>
-<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">.y</span><span class="op">$</span><span class="va">log_p</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
-<span>            title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">.x</span><span class="op">$</span><span class="va">`Body site`</span><span class="op">)</span>, <span class="st">"_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">.x</span><span class="op">$</span><span class="va">Rank</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>            subtitle <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Threshold = "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">.y</span><span class="op">$</span><span class="va">Prevalence</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span>, <span class="st">"%"</span><span class="op">)</span>,</span>
-<span>            y <span class="op">=</span> <span class="st">"ranking"</span>, x <span class="op">=</span> <span class="st">"log(normalized prevalence + 1)"</span></span>
-<span>        <span class="op">)</span> <span class="op">+</span></span>
-<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">}</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">plottt</span> <span class="op">&lt;-</span> <span class="fu">ggpubr</span><span class="fu">::</span><span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html" class="external-link">ggarrange</a></span><span class="op">(</span>plotlist <span class="op">=</span> <span class="va">pl</span><span class="op">)</span></span>
-<span><span class="va">plottt</span></span></code></pre></div>
-<p><img src="TypicalMicrobiomeSignatures_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
+<code class="sourceCode R"><span><span class="va">p_ch</span> <span class="op">&lt;-</span> <span class="va">dat_ch</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>thr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span></span>
+<span>        <span class="va">thr</span>, levels <span class="op">=</span> <span class="va">thr</span>, labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">thr</span>, <span class="st">"%"</span><span class="op">)</span></span>
+<span>    <span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">thr</span>, <span class="va">n_taxa</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span>position <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html" class="external-link">position_dodge2</a></span><span class="op">(</span><span class="fl">0.9</span><span class="op">)</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_text</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="va">n_taxa</span><span class="op">)</span>, position <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/position_dodge.html" class="external-link">position_dodge2</a></span><span class="op">(</span><span class="fl">0.9</span><span class="op">)</span>, vjust <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">facet_grid</a></span><span class="op">(</span><span class="va">Rank</span> <span class="op">~</span> <span class="va">`Body site`</span>, scales <span class="op">=</span> <span class="st">"free"</span>, space <span class="op">=</span> <span class="st">"free"</span>, <span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Prevalence threshold"</span>, y <span class="op">=</span> <span class="st">"Number of taxa"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">p_ch</span></span></code></pre></div>
+<p><img src="TypicalMicrobiomeSignatures_files/figure-html/unnamed-chunk-9-1.png" width="1440"></p>
 </div>
 <div class="section level2">
-<h2 id="not-normalized-prevalence">Not normalized prevalence<a class="anchor" aria-label="anchor" href="#not-normalized-prevalence"></a>
+<h2 id="determining-thresholds-for-the-adult-age-group">Determining thresholds for the adult age group<a class="anchor" aria-label="anchor" href="#determining-thresholds-for-the-adult-age-group"></a>
 </h2>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tms_rankings</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">tms_sets</span>,  <span class="op">~</span> <span class="op">{</span></span>
@@ -383,9 +386,52 @@ from normalized abundance data already.</p>
 <span><span class="co">#&gt;     0.07488987     0.02105263     0.01052632</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
+<h2 id="determining-threshold-for-the-child-age-group">Determining threshold for the child age group<a class="anchor" aria-label="anchor" href="#determining-threshold-for-the-child-age-group"></a>
 </h2>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tms_rankings_ch</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">tms_sets_ch</span>,  <span class="op">~</span> <span class="op">{</span></span>
+<span>    <span class="va">.x</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="co"># mutate(norm_p =  Prevalence / sum(Prevalence) ) |&gt; </span></span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="op">-</span><span class="va">Prevalence</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>        <span class="co"># arrange(-norm_p) |&gt; </span></span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>            r <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/row_number.html" class="external-link">row_number</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>            <span class="co"># log_p = log(norm_p + 1)</span></span>
+<span>            log_p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">Prevalence</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>        <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">elbows_ch</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">tms_rankings_ch</span>, <span class="op">~</span> <span class="op">{</span></span>
+<span>    <span class="va">row_n</span> <span class="op">&lt;-</span> <span class="va">.x</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">log_p</span>, <span class="va">r</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>        <span class="fu"><a href="https://docs.ropensci.org/pathviewr/reference/find_curve_elbow.html" class="external-link">find_curve_elbow</a></span><span class="op">(</span>export_type <span class="op">=</span> <span class="st">"row_num"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="va">.x</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice</a></span><span class="op">(</span><span class="va">row_n</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">Prevalence</span>, <span class="va">log_p</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">pl_ch</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html" class="external-link">map2</a></span><span class="op">(</span><span class="va">tms_rankings_ch</span>, <span class="va">elbows_ch</span>,  <span class="op">~</span> <span class="op">{</span></span>
+<span>    <span class="va">.x</span> <span class="op">|&gt;</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">log_p</span>, <span class="va">r</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>shape <span class="op">=</span> <span class="fl">21</span><span class="op">)</span> <span class="op">+</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">.y</span><span class="op">$</span><span class="va">log_p</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>            title <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">.x</span><span class="op">$</span><span class="va">`Body site`</span><span class="op">)</span>, <span class="st">"_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">.x</span><span class="op">$</span><span class="va">Rank</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>            subtitle <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Threshold = "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">.y</span><span class="op">$</span><span class="va">Prevalence</span> <span class="op">*</span> <span class="fl">100</span><span class="op">)</span>, <span class="st">"%"</span><span class="op">)</span>,</span>
+<span>            y <span class="op">=</span> <span class="st">"ranking"</span>, x <span class="op">=</span> <span class="st">"log(prevalence + 1)"</span></span>
+<span>        <span class="op">)</span> <span class="op">+</span></span>
+<span>        <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_bw</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">plottt_ch</span> <span class="op">&lt;-</span> <span class="fu">ggpubr</span><span class="fu">::</span><span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/ggarrange.html" class="external-link">ggarrange</a></span><span class="op">(</span>plotlist <span class="op">=</span> <span class="va">pl_ch</span><span class="op">)</span></span>
+<span><span class="va">plottt_ch</span></span></code></pre></div>
+<p><img src="TypicalMicrobiomeSignatures_files/figure-html/unnamed-chunk-12-1.png" width="700"></p>
+</div>
+<div class="section level2">
+<h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
+</h2>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/sessioninfo/reference/session_info.html" class="external-link">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Session info ───────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">setting </span> <span style="color: #555555; font-style: italic;">value</span></span></span>
