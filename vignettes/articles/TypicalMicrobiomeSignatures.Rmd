@@ -279,7 +279,8 @@ plottt_ch
 ```
 
 
-
+Above, the threshold for skin was 0, but I don't think it will be helpful.
+I'll used 0.01 instead.
 
 ## Session info
 
