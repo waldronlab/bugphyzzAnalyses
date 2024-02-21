@@ -186,6 +186,33 @@ bsdb_sigs <- discard(bsdb_sigs, is.null)
 
 Reference signatures:
 
+A small table showing how many taxa are unique for TMS or BSDB and how many 
+can be found in both:
+
+```{r}
+background_sigs_l <- vector("list", length(body_sites) * length(ranks))
+counter <- 1
+for (i in seq_along(body_sites)) {
+    for (j in seq_along(ranks)) {
+        tms_sig_name <- paste0(body_sites[i], "_", ranks[j])
+        bsdb_sig_rgx <- paste0("^", body_sites[i], "---", ranks[j])
+        names(background_sigs_l)[counter] <- tms_sig_name
+        
+        x <- tms_sigs[[tms_sig_name]]
+        y <- unique(unlist(bsdb_sigs[grep(bsdb_sig_rgx, names(bsdb_sigs))], use.names = FALSE))
+        
+        background_sigs_l[[counter]] <- tibble::tribble(
+            ~tms, ~bsdb, ~both,
+            length(setdiff(x, y)), length(setdiff(y, x)), length(intersect(x, y))
+        )
+        
+        counter <- counter + 1
+    }
+}
+bk_dat <- bind_rows(background_sigs_l, .id = "bodysite_rank")
+bk_dat
+```
+
 ```{r}
 background_sigs <- vector("list", length(bsdb_sigs)) 
 for (i in seq_along(background_sigs)) {
