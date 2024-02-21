@@ -53,11 +53,10 @@ sigTbl <- reduce(
 ) |>
     filter(!(is.na(bsdb_sig) & is.na(tms_sig)))
 
-# fname <- "inst/extdata/sig_table_signatures.tsv"
-fname <- "inst/extdata/sig_table_metasignatures.tsv"
+fname <- "inst/extdata/sig_table_signatures.tsv"
+# fname <- "inst/extdata/sig_table_metasignatures.tsv"
 # fname <- "inst/extdata/sig_table_metasignatures_nointersect.tsv"
 
 write.table(
     sigTbl, quote = FALSE, row.names = FALSE, sep = "\t", file = fname
 )
-
