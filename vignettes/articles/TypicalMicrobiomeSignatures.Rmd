@@ -110,6 +110,8 @@ for (i in seq_along(combined_vars)) {
 bind_rows(output, .id = "body_site.rank")
 ```
 
+## Thresholds for adult age group
+
 Let's use adult signatures only
 
 ```{r}
@@ -149,55 +151,45 @@ p
 ```
 
 
-
-## Normalized prevalence
-
-I probably don't need to normalize, since prevalence was obtained from
-normalized abundance data already.
+## Thresholds for child age group
 
 ```{r}
-tms_rankings <- map(tms_sets,  ~ {
-    .x |> 
-        mutate(norm_p =  Prevalence / sum(Prevalence) ) |> 
-        # arrange(-Prevalence) |> 
-        arrange(-norm_p) |> 
-        mutate(
-            r = row_number(),
-            log_p = log(norm_p + 1)
-            # log_p = log(Prevalence + 1)
-        )
-})
+tms_sets_ch <- tms_sets_ac[grep("child$", names(tms_sets_ac))]
+names(tms_sets_ch) <- sub("_child$", "", names(tms_sets_ch))
 
-elbows <- map(tms_rankings, ~ {
-    row_n <- .x |> 
-        select(log_p, r) |>
-        find_curve_elbow(export_type = "row_num") |> 
-        as.integer()
-    .x |> 
-        slice(row_n) |> 
-        select(Prevalence, norm_p, log_p)
-})
+output <- vector("list", length(tms_sets_ch) * length(thr))
+counter <- 1
+for (i in seq_along(tms_sets_ch)) {
+    for (j in seq_along(thr)) {
+        res <- tms_sets_ch[[i]] |> 
+            filter(Prevalence > thr[j]) |> 
+            count(`Body site`, Rank, name = "n_taxa")
+        res$thr <- thr[j] * 100
+        output[[counter]] <- res
+        counter <- counter  + 1
+    }
+}
+dat_ch <- bind_rows(output)
+head(dat_ch)
 ```
 
-```{r, fig.height = 8, fit.width = 12}
-pl <- map2(tms_rankings, elbows,  ~ {
-    .x |>
-        ggplot(aes(log_p, r)) +
-        geom_point(shape = 21) +
-        geom_vline(xintercept = .y$log_p, color = "red") +
-        labs(
-            title = paste0(unique(.x$`Body site`), "_", unique(.x$Rank)),
-            subtitle = paste0("Threshold = ", round(.y$Prevalence * 100), "%"),
-            y = "ranking", x = "log(normalized prevalence + 1)"
-        ) +
-        theme_bw()
-})
 
-plottt <- ggpubr::ggarrange(plotlist = pl)
-plottt
+
+```{r, fig.height=10, fig.width=15}
+p_ch <- dat_ch |> 
+    mutate(thr = factor(
+        thr, levels = thr, labels = paste0(thr, "%")
+    )) |> 
+    ggplot(aes(thr, n_taxa)) +
+    geom_col(position = position_dodge2(0.9), alpha = 1) + 
+    geom_text(aes(label = n_taxa), position = position_dodge2(0.9), vjust = -0.5) +
+    facet_grid(Rank ~ `Body site`, scales = "free", space = "free", ) +
+    labs(x = "Prevalence threshold", y = "Number of taxa") +
+    theme_bw()
+p_ch
 ```
 
-## Not normalized prevalence
+## Determining thresholds for the adult age group
 
 ```{r, fig.height = 8, fit.width = 12}
 tms_rankings <- map(tms_sets,  ~ {
@@ -242,6 +234,50 @@ plottt
 ```{r}
 map_dbl(elbows, ~ .x$Prevalence)
 ```
+
+## Determining threshold for the child age group
+
+```{r}
+tms_rankings_ch <- map(tms_sets_ch,  ~ {
+    .x |> 
+        # mutate(norm_p =  Prevalence / sum(Prevalence) ) |> 
+        arrange(-Prevalence) |>
+        # arrange(-norm_p) |> 
+        mutate(
+            r = row_number(),
+            # log_p = log(norm_p + 1)
+            log_p = log(Prevalence + 1)
+        )
+})
+
+elbows_ch <- map(tms_rankings_ch, ~ {
+    row_n <- .x |> 
+        select(log_p, r) |>
+        find_curve_elbow(export_type = "row_num") |> 
+        as.integer()
+    .x |> 
+        slice(row_n) |> 
+        select(Prevalence, log_p)
+})
+
+pl_ch <- map2(tms_rankings_ch, elbows_ch,  ~ {
+    .x |>
+        ggplot(aes(log_p, r)) +
+        geom_point(shape = 21) +
+        geom_vline(xintercept = .y$log_p, color = "red") +
+        labs(
+            title = paste0(unique(.x$`Body site`), "_", unique(.x$Rank)),
+            subtitle = paste0("Threshold = ", round(.y$Prevalence * 100), "%"),
+            y = "ranking", x = "log(prevalence + 1)"
+        ) +
+        theme_bw()
+})
+
+plottt_ch <- ggpubr::ggarrange(plotlist = pl_ch)
+plottt_ch
+
+```
+
 
 
 

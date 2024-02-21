@@ -352,14 +352,17 @@ myDataTable <- function(dat, page_len = NULL) {
 #' \code{elbows} returns the prevalence threshold for TypicalMicrobiomeSignatures
 #' based on the elbow of the curve method. See vignette.
 #'
+#' @param ag Age group. A character string. "adult" or "child"
+#'
 #' @return Vector of type double with thresholds.
 #' @export
 #'
 #' @examples
 #'
 #' elbows()
+#' elbows("child")
 #'
-elbows <- function() {
+elbows <- function(ag = "adult") {
     c(
         # feces_genus = 0.01,
         # feces_species = 0.01,
@@ -370,7 +373,7 @@ elbows <- function() {
         # vagina_genus = 0.01,
         # vagina_species = 0.01
     )
-    c(
+    adult <- c(
         feces_genus = 0.04097764,
         feces_species = 0.04430577,
         mouth_genus = 0.01363636,
@@ -380,4 +383,17 @@ elbows <- function() {
         vagina_genus = 0.02105263,
         vagina_species = 0.01052632
     )
+    child <- c(
+        feces_genus = 0.06133333,
+        feces_speies = 0.04977778,
+        mouth_genus = 0.04938272,
+        mouth_species = 0.04938272,
+        skin_genus = 0.01,
+        skin_species = 0.01
+    )
+    if (ag == "adult") {
+        return(adult)
+    } else if (ag == "child") {
+        return(child)
+    }
 }

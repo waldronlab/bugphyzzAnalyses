@@ -4,7 +4,10 @@
 \alias{elbows}
 \title{Elbows}
 \usage{
-elbows()
+elbows(ag = "adult")
+}
+\arguments{
+\item{ag}{Age group. A character string. "adult" or "child"}
 }
 \value{
 Vector of type double with thresholds.
@@ -16,5 +19,6 @@ based on the elbow of the curve method. See vignette.
 \examples{
 
 elbows()
+elbows("child")
 
 }
