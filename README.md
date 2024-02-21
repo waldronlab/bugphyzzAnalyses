@@ -1,4 +1,4 @@
-## Analyses with the bugphyzz package
+## Analyses using bugphyzz signatures
 
 This repository contains analyses and stats for the [bugphyzz package](https://github.com/waldronlab/bugphyzz).
 
