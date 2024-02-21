@@ -55,7 +55,7 @@ tms <- bind_rows(l, .id = "rank_agegroup") |>
         `Age group`, `Rank`, `NCBI ID` = NCBI, `Taxon name` = name,
         `Body site`, Prevalence
     ) |> 
-    filter(`Age group` == "adult") |> 
+    filter(`Age group` == "adult") |>
     mutate(
         `Body site` = case_when(
             `Body site` == "stool" ~ "feces",
@@ -63,7 +63,6 @@ tms <- bind_rows(l, .id = "rank_agegroup") |>
             TRUE ~ `Body site`
         )
     )
-    # filter(Prevalence > 0.01)
 head(tms)
 ```
 
@@ -78,7 +77,10 @@ bsdb <- bsdb |>
     filter(!is.na(`Abundance in Group 1`)) |> 
     # filter(grepl("(healthy|control)", `Group 0 name`, ignore.case = TRUE)) |> 
     filter(!is.na(`Body site`)) |> 
-      filter(`Study design` == "case-control" )
+    filter(`Study design` == "case-control" ) |> 
+    filter(
+        !grepl(pattern = "child", x = `Group 1 name`, ignore.case = TRUE)
+    )
 dim(bsdb)
 ```
 
