@@ -82,7 +82,7 @@ bsdb <- bsdb |>
     filter(!is.na(`Body site`)) |> 
     filter(`Study design` == "case-control" ) |> 
     filter(
-        !grepl(pattern = "child", x = `Group 1 name`, ignore.case = TRUE)
+        !grepl(pattern = "(child|infant)", x = `Group 1 name`, ignore.case = TRUE)
     )
 dim(bsdb)
 ```
