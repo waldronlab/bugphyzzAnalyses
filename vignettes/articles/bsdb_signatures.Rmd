@@ -171,8 +171,8 @@ for (i in seq_along(body_sites)) {
             # pos <- match(myDF$`BSDB ID`, bsdb_id)
             # pos <- pos[!is.na(pos)]
             new_sigs_names <- paste0(
-                body_sites[i], "---", ranks[j], "---", directions[k], "---",
-                tolower(myDF$Condition[pos]), "---",
+                body_sites[i], "-%-%-", ranks[j], "-%-%-", directions[k], "-%-%-",
+                tolower(myDF$Condition[pos]), "-%-%-",
                 names(sigs)
             )
             names(sigs) <- new_sigs_names
@@ -196,7 +196,7 @@ counter <- 1
 for (i in seq_along(body_sites)) {
     for (j in seq_along(ranks)) {
         tms_sig_name <- paste0(body_sites[i], "_", ranks[j])
-        bsdb_sig_rgx <- paste0("^", body_sites[i], "---", ranks[j])
+        bsdb_sig_rgx <- paste0("^", body_sites[i], "-%-%-", ranks[j])
         names(background_sigs_l)[counter] <- tms_sig_name
         
         x <- tms_sigs[[tms_sig_name]]
@@ -219,8 +219,8 @@ background_sigs <- vector("list", length(bsdb_sigs))
 for (i in seq_along(background_sigs)) {
     sig_name <- names(bsdb_sigs)[i]
     names(background_sigs)[i] <- sig_name
-    bodysite_name <- sub("^(\\w+)---(species|genus)---.*$", "\\1", sig_name)
-    rank_name <- sub("^(\\w+)---(species|genus)---.*$", "\\2", sig_name)
+    bodysite_name <- sub("^(\\w+)-%-%-(species|genus)-%-%-.*$", "\\1", sig_name)
+    rank_name <- sub("^(\\w+)-%-%-(species|genus)-%-%-.*$", "\\2", sig_name)
     tms_sig_name <- paste0(bodysite_name, "_", rank_name)
     background_sigs[[i]] <- unique(
         c(as.character(bsdb_sigs[[i]]), as.character(tms_sigs[[tms_sig_name]]))
@@ -260,7 +260,7 @@ bp_sigs <- c(bp_sigs_gn, bp_sigs_sp)
 genus:
 
 ```{r}
-bsdb_sigs_gn <- bsdb_sigs[grep("---genus---", names(bsdb_sigs))]
+bsdb_sigs_gn <- bsdb_sigs[grep("-%-%-genus-%-%-", names(bsdb_sigs))]
 background_sigs_gn <- background_sigs[names(bsdb_sigs_gn)]
 en_gn <- map2(bsdb_sigs_gn, background_sigs_gn, ~ {
     microbeSetEnrichment(set = .x, reference = .y, sigs = bp_sigs_gn)
@@ -271,7 +271,7 @@ en_gn_df <- en_gn |>
         col = "bsdb_sig",
         into = c(
             "body_site", "rank", "direction", "condition", "bsdb_sig"
-        ), sep = "---", remove = TRUE 
+        ), sep = "-%-%-", remove = TRUE 
     ) |> 
     mutate(condition = tolower(condition)) |> 
     mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
@@ -286,7 +286,7 @@ colnames(en_gn_df) <- sub("Set", "BSDB", colnames(en_gn_df))
 species:
 
 ```{r}
-bsdb_sigs_sp <- bsdb_sigs[grep("---species---", names(bsdb_sigs))]
+bsdb_sigs_sp <- bsdb_sigs[grep("-%-%-species-%-%-", names(bsdb_sigs))]
 background_sigs_sp <- background_sigs[names(bsdb_sigs_sp)]
 en_sp <- map2(bsdb_sigs_sp, background_sigs_sp, ~ {
     microbeSetEnrichment(set = .x, reference = .y, sigs = bp_sigs_sp)
@@ -298,7 +298,7 @@ en_sp_df <- en_sp |>
     # filter(fdr < 0.1) |> 
     separate(
         col = "bsdb_sig",
-        into = c("body_site", "rank", "direction", "condition", "bsdb_sig"), sep = "---",
+        into = c("body_site", "rank", "direction", "condition", "bsdb_sig"), sep = "-%-%-",
         remove =  TRUE 
     ) |> 
     mutate(condition = tolower(condition)) |> 
@@ -331,14 +331,19 @@ cond2cat <- read.table(fname, header = TRUE, sep = '\t')
 ```{r}
 en_tbl <- bind_rows(en_gn_df, en_sp_df) |>
     # group_by(rank) |>
-    mutate(`BSDB ID` = sub("^(bsdb:[0-9]+/[0-9]+/[0-9]+)_.*", "\\1", bsdb_sig)) |> 
+    mutate(
+        `BSDB ID` = sub("^(bsdb:[0-9]+/[0-9]+/[0-9]+)_.*", "\\1", bsdb_sig)
+    ) |> 
     mutate(
         fdr = round(p.adjust(p_value, method = "fdr"), 3)
     ) |>
     # ungroup() |>
     left_join(cond2cat, by = c("condition" = "Condition")) |> 
     left_join(
-        select(bsdb, `BSDB ID`, control = `Group 0 name`, treatment = `Group 1 name`),
+        select(
+            bsdb, `BSDB ID`,
+            control = `Group 0 name`, treatment = `Group 1 name`
+        ),
         by = "BSDB ID"
     ) |>
     mutate(
@@ -674,7 +679,7 @@ grid.arrange(p2)
 Union:
 
 ```{r}
-bsdb_ <- bsdb_sigs$`feces---genus---decreased---obesity---bsdb:74/3/2_obesity:high-BMI_vs_low-BMI_DOWN`
+bsdb_ <- bsdb_sigs$`feces-%-%-genus-%-%-decreased-%-%-obesity-%-%-bsdb:74/3/2_obesity:high-BMI_vs_low-BMI_DOWN`
 tms_ <- tms_sigs$feces_genus
 bp_sig_ <- bp_sigs$`bugphyzz:gram stain|gram stain negative|genus`
 bk_ <- unique(c(tms_, bsdb_))
@@ -715,7 +720,7 @@ ggsave(v, filename = "my_plot.svg", device = "svg")
 Intersection:
 
 ```{r}
-bsdb_ <- bsdb_sigs$`feces---genus---decreased---obesity---bsdb:74/1/2_obesity:obese_vs_non-obese_DOWN`
+bsdb_ <- bsdb_sigs$`feces-%-%-genus-%-%-decreased-%-%-obesity-%-%-bsdb:74/1/2_obesity:obese_vs_non-obese_DOWN`
 tms_ <- tms_sigs$feces_genus
 bp_sig_ <- bp_sigs$`bugphyzz:gram stain|gram stain negative|genus`
 bk_ <- unique(intersect(tms_, bsdb_))
@@ -728,10 +733,10 @@ mse |>
 Super BSDB intersect set:
 
 ```{r}
-bsdb_ <- bsdb_sigs$`feces---genus---decreased---obesity---bsdb:74/1/2_obesity:obese_vs_non-obese_DOWN`
+bsdb_ <- bsdb_sigs$`feces-%-%-genus-%-%-decreased-%-%-obesity-%-%-bsdb:74/1/2_obesity:obese_vs_non-obese_DOWN`
 tms_ <- tms_sigs$feces_genus
 bp_sig_ <- bp_sigs$`bugphyzz:gram stain|gram stain negative|genus`
-x_ <- unique(unlist(bsdb_sigs[grep("^feces---genus", names(bsdb_sigs))]))
+x_ <- unique(unlist(bsdb_sigs[grep("^feces-%-%-genus", names(bsdb_sigs))]))
 bk_ <- unique(intersect(tms_, x_))
 mse <- microbeSetEnrichment(set = bsdb_, reference = bk_, sigs = list(bp_sig = bp_sig_))
 mse |> 
@@ -742,10 +747,10 @@ mse |>
 Super BSDB union set
 
 ```{r}
-bsdb_ <- bsdb_sigs$`feces---genus---decreased---obesity---bsdb:74/1/2_obesity:obese_vs_non-obese_DOWN`
+bsdb_ <- bsdb_sigs$`feces-%-%-genus-%-%-decreased-%-%-obesity-%-%-bsdb:74/1/2_obesity:obese_vs_non-obese_DOWN`
 tms_ <- tms_sigs$feces_genus
 bp_sig_ <- bp_sigs$`bugphyzz:gram stain|gram stain negative|genus`
-x_ <- unique(unlist(bsdb_sigs[grep("^feces---genus", names(bsdb_sigs))]))
+x_ <- unique(unlist(bsdb_sigs[grep("^feces-%-%-genus", names(bsdb_sigs))]))
 bk_ <- unique(tms_, x_)
 mse <- microbeSetEnrichment(set = bsdb_, reference = bk_, sigs = list(bp_sig = bp_sig_))
 mse |> 

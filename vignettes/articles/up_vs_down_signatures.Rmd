@@ -138,17 +138,17 @@ lg <- map(l, ~ {
 })
 df_gn_1 <- data.frame(
     x = paste0(
-        sub("/\\d_.*", "", names(lg$decreased)), "---", names(lg$decreased)
+        sub("/\\d_.*", "", names(lg$decreased)), "-%-%-", names(lg$decreased)
     )
 ) |> 
-    separate(col = "x", into = c("custom_id", "sig_down"), sep = "---")
+    separate(col = "x", into = c("custom_id", "sig_down"), sep = "-%-%-")
 
 df_gn_2 <- data.frame(
     x = paste0(
-        sub("/\\d_.*", "", names(lg$increased)), "---", names(lg$increased)
+        sub("/\\d_.*", "", names(lg$increased)), "-%-%-", names(lg$increased)
     )
 ) |> 
-    separate(col = "x", into = c("custom_id", "sig_up"), sep = "---")
+    separate(col = "x", into = c("custom_id", "sig_up"), sep = "-%-%-")
 
 df_gn <- full_join(df_gn_1, df_gn_2, by = "custom_id") |> 
     drop_na() |> 
@@ -177,17 +177,17 @@ ls <- map(l, ~ {
 })
 df_sp_1 <- data.frame(
     x = paste0(
-        sub("/\\d_.*", "", names(ls$decreased)), "---", names(ls$decreased)
+        sub("/\\d_.*", "", names(ls$decreased)), "-%-%-", names(ls$decreased)
     )
 ) |> 
-    separate(col = "x", into = c("custom_id", "sig_down"), sep = "---")
+    separate(col = "x", into = c("custom_id", "sig_down"), sep = "-%-%-")
 
 df_sp_2 <- data.frame(
     x = paste0(
-        sub("/\\d_.*", "", names(ls$increased)), "---", names(ls$increased)
+        sub("/\\d_.*", "", names(ls$increased)), "-%-%-", names(ls$increased)
     )
 ) |> 
-    separate(col = "x", into = c("custom_id", "sig_up"), sep = "---")
+    separate(col = "x", into = c("custom_id", "sig_up"), sep = "-%-%-")
 
 df_sp <- full_join(df_sp_1, df_sp_2, by = "custom_id") |> 
     drop_na() |> 
@@ -280,7 +280,7 @@ for (i in seq_along(sigs_list_gn$up)) {
             s = bp_sigs_gn[[j]]
         )
         names(gn)[counter] <- paste0(
-            names(sigs_list_gn$up)[i], "---", names(bp_sigs_gn)[j], "---genus"
+            names(sigs_list_gn$up)[i], "-%-%-", names(bp_sigs_gn)[j], "-%-%-genus"
         )
         gn[[counter]] <- odds_ratio
         counter <- counter + 1
@@ -289,7 +289,7 @@ for (i in seq_along(sigs_list_gn$up)) {
 gn_df <- gn |> 
     bind_rows(.id = "name") |> 
     separate(
-        col = "name", into = c("bsdb_sig", "bp_sig", "rank"), sep = "---"
+        col = "name", into = c("bsdb_sig", "bp_sig", "rank"), sep = "-%-%-"
     ) |> 
     mutate(
         `BSDB ID` = sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", bsdb_sig),
@@ -317,7 +317,7 @@ for (i in seq_along(sigs_list_sp$up)) {
             s = bp_sigs_sp[[j]]
         )
         names(sp)[counter] <- paste0(
-            names(sigs_list_sp$up)[i], "---", names(bp_sigs_sp)[j], "---species"
+            names(sigs_list_sp$up)[i], "-%-%-", names(bp_sigs_sp)[j], "-%-%-species"
         )
         sp[[counter]] <- odds_ratio
         counter <- counter + 1
@@ -326,7 +326,7 @@ for (i in seq_along(sigs_list_sp$up)) {
 sp_df <- sp |> 
     bind_rows(.id = "name") |> 
     separate(
-        col = "name", into = c("bsdb_sig", "bp_sig", "rank"), sep = "---"
+        col = "name", into = c("bsdb_sig", "bp_sig", "rank"), sep = "-%-%-"
     ) |> 
     mutate(
         `BSDB ID` = sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", bsdb_sig),
