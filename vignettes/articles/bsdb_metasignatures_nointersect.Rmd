@@ -156,7 +156,7 @@ for (i in seq_along(body_sites)) {
             )
             bsdb_sigs[[index]] <- getMetaSignatures(
                 df = bsdb_subsets_by_bodysite[[body_sites[i]]],
-                colum = "Condition", direction = directions[k],
+                column = "Condition", direction = directions[k],
                 min.studies = 1, min.taxa = 5,
                 tax.id.type = "ncbi", tax.level = ranks[j],
                 exact.tax.level = FALSE

@@ -2,7 +2,7 @@
 
 bp_sigs |> length()
 bsdb_sigs |> length()
-tms_sigs |> names() |> head()
+tms_sigs |> names()
 
 taxids <- unique(unlist(c(bp_sigs, bsdb_sigs, tms_sigs), recursive = TRUE, use.names = FALSE))
 
