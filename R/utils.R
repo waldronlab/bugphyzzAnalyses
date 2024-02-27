@@ -77,49 +77,6 @@ createDT <- function(x){
     )
 }
 
-#' Import tidy Typical Microbiome Signatures
-#'
-#' \code{importTidyTMS} imports prevalence data from the
-#' TypicalMicrobiomeSignatures project.
-#'
-#' @param prevalence_threshold A numeric value: 0.01.
-#'
-#' @return A data.frame.
-#' @export
-#'
-importTidyTMS <- function(prevalence_threshold = 0.01) {
-    base_dir <- tools::R_user_dir('bugphyzzAnalyses', which = 'cache')
-    zip_file <- .downloadTMSZip()
-    unzip(zip_file, exdir = base_dir)
-    extracted_dir <- paste0(base_dir, '/', list.files(base_dir))
-    fnames <- grep(
-        '\\.csv', list.files(extracted_dir, full.names = TRUE), value = TRUE
-    )
-    tms <- purrr::map(fnames, read.csv)
-    names(tms) <- sub('^.*/matrix_(.*)\\.csv$', '\\1', fnames)
-    output <- vector('list', length(tms))
-    for (i in seq_along(output)) {
-        output[[i]] <- tms[[i]] |>
-            tidyr::pivot_longer(
-                cols = ends_with('_prevalence'), names_to = 'body_site',
-                values_to = 'prevalence'
-            ) |>
-            dplyr::mutate(body_site = sub('_prevalence$', '', body_site)) |>
-            tidyr::separate(
-                col = 'body_site', into = c('body_site', 'rank'), sep = '_'
-            ) |>
-            dplyr::rename(
-                taxid = NCBI, taxon_name = name
-            ) |>
-            dplyr::mutate(age_range = sub('^.*_', '', names(tms)[i]))
-    }
-    typical <- do.call(rbind, output)
-    typical$prevalence <- round(typical$prevalence, 2)
-    typical <- typical[typical$prevalence >= 0.01,]
-    return(typical)
-}
-
-
 #' Import the NYCHANES file
 #'
 #' \code{imporNYCHANES} imports the annotated NYCHANES file from the
@@ -280,22 +237,9 @@ calcPredStats <- function(df) {
 
 }
 
-.get_cache <- function() {
-    cache <- tools::R_user_dir("bugphyzzAnalyses", which="cache")
-    BiocFileCache::BiocFileCache(cache)
-}
 
-.downloadTMSZip <- function(verbose = FALSE) {
-    fileURL <- 'https://zenodo.org/records/7544550/files/waldronlab/TypicalMicrobiomeSignaturesExports-v1.0.0.zip?download=1'
-    bfc <- .get_cache()
-    rid <- BiocFileCache::bfcquery(bfc, "TypicalMicrobiomeSignatures.zip", "rname")$rid
-    if (!length(rid)) {
-        if( verbose )
-            message( "Downloading GENE file" )
-            rid <- names(BiocFileCache::bfcadd(bfc, "TypicalMicrobiomeSignatures.zip", fileURL))
-    }
-    BiocFileCache::bfcrpath(bfc, rids = rid)
-}
+
+
 
 #' Print datatable with my default options
 #'
@@ -396,4 +340,73 @@ elbows <- function(ag = "adult") {
     } else if (ag == "child") {
         return(child)
     }
+}
+
+
+## Non exported functions ----------------------------------------------------
+
+#' Import typical microbiome signatures
+#'
+#' \code{importTMS} Import all of the typical microbiome signatures in
+#' a tidy format.
+#'
+#' @return A data.frame.
+#' @export
+#'
+importTMS <- function() {
+    bfc <- .getCache()
+    rid <- BiocFileCache::bfcquery(bfc, query = "tms", field = "rname")$rid
+    if (!length(rid)) {
+        tms <- .downloadTMS()
+        fpath <- BiocFileCache::bfcnew(bfc, rname = "tms", ext = ".tsv")
+        readr::write_tsv(tms, file = fpath)
+    } else {
+        message("Using cached file...")
+        fpath <- BiocFileCache::bfcpath(x = bfc, rids = rid)
+        tms <- readr::read_tsv(fpath, show_col_types = FALSE)
+    }
+    return(tms)
+}
+
+.getCache <- function() {
+    cache <- tools::R_user_dir("bugphyzzAnalyses", which = "cache")
+    BiocFileCache::BiocFileCache(cache)
+}
+
+.downloadTMS <- function() {
+    message("Downloading typicial microbiome signatures...")
+    url <- "https://zenodo.org/records/7622129/files/waldronlab/TypicalMicrobiomeSignaturesExports-v1.0.1.zip?download=1"
+    temp_dir <- tempdir()
+    temp_file <- file.path(temp_dir, "tms.zip")
+    download.file(url = url, destfile = temp_file)
+    unzip(temp_file, exdir = temp_dir, junkpaths = TRUE)
+    csv_files <- list.files(temp_dir, pattern = "csv", full.names = TRUE)
+    l <- purrr::map(csv_files,  ~ {
+        .x |>
+            utils::read.csv() |>
+            tidyr::pivot_longer(
+                names_to = "Body site", values_to = "Prevalence",
+                cols = 3:tidyselect::last_col()
+            ) |>
+            dplyr::mutate(
+                `Body site` = sub("_(species|genus)_prevalence$", "", `Body site`)
+            )
+    })
+    names(l) <- sub("^.*matrix_(.*).csv$", "\\1", csv_files)
+    tms <- dplyr::bind_rows(l, .id = "rank_agegroup") |>
+        tidyr::separate(
+            col = "rank_agegroup", into = c("Rank", "Age group"),
+            sep = "_", remove = TRUE
+        ) |>
+        dplyr::relocate(
+            `Age group`, `Rank`, `NCBI ID` = NCBI, `Taxon name` = name,
+            `Body site`, Prevalence
+        ) |>
+        dplyr::mutate(
+            `Body site` = dplyr::case_when(
+                `Body site` == "stool" ~ "feces",
+                `Body site` == "oralcavity" ~ "mouth",
+                TRUE ~ `Body site`
+            )
+        )
 }
