@@ -1,5 +1,3 @@
-# Contents
-
 This file contains a brief description of the files found in this directory.
 
 ## condition2category.tsv
