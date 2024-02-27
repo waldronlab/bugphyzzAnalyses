@@ -71,10 +71,10 @@ head(tms)
 BugSigDB:
 
 ```{r, message=FALSE}
-## "10.5281/zenodo.10407666" v1.2.0
-## "10.5281/zenodo.6468009" v1.1.0
-# bsdb <- importBugSigDB(version = "10.5281/zenodo.10407666", cache = FALSE)
-bsdb <- importBugSigDB(cache = FALSE)
+bsdb_doi <- "10.5281/zenodo.10627578" # v1.2.1
+# bsdb_doi <-  "10.5281/zenodo.10407666" #v1.2.0
+# bsdb_doi <-  "10.5281/zenodo.6468009" #v1.1.0
+bsdb <- importBugSigDB(version = bsdb_doi)
 bsdb <- bsdb |> 
     filter(`Host species` == "Homo sapiens") |> 
     filter(!is.na(`Abundance in Group 1`)) |> 
