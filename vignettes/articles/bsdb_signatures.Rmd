@@ -374,7 +374,7 @@ bk_TMS_BSDB_BS_gn <- map2(
 system.time({
     en_TMS_BSDB_BS_gn <- vector("list", length(body_sites))
     for (i in seq_along(body_sites)) {
-        bk <- bk_TMS_BSDB_BS_sp[[body_sites[i]]]
+        bk <- bk_TMS_BSDB_BS_gn[[body_sites[i]]]
         rx <- paste0(body_sites[i], "-%-%-")
         sig_list <- bsdb_sigs_sp[grep(rx, names(bsdb_sigs_sp))]
         res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |> 
@@ -431,10 +431,132 @@ system.time({
 
 ## Enrichment | Background = TMS intersect with BSDB
 
-Reference signatures:
+Intersection at the genus level:
 
-A small table showing how many taxa are unique for TMS or BSDB and how many 
-can be found in both:
+```{r}
+tms_gn_x = unique(unlist(tms_sigs_gn))
+bsdb_gn_y = unique(unlist(bsdb_sigs_gn))
+tms_bsdb_gn_xy <- intersect(tms_gn_x, bsdb_gn_y)
+data.frame(
+    tms_genus_only = length(setdiff(tms_gn_x, tms_bsdb_gn_xy)),
+    bsdb_genus_only = length(setdiff(bsdb_gn_y, tms_bsdb_gn_xy)),
+    tms_bsdb_genus_intersect = length(tms_bsdb_gn_xy)
+)
+```
+
+
+Enrichment at the genus level:
+
+```{r}
+bk_TMS_BSDB_intersect_gn <- tms_bsdb_gn_xy
+system.time({
+    en_TMS_BSDB_intersect_gn <- map(
+        bsdb_sigs_gn,
+        ~ microbeSetEnrichment(.x, bk_TMS_BSDB_intersect_gn, bp_sigs_gn)
+        ) |> 
+        bind_rows(.id = "bsdb_sig") |> 
+        separate(
+            col = "bsdb_sig",
+            into = c("body_site", "rank", "direction", "condition", "bsdb_sig"),
+            sep = "-%-%-", remove = TRUE 
+        ) |> 
+        mutate(condition = tolower(condition)) |> 
+        mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
+        mutate_at(
+            .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+        ) |> 
+        mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name)) |> 
+        filter(fdr < 0.1)
+    colnames(en_TMS_BSDB_intersect_gn) <- sub(
+        "Set", "BSDB", colnames(en_TMS_BSDB_intersect_gn)
+    )
+})
+```
+
+Intersection at the species level
+
+```{r}
+tms_sp_x = unique(unlist(tms_sigs_sp))
+bsdb_sp_y = unique(unlist(bsdb_sigs_sp))
+tms_bsdb_sp_xy <- intersect(tms_sp_x, bsdb_sp_y)
+data.frame(
+    tms_species_only = length(setdiff(tms_sp_x, tms_bsdb_sp_xy)),
+    bsdb_species_only = length(setdiff(bsdb_sp_y, tms_bsdb_sp_xy)),
+    tms_bsdb_species_intersect = length(tms_bsdb_sp_xy)
+)
+```
+
+
+Enrichment at the species level:
+
+
+```{r}
+bk_TMS_BSDB_intersect_sp <- tms_bsdb_sp_xy
+system.time({
+    en_TMS_BSDB_intersect_sp <- map(
+        bsdb_sigs_sp,
+        ~ microbeSetEnrichment(.x, bk_TMS_BSDB_intersect_sp, bp_sigs_sp)
+        ) |> 
+        bind_rows(.id = "bsdb_sig") |> 
+        separate(
+            col = "bsdb_sig",
+            into = c("body_site", "rank", "direction", "condition", "bsdb_sig"),
+            sep = "-%-%-", remove = TRUE 
+        ) |> 
+        mutate(condition = tolower(condition)) |> 
+        mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
+        mutate_at(
+            .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+        ) |> 
+        mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name)) |> 
+        filter(fdr < 0.1)
+    colnames(en_TMS_BSDB_intersect_sp) <- sub(
+        "Set", "BSDB", colnames(en_TMS_BSDB_intersect_sp)
+    )
+})
+```
+
+## Enrichment | Background = TMS intersect with BSDB by body site
+
+Intersection by body site at the genus level:
+
+```{r}
+bk_TMS_BSDB_BS_intersect_gn <- vector("list", length(body_sites))
+for (i in seq_along(body_sites)) {
+    sigs <- unique(unlist(bsdb_sigs_gn[grep(body_sites[i], names(bsdb_sigs_gn))])
+}
+
+
+
+tms_sigs_gn
+
+map2()
+
+
+
+
+
+
+bk_BSDB_BS_sp <- vector("list", length(body_sites))
+    names(bk_BSDB_BS_sp) <- body_sites
+    for (i in seq_along(bk_BSDB_BS_sp)) {
+        res <- bsdb_sigs_sp[grepl(body_sites[[i]], names(bsdb_sigs_sp))]
+        if (is.null(res)) {
+            next
+        }
+        bk_BSDB_BS_sp[[i]] <- unique(unlist(res))
+    }
+
+
+
+
+```
+
+
+
+
+
+
 
 ```{r}
 background_sigs_l <- vector("list", length(body_sites) * length(ranks))
@@ -458,27 +580,6 @@ for (i in seq_along(body_sites)) {
 }
 bk_dat <- bind_rows(background_sigs_l, .id = "bodysite_rank")
 bk_dat
-```
-
-Global option:
-
-```{r}
-x = unique(unlist(tms_sigs_gn))
-y = unique(unlist(bsdb_sigs_gn))
-length(x)
-length(y)
-length(intersect(x, y))
-
-```
-
-
-```{r}
-a = unique(unlist(tms_sigs_sp))
-b = unique(unlist(bsdb_sigs_sp))
-length(a)
-length(b)
-length(intersect(a, b))
-
 ```
 
 ## Enrichment | Background = TMS by Body site + 1 BSDB sig
