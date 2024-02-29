@@ -373,7 +373,6 @@ system.time({
 })
 ```
 
-
 ```{r}
 en_BSDB_BS <- bind_rows(en_BSDB_BS_gn, en_BSDB_BS_sp)
 ```
@@ -610,7 +609,6 @@ system.time({
 })
 ```
 
-
 ```{r}
 en_TMS_BSDB_intersect <- bind_rows(
     en_TMS_BSDB_intersect_gn, en_TMS_BSDB_intersect_sp
@@ -641,6 +639,7 @@ l1 |>
     bind_rows() |> 
     set_names(c("bsdb_only", "tms_only", "both"))
 ```
+
 Enrichment at the genus level:
 
 ```{r}
@@ -911,7 +910,6 @@ ht <- Heatmap(
 ht
 ```
 
-
 ## Heatmaps
 
 Define funcions:
@@ -994,7 +992,6 @@ createHt <- function(x) {
 }
 ```
 
-
 ```{r}
 lmat_down = map(results, ~ createMat(.x, dir = "decreased"))
 lmat_up = map(results, ~ createMat(.x, dir = "increased"))
@@ -1004,8 +1001,6 @@ color_fun <- circlize::colorRamp2(
     colors = c("white", viridis::viridis(max_count))
 )
 ```
-
-
 
 ```{r}
 l_ht_down <- map(lmat_down, createHt)
@@ -1017,13 +1012,21 @@ l_ht_up <- map(lmat_up, createHt)
 up:
 
 ```{r, fig.height=16, fig.width=16}
-draw(l_ht_up$BSDB, column_title = "Background: union of BSDB signatures - Direction: increased")
+draw(
+    l_ht_up$BSDB,
+    column_title = 
+        "Background: union of BSDB signatures - Direction: increased"
+)
 ```
 
 down:
 
 ```{r, fig.height=10, fig.width=15}
-draw(l_ht_down$BSDB, column_title = "Background: union of BSDB signatures - direction: decreased")
+draw(
+    l_ht_down$BSDB,
+    column_title =
+        "Background: union of BSDB signatures - direction: decreased"
+)
 ```
 
 ### BSDB by BS
@@ -1031,13 +1034,20 @@ draw(l_ht_down$BSDB, column_title = "Background: union of BSDB signatures - dire
 up:
 
 ```{r, fig.height=16, fig.width=12}
-draw(l_ht_up$BSDB_BS, column_title = "Background: union of BSDB sigs by body site - Direction: increased" )
+draw(
+    l_ht_up$BSDB_BS,
+    column_title =
+        "Background: union of BSDB sigs by body site - Direction: increased"
+)
 ```
 
 down:
 
 ```{r, fig.height=8, fig.width=12}
-draw(l_ht_down$BSDB_BS, column_title = "Union of BSDB sigs by body site - decreased")
+draw(
+    l_ht_down$BSDB_BS,
+    column_title = "Union of BSDB sigs by body site - decreased"
+)
 ```
 
 ### TMS + BSDB
@@ -1045,13 +1055,20 @@ draw(l_ht_down$BSDB_BS, column_title = "Union of BSDB sigs by body site - decrea
 up:
 
 ```{r, fig.height=16, fig.width=13}
-draw(l_ht_up$TMS_BSDB, column_title = "Background: union of BSDB and TMS signatures - Direction: increased")
+draw(
+    l_ht_up$TMS_BSDB,
+    column_title = 
+        "Background: union of BSDB and TMS signatures - Direction: increased"
+)
 ```
 
 down:
 
 ```{r, fig.height=9, fig.width=14}
-draw(l_ht_down$TMS_BSDB, column_title = "Union of BSDB and TMS signatures - decreased")
+draw(
+    l_ht_down$TMS_BSDB,
+    column_title = "Union of BSDB and TMS signatures - decreased"
+)
 ```
 
 ### TMS + BSDB by BS
@@ -1059,13 +1076,20 @@ draw(l_ht_down$TMS_BSDB, column_title = "Union of BSDB and TMS signatures - decr
 up:
 
 ```{r, fig.height=15, fig.width=12}
-draw(l_ht_up$TMS_BSDB_BS, column_title = "Union of BSDB and TMS sigs by body site - increased")
+draw(
+    l_ht_up$TMS_BSDB_BS,
+    column_title = "Union of BSDB and TMS sigs by body site - increased"
+)
 ```
 
 down:
 
 ```{r, fig.height=8, fig.width=12}
-draw(l_ht_down$TMS_BSDB_BS, column_title = "Background: union of BSDB and TMS sigs by body site - Direction: decreased")
+draw(
+    l_ht_down$TMS_BSDB_BS,
+    column_title =
+        "Background: union of BSDB and TMS sigs by body site - Direction: decreased"
+)
 ```
 
 ### TMS interesct BSDB
@@ -1073,7 +1097,11 @@ draw(l_ht_down$TMS_BSDB_BS, column_title = "Background: union of BSDB and TMS si
 up:
 
 ```{r, fig.height=6, fig.width=6}
-draw(l_ht_up$TMS_BSDB_intersect, column_title = "Background: intersection of BSDB and TMS sigs - Direction: increased")
+draw(
+    l_ht_up$TMS_BSDB_intersect,
+    column_title =
+        "Background: intersection of BSDB and TMS sigs - Direction: increased"
+)
 ```
 
 down:
@@ -1081,7 +1109,10 @@ down:
 No results
 
 ```{r, eval=FALSE}
-draw(l_ht_down$TMS_BSD, column_title = "Intersection of BSDB and TMS sigs - decreased")
+draw(
+    l_ht_down$TMS_BSD,
+    column_title = "Intersection of BSDB and TMS sigs - decreased"
+)
 ```
 
 ### TMS intersect BSDB by BS
@@ -1089,13 +1120,20 @@ draw(l_ht_down$TMS_BSD, column_title = "Intersection of BSDB and TMS sigs - decr
 up: No results
 
 ```{r, eval=FALSE}
-draw(l_ht_up$TMS_BSDB_BS_interesct, column_title = "Intersection of BSDB and TMS sigs by body site - increased")
+draw(
+    l_ht_up$TMS_BSDB_BS_interesct,
+    column_title = "Intersection of BSDB and TMS sigs by body site - increased"
+)
 ```
 
 down:
 
 ```{r}
-draw(l_ht_down$TMS_BSDB_BS_intersect, column_title = "Background: intersection of BSDB adn TMS sigs by body site - Direction: decreased")
+draw(
+    l_ht_down$TMS_BSDB_BS_intersect,
+    column_title =
+        "Background: intersection of BSDB adn TMS sigs by body site - Direction: decreased"
+)
 
 ```
 
@@ -1104,13 +1142,21 @@ draw(l_ht_down$TMS_BSDB_BS_intersect, column_title = "Background: intersection o
 up:
 
 ```{r, fig.height=10, fig.width=9}
-draw(l_ht_up$TMS_1BSDB, column_title = "Background: union of TMS and one target BSDB signature - Direction: increased")
+draw(
+    l_ht_up$TMS_1BSDB,
+    column_title =
+        "Background: union of TMS and one target BSDB signature - Direction: increased"
+)
 ```
 
 down:
 
 ```{r, fig.height=9, fig.width=10}
-draw(l_ht_down$TMS_1BSDB, column_title = "Background: union of TMS and one target BSDB signature - Direction: decreased")
+draw(
+    l_ht_down$TMS_1BSDB,
+    column_title =
+        "Background: union of TMS and one target BSDB signature - Direction: decreased"
+)
 ```
 
 ## Session info
