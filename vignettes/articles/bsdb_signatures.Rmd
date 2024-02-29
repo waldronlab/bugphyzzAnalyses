@@ -616,6 +616,39 @@ l1 |>
     bind_rows() |> 
     set_names(c("bsdb_only", "tms_only", "both"))
 ```
+Enrichment at the genus level:
+
+```{r}
+system.time({
+    en_TMS_BSDB_BS_intersect_gn <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_TMS_BSDB_BS_intersect_gn[[body_sites[i]]]
+        rx <- paste0(body_sites[i], "-%-%-")
+        sig_list <- bsdb_sigs_gn[grep(rx, names(bsdb_sigs_gn))]
+        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_gn)) |> 
+            bind_rows(.id = "bsdb_sig") |> 
+            separate(
+                col = "bsdb_sig",
+                into = c(
+                    "body_site", "rank", "direction", "condition", "bsdb_sig"
+                ),
+                sep = "-%-%-", remove = TRUE 
+            ) |> 
+            mutate(condition = tolower(condition)) |> 
+            mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
+            mutate_at(
+                .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+                .funs = ~ round(.x, 2)
+            ) |> 
+            mutate(sig_name = sub(
+                "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+            ))
+        colnames(res) <- sub("Set", "BSDB", colnames(res))
+        en_TMS_BSDB_BS_intersect_gn[[i]] <- res
+    }
+    en_TMS_BSDB_BS_intersect_gn <- bind_rows(en_TMS_BSDB_BS_intersect_gn)
+})
+```
 
 Intersection by body site at the species level:
 
@@ -639,6 +672,41 @@ l2 |>
     bind_rows() |> 
     set_names(c("bsdb_only", "tms_only", "both"))
 ```
+
+Enrichment at the species level:
+
+```{r}
+system.time({
+    en_TMS_BSDB_BS_intersect_sp <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_TMS_BSDB_BS_intersect_sp[[body_sites[i]]]
+        rx <- paste0(body_sites[i], "-%-%-")
+        sig_list <- bsdb_sigs_sp[grep(rx, names(bsdb_sigs_sp))]
+        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |> 
+            bind_rows(.id = "bsdb_sig") |> 
+            separate(
+                col = "bsdb_sig",
+                into = c(
+                    "body_site", "rank", "direction", "condition", "bsdb_sig"
+                ),
+                sep = "-%-%-", remove = TRUE 
+            ) |> 
+            mutate(condition = tolower(condition)) |> 
+            mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
+            mutate_at(
+                .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+                .funs = ~ round(.x, 2)
+            ) |> 
+            mutate(sig_name = sub(
+                "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+            ))
+        colnames(res) <- sub("Set", "BSDB", colnames(res))
+        en_TMS_BSDB_BS_intersect_sp[[i]] <- res
+    }
+    en_TMS_BSDB_BS_intersect_sp <- bind_rows(en_TMS_BSDB_BS_intersect_sp)
+})
+```
+
 
 ## Enrichment | Background = TMS by Body site + 1 BSDB sig
 
