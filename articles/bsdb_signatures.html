@@ -380,7 +380,7 @@
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">en_BSDB_gn</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"Set"</span>, <span class="st">"BSDB"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">en_BSDB_gn</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  83.620   0.044  83.666</span></span></code></pre></div>
+<span><span class="co">#&gt;  82.861   0.020  82.885</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
@@ -407,7 +407,7 @@
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">en_BSDB_sp</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"Set"</span>, <span class="st">"BSDB"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">en_BSDB_sp</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  51.677   0.004  51.683</span></span></code></pre></div>
+<span><span class="co">#&gt;  51.568   0.020  51.590</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_BSDB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_BSDB_gn</span>, <span class="va">en_BSDB_sp</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -456,7 +456,7 @@
 <span>    <span class="va">en_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_BSDB_BS_gn</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  81.844   0.012  81.857</span></span></code></pre></div>
+<span><span class="co">#&gt;  82.017   0.028  82.052</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bk_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
@@ -499,7 +499,7 @@
 <span>    <span class="va">en_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_BSDB_BS_sp</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  49.406   0.008  49.416</span></span></code></pre></div>
+<span><span class="co">#&gt;  50.156   0.016  50.174</span></span></code></pre></div>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_BSDB_BS_gn</span>, <span class="va">en_BSDB_BS_sp</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -532,7 +532,7 @@
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_gn</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"Set"</span>, <span class="st">"BSDB"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_gn</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  83.549   0.040  83.591</span></span></code></pre></div>
+<span><span class="co">#&gt;  83.303   0.028  83.338</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
@@ -559,7 +559,7 @@
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_sp</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"Set"</span>, <span class="st">"BSDB"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_sp</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  53.208   0.008  53.220</span></span></code></pre></div>
+<span><span class="co">#&gt;  53.689   0.000  53.694</span></span></code></pre></div>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_TMS_BSDB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_gn</span>, <span class="va">en_TMS_BSDB_sp</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -601,7 +601,7 @@
 <span>    <span class="va">en_TMS_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_BS_gn</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  46.928   0.028  46.958</span></span></code></pre></div>
+<span><span class="co">#&gt;  47.039   0.008  47.049</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bk_TMS_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html" class="external-link">map2</a></span><span class="op">(</span></span>
@@ -637,7 +637,7 @@
 <span>    <span class="va">en_TMS_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_BS_sp</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  50.074   0.016  50.093</span></span></code></pre></div>
+<span><span class="co">#&gt;  49.909   0.004  49.916</span></span></code></pre></div>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_TMS_BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_gn</span>, <span class="va">en_TMS_BSDB_sp</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -685,7 +685,7 @@
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  79.697   0.028  79.728</span></span></code></pre></div>
+<span><span class="co">#&gt;  78.724   0.032  78.781</span></span></code></pre></div>
 <p>Intersection at the species level</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tms_sp_x</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">tms_sigs_sp</span><span class="op">)</span><span class="op">)</span></span>
@@ -727,7 +727,7 @@
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  48.192   0.008  48.200</span></span></code></pre></div>
+<span><span class="co">#&gt;  47.281   0.012  47.302</span></span></code></pre></div>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_TMS_BSDB_intersect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
 <span>    <span class="va">en_TMS_BSDB_intersect_gn</span>, <span class="va">en_TMS_BSDB_intersect_sp</span></span>
@@ -793,7 +793,7 @@
 <span>    <span class="va">en_TMS_BSDB_BS_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_BS_intersect_gn</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  78.637   0.036  78.690</span></span></code></pre></div>
+<span><span class="co">#&gt;  76.341   0.052  76.405</span></span></code></pre></div>
 <p>Intersection by body site at the species level:</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">l2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">body_sites</span>, <span class="op">~</span> <span class="op">{</span></span>
@@ -851,7 +851,7 @@
 <span>    <span class="va">en_TMS_BSDB_BS_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_BS_intersect_sp</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  46.478   0.016  46.500</span></span></code></pre></div>
+<span><span class="co">#&gt;  45.286   0.016  45.307</span></span></code></pre></div>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_TMS_BSDB_BS_intersect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
 <span>    <span class="va">en_TMS_BSDB_BS_intersect_gn</span>, <span class="va">en_TMS_BSDB_BS_intersect_sp</span></span>
@@ -901,7 +901,7 @@
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  77.113   0.028  77.150</span></span></code></pre></div>
+<span><span class="co">#&gt;  76.005   0.020  76.030</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
 <div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
@@ -930,7 +930,7 @@
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  46.374   0.028  46.408</span></span></code></pre></div>
+<span><span class="co">#&gt;  46.084   0.008  46.096</span></span></code></pre></div>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_TMS_1BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_1BSDB_BS_gn</span>, <span class="va">en_TMS_1BSDB_BS_sp</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -1132,11 +1132,19 @@ options</p>
 </h3>
 <p>up:</p>
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_up</span><span class="op">$</span><span class="va">BSDB</span>, column_title <span class="op">=</span> <span class="st">"Background: union of BSDB signatures - Direction: increased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_up</span><span class="op">$</span><span class="va">BSDB</span>,</span>
+<span>    column_title <span class="op">=</span> </span>
+<span>        <span class="st">"Background: union of BSDB signatures - Direction: increased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-45-1.png" width="1536"></p>
 <p>down:</p>
 <div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_down</span><span class="op">$</span><span class="va">BSDB</span>, column_title <span class="op">=</span> <span class="st">"Background: union of BSDB signatures - direction: decreased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_down</span><span class="op">$</span><span class="va">BSDB</span>,</span>
+<span>    column_title <span class="op">=</span></span>
+<span>        <span class="st">"Background: union of BSDB signatures - direction: decreased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-46-1.png" width="1440"></p>
 </div>
 <div class="section level3">
@@ -1144,11 +1152,18 @@ options</p>
 </h3>
 <p>up:</p>
 <div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_up</span><span class="op">$</span><span class="va">BSDB_BS</span>, column_title <span class="op">=</span> <span class="st">"Background: union of BSDB sigs by body site - Direction: increased"</span> <span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_up</span><span class="op">$</span><span class="va">BSDB_BS</span>,</span>
+<span>    column_title <span class="op">=</span></span>
+<span>        <span class="st">"Background: union of BSDB sigs by body site - Direction: increased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-47-1.png" width="1152"></p>
 <p>down:</p>
 <div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_down</span><span class="op">$</span><span class="va">BSDB_BS</span>, column_title <span class="op">=</span> <span class="st">"Union of BSDB sigs by body site - decreased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_down</span><span class="op">$</span><span class="va">BSDB_BS</span>,</span>
+<span>    column_title <span class="op">=</span> <span class="st">"Union of BSDB sigs by body site - decreased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-48-1.png" width="1152"></p>
 </div>
 <div class="section level3">
@@ -1156,11 +1171,18 @@ options</p>
 </h3>
 <p>up:</p>
 <div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_up</span><span class="op">$</span><span class="va">TMS_BSDB</span>, column_title <span class="op">=</span> <span class="st">"Background: union of BSDB and TMS signatures - Direction: increased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_up</span><span class="op">$</span><span class="va">TMS_BSDB</span>,</span>
+<span>    column_title <span class="op">=</span> </span>
+<span>        <span class="st">"Background: union of BSDB and TMS signatures - Direction: increased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-49-1.png" width="1248"></p>
 <p>down:</p>
 <div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_down</span><span class="op">$</span><span class="va">TMS_BSDB</span>, column_title <span class="op">=</span> <span class="st">"Union of BSDB and TMS signatures - decreased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_down</span><span class="op">$</span><span class="va">TMS_BSDB</span>,</span>
+<span>    column_title <span class="op">=</span> <span class="st">"Union of BSDB and TMS signatures - decreased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-50-1.png" width="1344"></p>
 </div>
 <div class="section level3">
@@ -1168,11 +1190,18 @@ options</p>
 </h3>
 <p>up:</p>
 <div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_up</span><span class="op">$</span><span class="va">TMS_BSDB_BS</span>, column_title <span class="op">=</span> <span class="st">"Union of BSDB and TMS sigs by body site - increased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_up</span><span class="op">$</span><span class="va">TMS_BSDB_BS</span>,</span>
+<span>    column_title <span class="op">=</span> <span class="st">"Union of BSDB and TMS sigs by body site - increased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-51-1.png" width="1152"></p>
 <p>down:</p>
 <div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_down</span><span class="op">$</span><span class="va">TMS_BSDB_BS</span>, column_title <span class="op">=</span> <span class="st">"Background: union of BSDB and TMS sigs by body site - Direction: decreased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_down</span><span class="op">$</span><span class="va">TMS_BSDB_BS</span>,</span>
+<span>    column_title <span class="op">=</span></span>
+<span>        <span class="st">"Background: union of BSDB and TMS sigs by body site - Direction: decreased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-52-1.png" width="1152"></p>
 </div>
 <div class="section level3">
@@ -1180,22 +1209,36 @@ options</p>
 </h3>
 <p>up:</p>
 <div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_up</span><span class="op">$</span><span class="va">TMS_BSDB_intersect</span>, column_title <span class="op">=</span> <span class="st">"Background: intersection of BSDB and TMS sigs - Direction: increased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_up</span><span class="op">$</span><span class="va">TMS_BSDB_intersect</span>,</span>
+<span>    column_title <span class="op">=</span></span>
+<span>        <span class="st">"Background: intersection of BSDB and TMS sigs - Direction: increased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-53-1.png" width="576"></p>
 <p>down:</p>
 <p>No results</p>
 <div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_down</span><span class="op">$</span><span class="va">TMS_BSD</span>, column_title <span class="op">=</span> <span class="st">"Intersection of BSDB and TMS sigs - decreased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_down</span><span class="op">$</span><span class="va">TMS_BSD</span>,</span>
+<span>    column_title <span class="op">=</span> <span class="st">"Intersection of BSDB and TMS sigs - decreased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="tms-intersect-bsdb-by-bs">TMS intersect BSDB by BS<a class="anchor" aria-label="anchor" href="#tms-intersect-bsdb-by-bs"></a>
 </h3>
 <p>up: No results</p>
 <div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_up</span><span class="op">$</span><span class="va">TMS_BSDB_BS_interesct</span>, column_title <span class="op">=</span> <span class="st">"Intersection of BSDB and TMS sigs by body site - increased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_up</span><span class="op">$</span><span class="va">TMS_BSDB_BS_interesct</span>,</span>
+<span>    column_title <span class="op">=</span> <span class="st">"Intersection of BSDB and TMS sigs by body site - increased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>down:</p>
 <div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_down</span><span class="op">$</span><span class="va">TMS_BSDB_BS_intersect</span>, column_title <span class="op">=</span> <span class="st">"Background: intersection of BSDB adn TMS sigs by body site - Direction: decreased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_down</span><span class="op">$</span><span class="va">TMS_BSDB_BS_intersect</span>,</span>
+<span>    column_title <span class="op">=</span></span>
+<span>        <span class="st">"Background: intersection of BSDB adn TMS sigs by body site - Direction: decreased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-56-1.png" width="700"></p>
 </div>
 <div class="section level3">
@@ -1203,11 +1246,19 @@ options</p>
 </h3>
 <p>up:</p>
 <div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_up</span><span class="op">$</span><span class="va">TMS_1BSDB</span>, column_title <span class="op">=</span> <span class="st">"Background: union of TMS and one target BSDB signature - Direction: increased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_up</span><span class="op">$</span><span class="va">TMS_1BSDB</span>,</span>
+<span>    column_title <span class="op">=</span></span>
+<span>        <span class="st">"Background: union of TMS and one target BSDB signature - Direction: increased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-57-1.png" width="864"></p>
 <p>down:</p>
 <div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">l_ht_down</span><span class="op">$</span><span class="va">TMS_1BSDB</span>, column_title <span class="op">=</span> <span class="st">"Background: union of TMS and one target BSDB signature - Direction: decreased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span></span>
+<span>    <span class="va">l_ht_down</span><span class="op">$</span><span class="va">TMS_1BSDB</span>,</span>
+<span>    column_title <span class="op">=</span></span>
+<span>        <span class="st">"Background: union of TMS and one target BSDB signature - Direction: decreased"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-58-1.png" width="960"></p>
 </div>
 </div>
