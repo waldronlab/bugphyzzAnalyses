@@ -21,12 +21,15 @@ library(purrr)
 library(tidyr)
 library(ComplexHeatmap)
 library(gridExtra)
+
+## Define some variables
+body_sites <- c("skin", "vagina", "mouth", "feces")
+ranks <- c("genus", "species")
 ```
 
 ## Data
 
 TypicalMicrobiomeSignatures:
-
 
 ```{r, message=FALSE}
 tms <- importTMS() |> 
@@ -84,7 +87,6 @@ names(bp)
 BugSigDB signatures:
 
 ```{r}
-ranks <- c("genus", "species")
 directions <- c("increased", "decreased")
 bsdb_sigs <- vector(
     mode = "list", 
@@ -128,6 +130,34 @@ bsdb_sigs <- list_flatten(bsdb_sigs)
 bsdb_sigs <- discard(bsdb_sigs, is.null)
 ```
 
+Separate BSDB signatures by body site and rank:
+
+```{r}
+bsdb_sigs_BS_gn <- vector("list", length(body_sites))
+for (i in seq_along(bsdb_sigs_BS_gn)) {
+   rx <- paste0("^", body_sites[i], "-%-%-", "genus")
+   sigsL <- bsdb_sigs[grep(rx, names(bsdb_sigs))]
+   names(sigsL) <- names(bsdb_sigs)[grep(rx, names(bsdb_sigs))]
+   if (is.null(sigsL)) {
+       next
+   }
+   bsdb_sigs_BS_gn[[i]] <- sigsL
+   names(bsdb_sigs_BS_gn)[i] <- body_sites[i]
+}
+
+bsdb_sigs_BS_sp <- vector("list", length(body_sites))
+for (i in seq_along(bsdb_sigs_BS_sp)) {
+   rx <- paste0("^", body_sites[i], "-%-%-", "species")
+   sigsL <- bsdb_sigs[grep(rx, names(bsdb_sigs))]
+   names(sigsL) <- names(bsdb_sigs)[grep(rx, names(bsdb_sigs))]
+   if (is.null(sigsL)) {
+       next
+   }
+   bsdb_sigs_BS_sp[[i]] <- sigsL
+   names(bsdb_sigs_BS_sp)[i] <- body_sites[i]
+}
+```
+
 bugphyzz signatures:
 
 ```{r, warning=FALSE}
@@ -158,8 +188,6 @@ bp_sigs <- c(bp_sigs_gn, bp_sigs_sp)
 Typical Microbiome Signatures:
 
 ```{r}
-body_sites <- c("skin", "vagina", "mouth", "feces")
-ranks <- c("genus", "species")
 thrs <- elbows()
 tms_sigs <- vector("list", length(body_sites) * length(ranks))
 counter <- 1
@@ -198,7 +226,10 @@ Enrichment at the genus level:
 
 ```{r}
 system.time({
-    en_BSDB_gn <- map(bsdb_sigs_gn, ~ microbeSetEnrichment(.x, bk_BSDB_gn, bp_sigs_gn)) |> 
+    en_BSDB_gn <- map(
+        .x = bsdb_sigs_gn,
+        .f = ~ microbeSetEnrichment(.x, bk_BSDB_gn, bp_sigs_gn)
+    ) |> 
         bind_rows(.id = "bsdb_sig") |> 
         separate(
             col = "bsdb_sig",
@@ -208,10 +239,13 @@ system.time({
         mutate(condition = tolower(condition)) |> 
         mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
         mutate_at(
-            .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+            .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+            .funs = ~ round(.x, 2)
         ) |> 
-        mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name)) |> 
-        filter(fdr < 0.1)
+        mutate(sig_name = sub(
+            "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+        ))
+        # filter(fdr < 0.1)
     colnames(en_BSDB_gn) <- sub("Set", "BSDB", colnames(en_BSDB_gn))
 })
 ```
@@ -220,7 +254,10 @@ Enrichment at the species level:
 
 ```{r}
 system.time({
-    en_BSDB_sp <- map(bsdb_sigs_sp, ~ microbeSetEnrichment(.x, bk_BSDB_sp, bp_sigs_sp)) |> 
+    en_BSDB_sp <- map(
+        .x = bsdb_sigs_sp,
+        .f = ~ microbeSetEnrichment(.x, bk_BSDB_sp, bp_sigs_sp)
+    ) |> 
         bind_rows(.id = "bsdb_sig") |> 
         separate(
             col = "bsdb_sig",
@@ -230,10 +267,13 @@ system.time({
         mutate(condition = tolower(condition)) |> 
         mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
         mutate_at(
-            .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+            .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+            .funs = ~ round(.x, 2)
         ) |> 
-        mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name)) |> 
-        filter(fdr < 0.1)
+        mutate(sig_name = sub(
+            "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+        ))
+        # filter(fdr < 0.1)
     colnames(en_BSDB_sp) <- sub("Set", "BSDB", colnames(en_BSDB_sp))
 })
 ```
@@ -243,55 +283,17 @@ system.time({
 Enrichment at the genus level:
 
 ```{r}
-system.time({
-    bk_BSDB_BS_sp <- vector("list", length(body_sites))
-    names(bk_BSDB_BS_sp) <- body_sites
-    for (i in seq_along(bk_BSDB_BS_sp)) {
-        res <- bsdb_sigs_sp[grepl(body_sites[[i]], names(bsdb_sigs_sp))]
-        if (is.null(res)) {
-            next
-        }
-        bk_BSDB_BS_sp[[i]] <- unique(unlist(res))
+bk_BSDB_BS_gn <- vector("list", length(body_sites))
+names(bk_BSDB_BS_gn) <- body_sites
+for (i in seq_along(bk_BSDB_BS_gn)) {
+    res <- bsdb_sigs_gn[grepl(body_sites[[i]], names(bsdb_sigs_gn))]
+    if (is.null(res)) {
+        next
     }
-    
-    en_BSDB_BS_sp <- vector("list", length(body_sites))
-    for (i in seq_along(body_sites)) {
-        bk <- bk_BSDB_BS_sp[[body_sites[i]]]
-        rx <- paste0(body_sites[i], "-%-%-")
-        sig_list <- bsdb_sigs_sp[grep(rx, names(bsdb_sigs_sp))]
-        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |> 
-            bind_rows(.id = "bsdb_sig") |> 
-            separate(
-                col = "bsdb_sig",
-                into = c("body_site", "rank", "direction", "condition", "bsdb_sig"),
-                sep = "-%-%-", remove = TRUE 
-            ) |> 
-            mutate(condition = tolower(condition)) |> 
-            mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
-            mutate_at(
-                .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
-            ) |> 
-            mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
-        colnames(res) <- sub("Set", "BSDB", colnames(res))
-        en_BSDB_BS_sp[[i]] <- res
-    }
-    en_BSDB_BS_sp <- bind_rows(en_BSDB_BS_sp)
-})
-```
+    bk_BSDB_BS_gn[[i]] <- unique(unlist(res))
+}
 
-Enrichment at the genus level:
-
-```{r}
 system.time({
-    bk_BSDB_BS_gn <- vector("list", length(body_sites))
-    names(bk_BSDB_BS_gn) <- body_sites
-    for (i in seq_along(bk_BSDB_BS_gn)) {
-        res <- bsdb_sigs_gn[grepl(body_sites[[i]], names(bsdb_sigs_gn))]
-        if (is.null(res)) {
-            next
-        }
-        bk_BSDB_BS_gn[[i]] <- unique(unlist(res))
-    }
     en_BSDB_BS_gn <- vector("list", length(body_sites))
     for (i in seq_along(body_sites)) {
         bk <- bk_BSDB_BS_gn[[body_sites[i]]]
@@ -301,15 +303,20 @@ system.time({
             bind_rows(.id = "bsdb_sig") |> 
             separate(
                 col = "bsdb_sig",
-                into = c("body_site", "rank", "direction", "condition", "bsdb_sig"),
+                into = c(
+                    "body_site", "rank", "direction", "condition", "bsdb_sig"
+                ),
                 sep = "-%-%-", remove = TRUE 
             ) |> 
             mutate(condition = tolower(condition)) |> 
             mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
             mutate_at(
-                .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+                .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+                .funs = ~ round(.x, 2)
             ) |> 
-            mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
+            mutate(sig_name = sub(
+                "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+            ))
         colnames(res) <- sub("Set", "BSDB", colnames(res))
         en_BSDB_BS_gn[[i]] <- res
     }
@@ -317,14 +324,61 @@ system.time({
 })
 ```
 
+Enrichment at the species level:
+
+```{r}
+bk_BSDB_BS_sp <- vector("list", length(body_sites))
+names(bk_BSDB_BS_sp) <- body_sites
+for (i in seq_along(bk_BSDB_BS_sp)) {
+    res <- bsdb_sigs_sp[grepl(body_sites[[i]], names(bsdb_sigs_sp))]
+    if (is.null(res)) {
+        next
+    }
+    bk_BSDB_BS_sp[[i]] <- unique(unlist(res))
+}
+
+system.time({
+    en_BSDB_BS_sp <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_BSDB_BS_sp[[body_sites[i]]]
+        rx <- paste0(body_sites[i], "-%-%-")
+        sig_list <- bsdb_sigs_sp[grep(rx, names(bsdb_sigs_sp))]
+        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |> 
+            bind_rows(.id = "bsdb_sig") |> 
+            separate(
+                col = "bsdb_sig",
+                into = c(
+                    "body_site", "rank", "direction", "condition", "bsdb_sig"
+                ),
+                sep = "-%-%-", remove = TRUE 
+            ) |> 
+            mutate(condition = tolower(condition)) |> 
+            mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
+            mutate_at(
+                .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+                .funs = ~ round(.x, 2)
+            ) |> 
+            mutate(sig_name = sub(
+                "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+            ))
+        colnames(res) <- sub("Set", "BSDB", colnames(res))
+        en_BSDB_BS_sp[[i]] <- res
+    }
+    en_BSDB_BS_sp <- bind_rows(en_BSDB_BS_sp)
+})
+```
+
 ## Enrichemnt | Background = TMS + BSDB
 
-Enrichemtn at the genus level:
+Enrichment at the genus level:
 
 ```{r}
 system.time({
     bk_TMS_BSDB_gn <- unique(unlist(c(tms_sigs_gn, bsdb_sigs_gn)))
-    en_TMS_BSDB_gn <- map(bsdb_sigs_gn, ~ microbeSetEnrichment(.x, bk_TMS_BSDB_gn, bp_sigs_gn)) |> 
+    en_TMS_BSDB_gn <- map(
+        .x = bsdb_sigs_gn,
+        .f = ~ microbeSetEnrichment(.x, bk_TMS_BSDB_gn, bp_sigs_gn)
+    ) |> 
         bind_rows(.id = "bsdb_sig") |> 
         separate(
             col = "bsdb_sig",
@@ -334,9 +388,12 @@ system.time({
         mutate(condition = tolower(condition)) |> 
         mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
         mutate_at(
-            .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+            .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+            .funs = ~ round(.x, 2)
         ) |> 
-        mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
+        mutate(sig_name = sub(
+            "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+        ))
     colnames(en_TMS_BSDB_gn) <- sub("Set", "BSDB", colnames(en_TMS_BSDB_gn))
 })
 ```
@@ -346,7 +403,10 @@ Enrichment at the species level:
 ```{r}
 system.time({
     bk_TMS_BSDB_sp <- unique(unlist(c(tms_sigs_sp, bsdb_sigs_sp)))
-    en_TMS_BSDB_sp <- map(bsdb_sigs_sp, ~ microbeSetEnrichment(.x, bk_TMS_BSDB_sp, bp_sigs_sp)) |> 
+    en_TMS_BSDB_sp <- map(
+        .x = bsdb_sigs_sp,
+        .f = ~ microbeSetEnrichment(.x, bk_TMS_BSDB_sp, bp_sigs_sp)
+        ) |> 
         bind_rows(.id = "bsdb_sig") |> 
         separate(
             col = "bsdb_sig",
@@ -356,9 +416,12 @@ system.time({
         mutate(condition = tolower(condition)) |> 
         mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
         mutate_at(
-            .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+            .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+            .funs = ~ round(.x, 2)
         ) |> 
-        mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
+        mutate(sig_name = sub(
+            "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+        ))
     colnames(en_TMS_BSDB_sp) <- sub("Set", "BSDB", colnames(en_TMS_BSDB_sp))
 })
 ```
@@ -381,15 +444,20 @@ system.time({
             bind_rows(.id = "bsdb_sig") |> 
             separate(
                 col = "bsdb_sig",
-                into = c("body_site", "rank", "direction", "condition", "bsdb_sig"),
+                into = c(
+                    "body_site", "rank", "direction", "condition", "bsdb_sig"
+                ),
                 sep = "-%-%-", remove = TRUE 
             ) |> 
             mutate(condition = tolower(condition)) |> 
             mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
             mutate_at(
-                .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+                .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+                .funs = ~ round(.x, 2)
             ) |> 
-            mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
+            mutate(sig_name = sub(
+                "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+            ))
         colnames(res) <- sub("Set", "BSDB", colnames(res))
         en_TMS_BSDB_BS_gn[[i]] <- res
     }
@@ -413,15 +481,20 @@ system.time({
             bind_rows(.id = "bsdb_sig") |> 
             separate(
                 col = "bsdb_sig",
-                into = c("body_site", "rank", "direction", "condition", "bsdb_sig"),
+                into = c(
+                    "body_site", "rank", "direction", "condition", "bsdb_sig"
+                ),
                 sep = "-%-%-", remove = TRUE 
             ) |> 
             mutate(condition = tolower(condition)) |> 
             mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
             mutate_at(
-                .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+                .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+                .funs = ~ round(.x, 2)
             ) |> 
-            mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
+            mutate(sig_name = sub(
+                "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+            ))
         colnames(res) <- sub("Set", "BSDB", colnames(res))
         en_TMS_BSDB_BS_sp[[i]] <- res
     }
@@ -444,7 +517,6 @@ data.frame(
 )
 ```
 
-
 Enrichment at the genus level:
 
 ```{r}
@@ -463,10 +535,13 @@ system.time({
         mutate(condition = tolower(condition)) |> 
         mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
         mutate_at(
-            .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+            .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+            .funs = ~ round(.x, 2)
         ) |> 
-        mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name)) |> 
-        filter(fdr < 0.1)
+        mutate(sig_name = sub(
+            "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+        )) 
+        # filter(fdr < 0.1)
     colnames(en_TMS_BSDB_intersect_gn) <- sub(
         "Set", "BSDB", colnames(en_TMS_BSDB_intersect_gn)
     )
@@ -486,9 +561,7 @@ data.frame(
 )
 ```
 
-
 Enrichment at the species level:
-
 
 ```{r}
 bk_TMS_BSDB_intersect_sp <- tms_bsdb_sp_xy
@@ -506,10 +579,13 @@ system.time({
         mutate(condition = tolower(condition)) |> 
         mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
         mutate_at(
-            .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+            .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+            .funs = ~ round(.x, 2)
         ) |> 
-        mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name)) |> 
-        filter(fdr < 0.1)
+        mutate(sig_name = sub(
+            "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+        ))
+        # filter(fdr < 0.1)
     colnames(en_TMS_BSDB_intersect_sp) <- sub(
         "Set", "BSDB", colnames(en_TMS_BSDB_intersect_sp)
     )
@@ -521,70 +597,52 @@ system.time({
 Intersection by body site at the genus level:
 
 ```{r}
-bk_TMS_BSDB_BS_intersect_gn <- vector("list", length(body_sites))
-for (i in seq_along(body_sites)) {
-    sigs <- unique(unlist(bsdb_sigs_gn[grep(body_sites[i], names(bsdb_sigs_gn))])
-}
-
-
-
-tms_sigs_gn
-
-map2()
-
-
-
-
-
-
-bk_BSDB_BS_sp <- vector("list", length(body_sites))
-    names(bk_BSDB_BS_sp) <- body_sites
-    for (i in seq_along(bk_BSDB_BS_sp)) {
-        res <- bsdb_sigs_sp[grepl(body_sites[[i]], names(bsdb_sigs_sp))]
-        if (is.null(res)) {
-            next
-        }
-        bk_BSDB_BS_sp[[i]] <- unique(unlist(res))
-    }
-
-
-
-
+l1 <- map(body_sites, ~ {
+    x <- unique(unlist(bsdb_sigs_BS_gn[[.x]]))
+    y <- tms_sigs_gn[[.x]]
+    xy <- intersect(x, y)
+    x_ <- setdiff(x, xy)
+    y_ <- setdiff(y, xy)
+    list(
+        bsdb_only = x_,
+        tms_only = y_,
+        both = xy
+    )
+})
+names(l1) <- body_sites
+bk_TMS_BSDB_BS_intersect_gn <- map(l1, ~ .x$both)
+l1 |> 
+    map(~ as.data.frame(matrix(map_int(.x, length), nrow = 1))) |> 
+    bind_rows() |> 
+    set_names(c("bsdb_only", "tms_only", "both"))
 ```
 
-
-
-
-
-
+Intersection by body site at the species level:
 
 ```{r}
-background_sigs_l <- vector("list", length(body_sites) * length(ranks))
-counter <- 1
-for (i in seq_along(body_sites)) {
-    for (j in seq_along(ranks)) {
-        tms_sig_name <- paste0(body_sites[i], "_", ranks[j])
-        bsdb_sig_rgx <- paste0("^", body_sites[i], "-%-%-", ranks[j])
-        names(background_sigs_l)[counter] <- tms_sig_name
-        
-        x <- tms_sigs[[tms_sig_name]]
-        y <- unique(unlist(bsdb_sigs[grep(bsdb_sig_rgx, names(bsdb_sigs))], use.names = FALSE))
-        
-        background_sigs_l[[counter]] <- tibble::tribble(
-            ~tms, ~bsdb, ~both,
-            length(setdiff(x, y)), length(setdiff(y, x)), length(intersect(x, y))
-        )
-        
-        counter <- counter + 1
-    }
-}
-bk_dat <- bind_rows(background_sigs_l, .id = "bodysite_rank")
-bk_dat
+l2 <- map(body_sites, ~ {
+    x <- unique(unlist(bsdb_sigs_BS_sp[[.x]]))
+    y <- tms_sigs_sp[[.x]]
+    xy <- intersect(x, y)
+    x_ <- setdiff(x, xy)
+    y_ <- setdiff(y, xy)
+    list(
+        bsdb_only = x_,
+        tms_only = y_,
+        both = xy
+    )
+})
+names(l2) <- body_sites
+bk_TMS_BSDB_BS_intersect_sp <- map(l2, ~ .x$both)
+l2 |> 
+    map(~ as.data.frame(matrix(map_int(.x, length), nrow = 1))) |> 
+    bind_rows() |> 
+    set_names(c("bsdb_only", "tms_only", "both"))
 ```
 
 ## Enrichment | Background = TMS by Body site + 1 BSDB sig
 
-Background:
+Background(s):
 
 ```{r}
 bk_TMS_1BSDB_BS <- vector("list", length(bsdb_sigs)) 
@@ -618,10 +676,15 @@ system.time({
         mutate(condition = tolower(condition)) |> 
         mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
         mutate_at(
-            .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+            .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+            .funs = ~ round(.x, 2)
         ) |> 
-        mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
-    colnames(en_TMS_1BSDB_BS_gn) <- sub("Set", "BSDB", colnames(en_TMS_1BSDB_BS_gn))
+        mutate(sig_name = sub(
+            "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+        ))
+    colnames(en_TMS_1BSDB_BS_gn) <- sub(
+        "Set", "BSDB", colnames(en_TMS_1BSDB_BS_gn)
+    )
 })
 ```
 
@@ -643,13 +706,17 @@ system.time({
         mutate(condition = tolower(condition)) |> 
         mutate_at(.vars = c("p_value", "fdr"), .funs = ~ round(.x, 3)) |> 
         mutate_at(
-            .vars = c("odds_ratio", "upper_ci", "lower_ci"), .funs = ~ round(.x, 2)
+            .vars = c("odds_ratio", "upper_ci", "lower_ci"),
+            .funs = ~ round(.x, 2)
         ) |> 
-        mutate(sig_name = sub("^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name))
-    colnames(en_TMS_1BSDB_BS_sp) <- sub("Set", "BSDB", colnames(en_TMS_1BSDB_BS_sp))
+        mutate(sig_name = sub(
+            "^bugphyzz:(.*)\\|(genus|species)$", "\\1", sig_name
+        ))
+    colnames(en_TMS_1BSDB_BS_sp) <- sub(
+        "Set", "BSDB", colnames(en_TMS_1BSDB_BS_sp)
+    )
 })
 ```
-
 
 ## Grouping
 
