@@ -1301,6 +1301,7 @@ ht_comb_down <- combinationHt(lmat_down)
 draw(ht_comb_down, column_title = "Decreased")
 ```
 
+
 ## Session info
 
 ```{r}
