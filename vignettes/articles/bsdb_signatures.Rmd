@@ -1161,6 +1161,146 @@ draw(
 )
 ```
 
+
+## Comparison of conditions and signatures across backgrounds
+
+Define functions:
+
+```{r}
+globalHt <- function(l, what) {
+    mat_ <- l |> 
+        map(~ map(.x, function(x) do.call(what, list(x)))) |> 
+        map(~ data.frame(sig = unique(unlist(.x)), y = 1)) |> 
+        {\(y) map2(.x = y, .y = names(y), ~ {colnames(.x)[2] <- .y; .x})}() |> 
+        reduce(~ left_join(.x, .y, by = "sig") ) |> 
+        {\(y) {y[is.na(y)] <- 0; y}}() |> 
+        tibble::column_to_rownames(var = "sig") |> 
+        as.matrix()
+    ht_ <- Heatmap(
+        matrix = mat_,
+        show_row_names = TRUE,
+        col = circlize::colorRamp2(c(0, 1), c("white", "gray25")),
+        name = "presence/absence",
+        row_names_max_width = max_text_width(
+            rownames(mat_),
+        gp = gpar(fontsize = 12)
+        ),
+        rect_gp = gpar(col = "gray70", lwd = 1)
+    )
+    ht_
+}
+```
+
+
+Conditions - UP:
+
+```{r, fig.height=9, fig.width=8}
+ht_cond_up <- globalHt(lmat_up, "colnames")
+draw(ht_cond_up, column_title = "Conditions - Increased")
+```
+
+Conditions - Down
+
+```{r, fig.height=9, fig.width=8}
+ht_cond_down <- globalHt(lmat_down, "colnames")
+draw(ht_cond_down, column_title = "Conditions - decreased")
+
+```
+
+Signatures - UP
+
+```{r, fig.height=12, fig.width=9}
+ht_cond_up <- globalHt(lmat_up, "rownames")
+draw(ht_cond_up, column_title = "BP Signatures - Increased")
+
+```
+
+Signatures - Down
+
+```{r, fig.height=12, fig.width=9}
+ht_cond_down <- globalHt(lmat_down, "rownames")
+draw(ht_cond_down)
+```
+
+## Combinations
+
+Define function
+
+
+```{r}
+myFun <- function(x) {
+    x |> 
+        as.data.frame() |> 
+        tibble::rownames_to_column("sig") |> 
+        pivot_longer(
+            names_to = "condition", values_to = "presence", cols = 2:last_col()
+        ) |> 
+        filter(presence > 0) |> 
+        unite(col = "combination", sep = " --- ", condition, sig)
+        # mutate(presence = 1) 
+}
+
+combinationHt <- function(l) {
+    
+    
+    xvar <- l |> 
+        map(~ map(.x, function(x) myFun(x))) |> 
+        map(~ distinct(bind_rows(.x, .id = "bs"))) |> 
+        bind_rows(.id = "bk") |> 
+        mutate(
+            bs = factor(bs), combination = factor(combination),
+            bk = factor(bk)
+        ) |> 
+        {\(y) split(y, y$bs)}() |> 
+        map(~select(.x, -bs)) |> 
+        map(~ {
+            .x |> 
+                complete(combination, bk, fill = list(presence = 0)) |> 
+                pivot_wider(
+                    names_from = "bk", values_from = "presence", values_fill = 0
+                ) |>
+                tibble::column_to_rownames(var = "combination") |>
+                as.matrix()
+        }) |> 
+        map(~ {
+            select_row <- which(rowSums(.x) > 0)
+            .x[select_row, , drop = FALSE]
+        }) |>
+        imap(~{
+            # color_fun <- circlize::colorRamp2(
+            #     breaks = c(0, seq(1, max_count)), 
+            #     colors = c("white", viridis::viridis(max_count))
+            # )
+            
+            Heatmap(
+                matrix = .x,
+                show_row_names = TRUE,
+                show_row_dend = FALSE,
+                show_column_dend = FALSE,
+                row_title = .y,
+                col = color_fun,
+                name = "# sigs",
+                row_names_max_width = max_text_width(
+                    rownames(.x),
+                    gp = gpar(fontsize = 12)
+                ),
+                rect_gp = gpar(col = "gray70", lwd = 1)
+            )
+        })
+    reduce(xvar, ~ .x %v% .y)
+}
+```
+
+```{r, fig.height=25, fig.width=14, warning=FALSE}
+ht_comb_up <- combinationHt(lmat_up)
+draw(ht_comb_up, column_title = "Increased")
+```
+
+```{r, fig.height=25, fig.width=14, warning=FALSE}
+ht_comb_down <- combinationHt(lmat_down)
+draw(ht_comb_down, column_title = "Decreased")
+```
+
 ## Session info
 
 ```{r}
