@@ -1291,12 +1291,12 @@ combinationHt <- function(l) {
 }
 ```
 
-```{r, fig.height=25, fig.width=14, warning=FALSE}
+```{r, fig.height=30, fig.width=10, warning=FALSE}
 ht_comb_up <- combinationHt(lmat_up)
 draw(ht_comb_up, column_title = "Increased")
 ```
 
-```{r, fig.height=25, fig.width=14, warning=FALSE}
+```{r, fig.height=30, fig.width=10, warning=FALSE}
 ht_comb_down <- combinationHt(lmat_down)
 draw(ht_comb_down, column_title = "Decreased")
 ```
