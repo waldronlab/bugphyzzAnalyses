@@ -212,7 +212,7 @@ names(tms_sigs_gn) <- sub("_genus", "", names(tms_sigs_gn))
 names(tms_sigs_sp) <- sub("_species", "", names(tms_sigs_sp))
 ```
 
-## Enrichment | Background = BSDB
+## Enrichment \| Background = BSDB
 
 Background:
 
@@ -283,7 +283,7 @@ system.time({
 en_BSDB <- bind_rows(en_BSDB_gn, en_BSDB_sp)
 ```
 
-## Enrichment | Background = BSDB by Body site
+## Enrichment \| Background = BSDB by Body site
 
 Enrichment at the genus level:
 
@@ -377,7 +377,7 @@ system.time({
 en_BSDB_BS <- bind_rows(en_BSDB_BS_gn, en_BSDB_BS_sp)
 ```
 
-## Enrichemnt | Background = TMS + BSDB
+## Enrichemnt \| Background = TMS + BSDB
 
 Enrichment at the genus level:
 
@@ -439,7 +439,7 @@ system.time({
 en_TMS_BSDB <- bind_rows(en_TMS_BSDB_gn, en_TMS_BSDB_sp)
 ```
 
-## Enrichment | Background = TMS by Body site + BSDB by Body site
+## Enrichment \| Background = TMS by Body site + BSDB by Body site
 
 Enrichment at the genus level:
 
@@ -519,7 +519,7 @@ system.time({
 en_TMS_BSDB_BS <- bind_rows(en_TMS_BSDB_gn, en_TMS_BSDB_sp)
 ```
 
-## Enrichment | Background = TMS intersect with BSDB
+## Enrichment \| Background = TMS intersect with BSDB
 
 Intersection at the genus level:
 
@@ -615,7 +615,7 @@ en_TMS_BSDB_intersect <- bind_rows(
 )
 ```
 
-## Enrichment | Background = TMS intersect with BSDB by body site
+## Enrichment \| Background = TMS intersect with BSDB by body site
 
 Intersection by body site at the genus level:
 
@@ -737,7 +737,7 @@ en_TMS_BSDB_BS_intersect <- bind_rows(
 )
 ```
 
-## Enrichment | Background = TMS by Body site + 1 BSDB sig
+## Enrichment \| Background = TMS by Body site + 1 BSDB sig
 
 Background(s):
 
@@ -853,6 +853,7 @@ Adjust FDR and filter:
 filtered_results <- map(results, ~ filter(.x, fdr < 0.1))
 map(filtered_results, dim)
 ```
+
 Check which signatures are more frequent among the background options
 
 ```{r}
@@ -895,7 +896,6 @@ m <- z |>
     as.matrix()
 
 ```
-
 
 ```{r, warning=FALSE, fig.height=10, fig.width=5}
 col_fun <- circlize::colorRamp2(
@@ -950,9 +950,11 @@ createMat <- function(dat, fdr_th = 0.1, dir) {
 createHt <- function(x) {
     lht <- vector("list", length(x))
     for (i in seq_along(x)) {
+        xmat <- x[[i]]
+        xmat <- xmat[sort(rownames(xmat)),, drop = FALSE]
         if (i == length(lht)) {
             lht[[i]] <- Heatmap(
-                matrix = x[[i]],
+                matrix = xmat,
                 col = color_fun,
                 show_column_dend = FALSE,
                 show_row_dend = FALSE,
@@ -963,14 +965,14 @@ createHt <- function(x) {
                 column_title_rot = 45,
                 column_names_rot = 45,
                 row_names_max_width = max_text_width(
-                    rownames(x[[i]]),
+                    rownames(xmat),
                     gp = gpar(fontsize = 12)
                 ),
                 rect_gp = gpar(col = "gray70", lwd = 1)
             )
         } else {
             lht[[i]] <- Heatmap(
-                matrix = x[[i]],
+                matrix = xmat,
                 col = color_fun,
                 show_column_dend = FALSE,
                 show_row_dend = FALSE,
@@ -981,7 +983,7 @@ createHt <- function(x) {
                 column_title_rot = 45,
                 column_names_rot = 45,
                 row_names_max_width = max_text_width(
-                    rownames(x[[i]]),
+                    rownames(xmat),
                     gp = gpar(fontsize = 12)
                 ),
                 rect_gp = gpar(col = "gray70", lwd = 1)
@@ -1046,7 +1048,7 @@ down:
 ```{r, fig.height=8, fig.width=12}
 draw(
     l_ht_down$BSDB_BS,
-    column_title = "Union of BSDB sigs by body site - decreased"
+    column_title = "Background:Union of BSDB sigs by body site - Direction: decreased"
 )
 ```
 
@@ -1067,7 +1069,7 @@ down:
 ```{r, fig.height=9, fig.width=14}
 draw(
     l_ht_down$TMS_BSDB,
-    column_title = "Union of BSDB and TMS signatures - decreased"
+    column_title = "Background: Union of BSDB and TMS signatures - Direction: decreased"
 )
 ```
 
@@ -1078,7 +1080,7 @@ up:
 ```{r, fig.height=15, fig.width=12}
 draw(
     l_ht_up$TMS_BSDB_BS,
-    column_title = "Union of BSDB and TMS sigs by body site - increased"
+    column_title = "Background: Union of BSDB and TMS sigs by body site - Direction: increased"
 )
 ```
 
@@ -1111,7 +1113,7 @@ No results
 ```{r, eval=FALSE}
 draw(
     l_ht_down$TMS_BSD,
-    column_title = "Intersection of BSDB and TMS sigs - decreased"
+    column_title = "Background: Intersection of BSDB and TMS sigs - Direction: decreased"
 )
 ```
 
@@ -1122,7 +1124,7 @@ up: No results
 ```{r, eval=FALSE}
 draw(
     l_ht_up$TMS_BSDB_BS_interesct,
-    column_title = "Intersection of BSDB and TMS sigs by body site - increased"
+    column_title = "Background: Intersection of BSDB and TMS sigs by body site - Direction: increased"
 )
 ```
 
