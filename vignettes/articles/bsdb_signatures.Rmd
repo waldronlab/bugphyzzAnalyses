@@ -1236,13 +1236,11 @@ myFun <- function(x) {
             names_to = "condition", values_to = "presence", cols = 2:last_col()
         ) |> 
         filter(presence > 0) |> 
-        unite(col = "combination", sep = " --- ", condition, sig)
+        unite(col = "combination", sep = " |---| ", condition, sig)
         # mutate(presence = 1) 
 }
 
 combinationHt <- function(l) {
-    
-    
     xvar <- l |> 
         map(~ map(.x, function(x) myFun(x))) |> 
         map(~ distinct(bind_rows(.x, .id = "bs"))) |> 
@@ -1265,13 +1263,16 @@ combinationHt <- function(l) {
         map(~ {
             select_row <- which(rowSums(.x) > 0)
             .x[select_row, , drop = FALSE]
+            # .x[sort(rownames(.x)), , drop = FALSE]
+            
         }) |>
         imap(~{
-            # color_fun <- circlize::colorRamp2(
-            #     breaks = c(0, seq(1, max_count)), 
-            #     colors = c("white", viridis::viridis(max_count))
-            # )
             .x <- .x[sort(rownames(.x)), , drop = FALSE]
+            order_of_columns <- c(
+                "TMS_BSDB", "TMS_BSDB_BS", "BSDB", "BSDB_BS",
+                "TMS_1BSDB_BS", "TMS_BSDB_intersect",
+                "TMS_BSDB_BS_intersect"
+            )
             Heatmap(
                 matrix = .x,
                 show_row_names = TRUE,
@@ -1282,6 +1283,8 @@ combinationHt <- function(l) {
                 row_title = .y,
                 col = color_fun,
                 name = "# sigs",
+                row_order = rownames(.x),
+                column_order = order_of_columns,
                 row_names_max_width = max_text_width(
                     rownames(.x),
                     gp = gpar(fontsize = 12)
