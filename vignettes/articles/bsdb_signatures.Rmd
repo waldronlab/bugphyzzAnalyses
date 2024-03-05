@@ -1271,12 +1271,14 @@ combinationHt <- function(l) {
             #     breaks = c(0, seq(1, max_count)), 
             #     colors = c("white", viridis::viridis(max_count))
             # )
-            
+            .x <- .x[sort(rownames(.x)), , drop = FALSE]
             Heatmap(
                 matrix = .x,
                 show_row_names = TRUE,
                 show_row_dend = FALSE,
                 show_column_dend = FALSE,
+                row_dend_reorder = FALSE,
+                column_dend_reorder = FALSE,
                 row_title = .y,
                 col = color_fun,
                 name = "# sigs",
@@ -1300,7 +1302,6 @@ draw(ht_comb_up, column_title = "Increased")
 ht_comb_down <- combinationHt(lmat_down)
 draw(ht_comb_down, column_title = "Decreased")
 ```
-
 
 ## Session info
 
