@@ -23,7 +23,6 @@ library(ComplexHeatmap)
 library(gridExtra)
 library(ggplot2)
 
-## Define some variables
 body_sites <- c("skin", "vagina", "mouth", "feces")
 ranks <- c("genus", "species")
 ```
@@ -212,7 +211,28 @@ names(tms_sigs_gn) <- sub("_genus", "", names(tms_sigs_gn))
 names(tms_sigs_sp) <- sub("_species", "", names(tms_sigs_sp))
 ```
 
-## Enrichment \| Background = BSDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Enrichment - Background: BSDB
 
 Background:
 
@@ -283,7 +303,7 @@ system.time({
 en_BSDB <- bind_rows(en_BSDB_gn, en_BSDB_sp)
 ```
 
-## Enrichment \| Background = BSDB by Body site
+## Enrichment - Background: BSDB by Body site
 
 Enrichment at the genus level:
 
@@ -377,7 +397,7 @@ system.time({
 en_BSDB_BS <- bind_rows(en_BSDB_BS_gn, en_BSDB_BS_sp)
 ```
 
-## Enrichemnt \| Background = TMS + BSDB
+## Enrichemnt - Background: TMS + BSDB
 
 Enrichment at the genus level:
 
@@ -439,7 +459,7 @@ system.time({
 en_TMS_BSDB <- bind_rows(en_TMS_BSDB_gn, en_TMS_BSDB_sp)
 ```
 
-## Enrichment \| Background = TMS by Body site + BSDB by Body site
+## Enrichment - Background: TMS + BSDB by body site
 
 Enrichment at the genus level:
 
@@ -519,7 +539,7 @@ system.time({
 en_TMS_BSDB_BS <- bind_rows(en_TMS_BSDB_gn, en_TMS_BSDB_sp)
 ```
 
-## Enrichment \| Background = TMS intersect with BSDB
+## Enrichment - Background: TMS + BSDB intersect
 
 Intersection at the genus level:
 
@@ -615,7 +635,7 @@ en_TMS_BSDB_intersect <- bind_rows(
 )
 ```
 
-## Enrichment \| Background = TMS intersect with BSDB by body site
+## Enrichment - Background: TMS + BSDB intersect by body site
 
 Intersection by body site at the genus level:
 
@@ -737,7 +757,7 @@ en_TMS_BSDB_BS_intersect <- bind_rows(
 )
 ```
 
-## Enrichment \| Background = TMS by Body site + 1 BSDB sig
+## Enrichment - Background: TMS + 1BSDB by body site
 
 Background(s):
 
@@ -1422,7 +1442,7 @@ en_meta_BSDB <- bind_rows(en_meta_BSDB_gn, en_meta_BSDB_sp) |>
 ```
 
 
-## Enrichment metasignatures - Background: bsdb by body site
+## Enrichment metasignatures - Background: BSDB by body site
 
 genus:
 
@@ -1560,7 +1580,7 @@ en_meta_TMS_BSDB <- bind_rows(en_meta_TMS_BSDB_gn, en_meta_TMS_BSDB_sp) |>
 ```
 
 
-## Enrichment | TMS + BSDB by Body site
+## Enrichment metasignatures - Background: TMS + BSDB by body site
 
 ```{r}
 system.time({
@@ -1634,7 +1654,7 @@ en_meta_TMS_BSDB_BS <- bind_rows(en_meta_TMS_BSDB_BS_gn, en_meta_TMS_BSDB_BS_sp)
     filter(fdr < 0.1)
 ```
 
-## Enrichment - Background: interesct
+## Enrichment metasignatures - Background: TMS + BSDB intersect
 
 ```{r}
 meta_bsdb_gn_y = unique(unlist(metasigs_gn))
@@ -1714,7 +1734,7 @@ en_meta_TMS_BSDB_intersect <- bind_rows(
     filter(fdr < 0.1)
 ```
 
-## Enrichment - Bacgkround: interesct by body site
+## Enrichment metasignatures - Bacgkround: TMS + BSDB intersect by body site
 
 ```{r}
 metasigs_BS_gn <- vector("list", length(body_sites))
@@ -1848,7 +1868,7 @@ en_meta_TMS_BSDB_BS_intersect <- bind_rows(
 ```
 
 
-## Enrichment - Background: TMS + 1BSDB
+## Enrichment metasignatures - Background: TMS + 1BSDB by body site
 
 ```{r}
 metasigs <- c(metasigs_gn, metasigs_sp)
@@ -1933,7 +1953,7 @@ en_meta_TMS_1BSDB_BS <- bind_rows(
     filter(fdr < 0.1)
 ```
 
-## Combination meta sigantures
+## Combine results metasigantures
 
 ```{r}
 meta_results <- list(
@@ -1960,6 +1980,7 @@ meta_results <- list(
 
 ```
 
+## Heatmaps metasignatures
 
 ```{r}
 meta_lmat_down = map(meta_results, ~ createMat(.x, dir = "decreased"))
@@ -1981,13 +2002,10 @@ meta_ht_comb_down <- combinationHt(meta_lmat_down)
 draw(meta_ht_comb_down, column_title = "decreased")
 ```
 
+# Extra functions
 
 
-
-
-
-
-## Session info
+# Session info
 
 ```{r}
 sessioninfo::session_info()
