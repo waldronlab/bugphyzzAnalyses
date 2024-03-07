@@ -394,10 +394,100 @@
 <span><span class="va">metasigs_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">metasigs_sp_up</span>, <span class="va">metasigs_sp_down</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="meta-sigantures-without-intersection">Meta-sigantures without intersection<a class="anchor" aria-label="anchor" href="#meta-sigantures-without-intersection"></a>
+</h2>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">removeRepeatedTaxa</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">up</span>, <span class="va">down</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">down</span>, <span class="op">~</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>down <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">.x</span>, collapse <span class="op">=</span> <span class="st">";"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">"name"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://tidyr.tidyverse.org/reference/separate.html" class="external-link">separate</a></span><span class="op">(</span></span>
+<span>            col <span class="op">=</span> <span class="st">"name"</span>,</span>
+<span>            into <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"body_site"</span>, <span class="st">"rank"</span>, <span class="st">"direction"</span>, <span class="st">"condition"</span><span class="op">)</span>,</span>
+<span>            sep <span class="op">=</span> <span class="st">"-%-%-"</span></span>
+<span>        <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">direction</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>down <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">down</span>, <span class="st">";"</span><span class="op">)</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">up</span>, <span class="op">~</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>up <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">.x</span>, collapse <span class="op">=</span> <span class="st">";"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">"name"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://tidyr.tidyverse.org/reference/separate.html" class="external-link">separate</a></span><span class="op">(</span></span>
+<span>            col <span class="op">=</span> <span class="st">"name"</span>,</span>
+<span>            into <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"body_site"</span>, <span class="st">"rank"</span>, <span class="st">"direction"</span>, <span class="st">"condition"</span><span class="op">)</span>,</span>
+<span>            sep <span class="op">=</span> <span class="st">"-%-%-"</span></span>
+<span>        <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">direction</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>up <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">up</span>, <span class="st">";"</span><span class="op">)</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html" class="external-link">full_join</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">a</span> <span class="op">&lt;-</span> <span class="va">z</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html" class="external-link">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>intersect <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">up</span>, <span class="va">down</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>up_unique <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="va">up</span>, <span class="va">intersect</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>down_unique <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="va">down</span>, <span class="va">intersect</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">down</span>, <span class="op">-</span><span class="va">up</span>, <span class="op">-</span><span class="va">intersect</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">b</span> <span class="op">&lt;-</span> <span class="va">a</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html" class="external-link">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">up_unique</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span></span>
+<span>            <span class="va">body_site</span>, <span class="st">"-%-%-"</span>, <span class="va">rank</span>, <span class="st">"-%-%-increased-%-%-"</span>, <span class="va">condition</span></span>
+<span>        <span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">name</span>, <span class="va">up_unique</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">c</span> <span class="op">&lt;-</span> <span class="va">a</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/rowwise.html" class="external-link">rowwise</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">down_unique</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span></span>
+<span>            <span class="va">body_site</span>, <span class="st">"-%-%-"</span>, <span class="va">rank</span>, <span class="st">"-%-%-decreased-%-%-"</span>, <span class="va">condition</span></span>
+<span>        <span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">name</span>, <span class="va">down_unique</span><span class="op">)</span></span>
+<span>    </span>
+<span>    <span class="va">output1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">b</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">output1</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">output1</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">b</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice</a></span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">up_unique</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">output1</span><span class="op">)</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">b</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice</a></span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">name</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    </span>
+<span>    <span class="va">output2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">c</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">output2</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">output2</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">c</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice</a></span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">down_unique</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">output2</span><span class="op">)</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">c</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice</a></span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">name</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>up <span class="op">=</span> <span class="va">output1</span>, down <span class="op">=</span> <span class="va">output2</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">umetasigs_gn_list</span> <span class="op">&lt;-</span> <span class="fu">removeRepeatedTaxa</span><span class="op">(</span><span class="va">metasigs_gn_up</span>, <span class="va">metasigs_gn_down</span><span class="op">)</span></span>
+<span><span class="va">umetasigs_gn</span> <span class="op">&lt;-</span> <span class="va">umetasigs_gn_list</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/list_flatten.html" class="external-link">list_flatten</a></span><span class="op">(</span>name_spec <span class="op">=</span> <span class="st">"{inner}"</span><span class="op">)</span></span>
+<span><span class="va">umetasigs_gn_up</span> <span class="op">&lt;-</span> <span class="va">umetasigs_gn_list</span><span class="op">$</span><span class="va">up</span></span>
+<span><span class="va">umetasigs_gn_down</span> <span class="op">&lt;-</span> <span class="va">umetasigs_gn_list</span><span class="op">$</span><span class="va">down</span></span>
+<span></span>
+<span><span class="va">umetasigs_sp_list</span> <span class="op">&lt;-</span> <span class="fu">removeRepeatedTaxa</span><span class="op">(</span><span class="va">metasigs_sp_up</span>, <span class="va">metasigs_sp_down</span><span class="op">)</span></span>
+<span><span class="va">umetasigs_sp</span> <span class="op">&lt;-</span> <span class="va">umetasigs_sp_list</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/list_flatten.html" class="external-link">list_flatten</a></span><span class="op">(</span>name_spec <span class="op">=</span> <span class="st">"{inner}"</span><span class="op">)</span></span>
+<span><span class="va">umetasigs_sp_up</span> <span class="op">&lt;-</span> <span class="va">umetasigs_sp_list</span><span class="op">$</span><span class="va">up</span></span>
+<span><span class="va">umetasigs_sp_down</span> <span class="op">&lt;-</span> <span class="va">umetasigs_sp_list</span><span class="op">$</span><span class="va">down</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="ora-with-bsdb-signatures">ORA with BSDB signatures<a class="anchor" aria-label="anchor" href="#ora-with-bsdb-signatures"></a>
 </h2>
 <p>Define function fo format enrichment results (sigs)</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">formatEnSigs</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">l</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">l</span> <span class="op">|&gt;</span> </span>
 <span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">"bsdb_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -421,13 +511,13 @@
 <h3 id="background-bsdb">Background: BSDB<a class="anchor" aria-label="anchor" href="#background-bsdb"></a>
 </h3>
 <p>BSDB: Union of all BSDB signatures by rank</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bsdb_sigs_gn</span> <span class="op">&lt;-</span> <span class="va">bsdb_sigs</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"-%-%-genus-%-%-"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sigs</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">bsdb_sigs_sp</span> <span class="op">&lt;-</span> <span class="va">bsdb_sigs</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"-%-%-species-%-%-"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sigs</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">bk_BSDB_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">bsdb_sigs_gn</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">bk_BSDB_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">bsdb_sigs_sp</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>ORA at the genus level:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_BSDB_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
 <span>        .x <span class="op">=</span> <span class="va">bsdb_sigs_gn</span>,</span>
@@ -436,9 +526,9 @@
 <span>        <span class="fu">formatEnSigs</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  84.110   0.040  84.155</span></span></code></pre></div>
+<span><span class="co">#&gt;  86.935   0.040  86.977</span></span></code></pre></div>
 <p>ORA at the species level:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_BSDB_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
 <span>        .x <span class="op">=</span> <span class="va">bsdb_sigs_sp</span>,</span>
@@ -447,16 +537,16 @@
 <span>        <span class="fu">formatEnSigs</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  51.980   0.024  52.006</span></span></code></pre></div>
+<span><span class="co">#&gt;  53.866   0.008  53.877</span></span></code></pre></div>
 <p>Combine results:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_BSDB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_BSDB_gn</span>, <span class="va">en_BSDB_sp</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="background-bsdb_bs">Background: BSDB_BS<a class="anchor" aria-label="anchor" href="#background-bsdb_bs"></a>
 </h3>
 <p>BSDB_BS: Union of all BSDB signatures by body site by rank</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bk_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bk_BSDB_BS_gn</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">body_sites</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">bk_BSDB_BS_gn</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -479,7 +569,7 @@
 <span><span class="op">}</span></span>
 <span><span class="va">bk_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/keep.html" class="external-link">discard</a></span><span class="op">(</span><span class="va">bk_BSDB_BS_sp</span>, <span class="va">is.null</span><span class="op">)</span></span></code></pre></div>
 <p>Enrichment at the genus level:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -493,9 +583,9 @@
 <span>    <span class="va">en_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_BSDB_BS_gn</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  82.783   0.012  82.798</span></span></code></pre></div>
+<span><span class="co">#&gt;  85.146   0.020  85.168</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -509,20 +599,20 @@
 <span>    <span class="va">en_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_BSDB_BS_sp</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  49.884   0.024  49.909</span></span></code></pre></div>
+<span><span class="co">#&gt;  50.782   0.012  50.796</span></span></code></pre></div>
 <p>Combine results</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_BSDB_BS_gn</span>, <span class="va">en_BSDB_BS_sp</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="background-tms_bsdb">Background: TMS_BSDB<a class="anchor" aria-label="anchor" href="#background-tms_bsdb"></a>
 </h3>
 <p>Background: Union of all taxa in BSDB and TMS by rank</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bk_TMS_BSDB_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">tms_sigs_gn</span>, <span class="va">bsdb_sigs_gn</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">bk_TMS_BSDB_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">tms_sigs_sp</span>, <span class="va">bsdb_sigs_sp</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Enrichment at the genus level:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## TODO investigate warnings</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_TMS_BSDB_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
@@ -532,9 +622,9 @@
 <span>        <span class="fu">formatEnSigs</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  83.764   0.004  83.773</span></span></code></pre></div>
+<span><span class="co">#&gt;  86.656   0.036  86.705</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_TMS_BSDB_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
 <span>        .x <span class="op">=</span> <span class="va">bsdb_sigs_sp</span>,</span>
@@ -543,16 +633,16 @@
 <span>        <span class="fu">formatEnSigs</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  53.019   0.004  53.038</span></span></code></pre></div>
+<span><span class="co">#&gt;  55.235   0.004  55.253</span></span></code></pre></div>
 <p>Combine results:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_TMS_BSDB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_gn</span>, <span class="va">en_TMS_BSDB_sp</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="background-tms_bsdb_bs">Background: TMS_BSDB_BS<a class="anchor" aria-label="anchor" href="#background-tms_bsdb_bs"></a>
 </h3>
 <p>Backgrounds:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bk_TMS_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html" class="external-link">map2</a></span><span class="op">(</span></span>
 <span>    <span class="va">tms_sigs_gn</span><span class="op">[</span><span class="va">body_sites</span><span class="op">]</span>, <span class="va">bk_BSDB_BS_gn</span><span class="op">[</span><span class="va">body_sites</span><span class="op">]</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">.y</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
@@ -561,7 +651,7 @@
 <span>    <span class="va">tms_sigs_sp</span><span class="op">[</span><span class="va">body_sites</span><span class="op">]</span>, <span class="va">bk_BSDB_BS_sp</span><span class="op">[</span><span class="va">body_sites</span><span class="op">]</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">.y</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Enrichment at the genus level:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_TMS_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -575,9 +665,9 @@
 <span>    <span class="va">en_TMS_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_BS_gn</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  82.191   0.036  82.239</span></span></code></pre></div>
+<span><span class="co">#&gt;  83.486   0.012  83.512</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## TODO investigate warnings</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_TMS_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
@@ -592,16 +682,16 @@
 <span>    <span class="va">en_TMS_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_BS_sp</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  50.053   0.016  50.081</span></span></code></pre></div>
+<span><span class="co">#&gt;  49.754   0.020  49.783</span></span></code></pre></div>
 <p>Combine results:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_TMS_BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_gn</span>, <span class="va">en_TMS_BSDB_sp</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="background-tms_bsdb_intersect">Background: TMS_BSDB_intersect<a class="anchor" aria-label="anchor" href="#background-tms_bsdb_intersect"></a>
 </h3>
 <p>Intersection at the genus level:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tms_gn_x</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">tms_sigs_gn</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">bsdb_gn_y</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">bsdb_sigs_gn</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">bk_TMS_BSDB_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">tms_gn_x</span>, <span class="va">bsdb_gn_y</span><span class="op">)</span></span>
@@ -613,7 +703,7 @@
 <span><span class="co">#&gt;   tms_genus_only bsdb_genus_only tms_bsdb_genus_intersect</span></span>
 <span><span class="co">#&gt; 1             33             316                      174</span></span></code></pre></div>
 <p>Intersection at the species level:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tms_sp_x</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">tms_sigs_sp</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">bsdb_sp_y</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">bsdb_sigs_sp</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">bk_TMS_BSDB_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">tms_sp_x</span>, <span class="va">bsdb_sp_y</span><span class="op">)</span></span>
@@ -625,7 +715,7 @@
 <span><span class="co">#&gt;   tms_species_only bsdb_species_only tms_bsdb_species_intersect</span></span>
 <span><span class="co">#&gt; 1              335               503                        301</span></span></code></pre></div>
 <p>Enrichment at the genus level:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_TMS_BSDB_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
 <span>        <span class="va">bsdb_sigs_gn</span>,</span>
@@ -634,9 +724,9 @@
 <span>        <span class="fu">formatEnSigs</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  78.734   0.028  78.771</span></span></code></pre></div>
+<span><span class="co">#&gt;  78.977   0.040  79.025</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_TMS_BSDB_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
 <span>        <span class="va">bsdb_sigs_sp</span>,</span>
@@ -645,9 +735,9 @@
 <span>        <span class="fu">formatEnSigs</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  47.677   0.008  47.688</span></span></code></pre></div>
+<span><span class="co">#&gt;  47.563   0.028  47.592</span></span></code></pre></div>
 <p>Combine results</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_TMS_BSDB_intersect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
 <span>    <span class="va">en_TMS_BSDB_intersect_gn</span>, <span class="va">en_TMS_BSDB_intersect_sp</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -656,7 +746,7 @@
 <h3 id="background-tms_bsdb_bs_intersect">Background: TMS_BSDB_BS_intersect<a class="anchor" aria-label="anchor" href="#background-tms_bsdb_bs_intersect"></a>
 </h3>
 <p>Intersection by body site at the genus level:</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">body_sites</span>, <span class="op">~</span> <span class="op">{</span></span>
 <span>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">bsdb_sigs_BS_gn</span><span class="op">[[</span><span class="va">.x</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">tms_sigs_gn</span><span class="op">[[</span><span class="va">.x</span><span class="op">]</span><span class="op">]</span></span>
@@ -681,7 +771,7 @@
 <span><span class="co">#&gt; 3        50       25   61</span></span>
 <span><span class="co">#&gt; 4       347       11  100</span></span></code></pre></div>
 <p>Intersection by body site at the species level:</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">l2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">body_sites</span>, <span class="op">~</span> <span class="op">{</span></span>
 <span>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">bsdb_sigs_BS_sp</span><span class="op">[[</span><span class="va">.x</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">tms_sigs_sp</span><span class="op">[[</span><span class="va">.x</span><span class="op">]</span><span class="op">]</span></span>
@@ -706,7 +796,7 @@
 <span><span class="co">#&gt; 3        55      183  112</span></span>
 <span><span class="co">#&gt; 4       507      110  154</span></span></code></pre></div>
 <p>Enrichment at the genus level:</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_TMS_BSDB_BS_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -720,9 +810,9 @@
 <span>    <span class="va">en_TMS_BSDB_BS_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_BS_intersect_gn</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  77.739   0.012  77.757</span></span></code></pre></div>
+<span><span class="co">#&gt;  78.643   0.036  78.682</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_TMS_BSDB_BS_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -736,8 +826,8 @@
 <span>    <span class="va">en_TMS_BSDB_BS_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_BSDB_BS_intersect_sp</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  46.285   0.028  46.316</span></span></code></pre></div>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;  46.921   0.020  46.945</span></span></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_TMS_BSDB_BS_intersect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
 <span>    <span class="va">en_TMS_BSDB_BS_intersect_gn</span>, <span class="va">en_TMS_BSDB_BS_intersect_sp</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -746,7 +836,7 @@
 <h3 id="background-tms_1bsdb_bs">Background: TMS_1BSDB_BS<a class="anchor" aria-label="anchor" href="#background-tms_1bsdb_bs"></a>
 </h3>
 <p>Background(s):</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bk_TMS_1BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">bsdb_sigs</span><span class="op">)</span><span class="op">)</span> </span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">bk_TMS_1BSDB_BS</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">sig_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sigs</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
@@ -763,7 +853,7 @@
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Enrichment at the genus level:</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">bk_TMS_1BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="va">bk_TMS_1BSDB_BS</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sigs_gn</span><span class="op">)</span><span class="op">]</span></span>
 <span>    <span class="va">en_TMS_1BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html" class="external-link">map2</a></span><span class="op">(</span><span class="va">bsdb_sigs_gn</span>, <span class="va">bk_TMS_1BSDB_BS_gn</span>, <span class="op">~</span> <span class="op">{</span></span>
@@ -772,9 +862,9 @@
 <span>        <span class="fu">formatEnSigs</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  77.424   0.028  77.463</span></span></code></pre></div>
+<span><span class="co">#&gt;  78.735   0.032  78.772</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">bk_TMS_1BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="va">bk_TMS_1BSDB_BS</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bsdb_sigs_sp</span><span class="op">)</span><span class="op">]</span></span>
 <span>    <span class="va">en_TMS_1BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html" class="external-link">map2</a></span><span class="op">(</span><span class="va">bsdb_sigs_sp</span>, <span class="va">bk_TMS_1BSDB_BS_sp</span>, <span class="op">~</span> <span class="op">{</span></span>
@@ -783,15 +873,15 @@
 <span>        <span class="fu">formatEnSigs</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  46.700   0.012  46.714</span></span></code></pre></div>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;  48.073   0.020  48.094</span></span></code></pre></div>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_TMS_1BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_TMS_1BSDB_BS_gn</span>, <span class="va">en_TMS_1BSDB_BS_sp</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="combine-ora-results">Combine ORA results<a class="anchor" aria-label="anchor" href="#combine-ora-results"></a>
 </h3>
 <p>Store all results in a single list:</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    BSDB <span class="op">=</span> <span class="va">en_BSDB</span>,</span>
 <span>    BSDB_BS <span class="op">=</span> <span class="va">en_BSDB_BS</span>,</span>
@@ -807,7 +897,7 @@
 <span>        <span class="va">condition</span>, <span class="st">"-#-#-"</span>, <span class="va">sig_name</span>, <span class="st">"-#-#-"</span>, <span class="va">bsdb_sig</span><span class="op">)</span></span>
 <span>    <span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Adjust FDR and filter:</p>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">filtered_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">results</span>, <span class="op">~</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">fdr</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">filtered_results</span>, <span class="va">dim</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $BSDB</span></span>
@@ -835,7 +925,7 @@
 <h3 id="visualization">Visualization<a class="anchor" aria-label="anchor" href="#visualization"></a>
 </h3>
 <p>Define functions:</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">createMat</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">dat</span>, <span class="va">fdr_th</span> <span class="op">=</span> <span class="fl">0.1</span>, <span class="va">dir</span><span class="op">)</span> <span class="op">{</span></span>
 <span>   <span class="va">dat</span> <span class="op">&lt;-</span> <span class="va">dat</span> <span class="op">|&gt;</span> </span>
 <span>       <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
@@ -868,7 +958,11 @@
 <span>   <span class="va">output</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">createHt</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="va">createHt</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">max_count</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">color_fun</span> <span class="op">&lt;-</span> <span class="fu">circlize</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/circlize/man/colorRamp2.html" class="external-link">colorRamp2</a></span><span class="op">(</span></span>
+<span>        breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">max_count</span><span class="op">)</span>, </span>
+<span>        colors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"brown"</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
 <span>    <span class="va">lht</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>        <span class="va">xmat</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span></span>
@@ -892,7 +986,7 @@
 <span>                    <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">xmat</span><span class="op">)</span>,</span>
 <span>                    gp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>fontsize <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span>                <span class="op">)</span>,</span>
-<span>                rect_gp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"gray70"</span>, lwd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>                rect_gp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"gray60"</span>, lwd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span>            <span class="op">)</span></span>
 <span>        <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>            <span class="va">lht</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/Heatmap.html" class="external-link">Heatmap</a></span><span class="op">(</span></span>
@@ -912,7 +1006,7 @@
 <span>                    <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">xmat</span><span class="op">)</span>,</span>
 <span>                    gp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>fontsize <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span>                <span class="op">)</span>,</span>
-<span>                rect_gp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"gray70"</span>, lwd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span>                rect_gp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"gray60"</span>, lwd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span>            <span class="op">)</span></span>
 <span>        <span class="op">}</span></span>
 <span>    <span class="op">}</span></span>
@@ -930,7 +1024,11 @@
 <span>        <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unite.html" class="external-link">unite</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"combination"</span>, sep <span class="op">=</span> <span class="st">" |---| "</span>, <span class="va">sig</span>, <span class="va">condition</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">combinationHt</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">l</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="va">combinationHt</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">l</span>, <span class="va">max_count</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">color_fun</span> <span class="op">&lt;-</span> <span class="fu">circlize</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/circlize/man/colorRamp2.html" class="external-link">colorRamp2</a></span><span class="op">(</span></span>
+<span>        breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">max_count</span><span class="op">)</span>, </span>
+<span>        colors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"brown"</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
 <span>    <span class="va">xvar</span> <span class="op">&lt;-</span> <span class="va">l</span> <span class="op">|&gt;</span> </span>
 <span>        <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">.x</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">myFun</span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>        <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/distinct.html" class="external-link">distinct</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">.x</span>, .id <span class="op">=</span> <span class="st">"bs"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -977,35 +1075,31 @@
 <span>                    <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span>,</span>
 <span>                    gp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>fontsize <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span>                <span class="op">)</span>,</span>
-<span>                rect_gp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"gray70"</span>, lwd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>                rect_gp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/gpar.html" class="external-link">gpar</a></span><span class="op">(</span>col <span class="op">=</span> <span class="st">"gray60"</span>, lwd <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>                border <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>            <span class="op">)</span></span>
 <span>        <span class="op">}</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/reduce.html" class="external-link">reduce</a></span><span class="op">(</span><span class="va">xvar</span>, <span class="op">~</span> <span class="va">.x</span> <span class="op"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/pct_v_pct.html" class="external-link">%v%</a></span> <span class="va">.y</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Create matrices</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lmat_down</span> <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">results</span>, <span class="op">~</span> <span class="fu">createMat</span><span class="op">(</span><span class="va">.x</span>, dir <span class="op">=</span> <span class="st">"decreased"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">lmat_up</span> <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">results</span>, <span class="op">~</span> <span class="fu">createMat</span><span class="op">(</span><span class="va">.x</span>, dir <span class="op">=</span> <span class="st">"increased"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## This variables are used in the functions defined above</span></span>
-<span><span class="va">max_count</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">lmat_down</span>, <span class="va">lmat_up</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">color_fun</span> <span class="op">&lt;-</span> <span class="fu">circlize</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/circlize/man/colorRamp2.html" class="external-link">colorRamp2</a></span><span class="op">(</span></span>
-<span>    breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">max_count</span><span class="op">)</span><span class="op">)</span>, </span>
-<span>    colors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="fu">viridis</span><span class="fu">::</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="va">max_count</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
+<span><span class="va">maxCountSig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">lmat_down</span>, <span class="va">lmat_up</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## Create heatmaps, but don't display them unless it's required</span></span>
 <span><span class="co"># l_ht_down &lt;- map(lmat_down, createHt)</span></span>
 <span><span class="co"># l_ht_up &lt;- map(lmat_up, createHt)</span></span></code></pre></div>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ht_comb_up</span> <span class="op">&lt;-</span> <span class="fu">combinationHt</span><span class="op">(</span><span class="va">lmat_up</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">ht_comb_up</span>, column_title <span class="op">=</span> <span class="st">"Increased"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-46-1.png" width="960"></p>
 <div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ht_comb_down</span> <span class="op">&lt;-</span> <span class="fu">combinationHt</span><span class="op">(</span><span class="va">lmat_down</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">ht_comb_down</span>, column_title <span class="op">=</span> <span class="st">"Decreased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">ht_comb_up</span> <span class="op">&lt;-</span> <span class="fu">combinationHt</span><span class="op">(</span><span class="va">lmat_up</span>, <span class="va">maxCountSig</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">ht_comb_up</span>, column_title <span class="op">=</span> <span class="st">"Increased"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-47-1.png" width="960"></p>
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ht_comb_down</span> <span class="op">&lt;-</span> <span class="fu">combinationHt</span><span class="op">(</span><span class="va">lmat_down</span>, <span class="va">maxCountSig</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">ht_comb_down</span>, column_title <span class="op">=</span> <span class="st">"Decreased"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-48-1.png" width="960"></p>
 </div>
 </div>
 <div class="section level2">
@@ -1013,7 +1107,7 @@
 </h2>
 <p>Define funtion for formating enrichemnt results with
 metasignatures</p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">formatEnMetSig</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">l</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">l</span> <span class="op">|&gt;</span> </span>
 <span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">"bsdb_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -1037,7 +1131,7 @@ metasignatures</p>
 <div class="section level3">
 <h3 id="background-bsdb-1">Background: BSDB<a class="anchor" aria-label="anchor" href="#background-bsdb-1"></a>
 </h3>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_meta_BSDB_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
 <span>        <span class="va">metasigs_gn</span>, <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk_BSDB_gn</span>, <span class="va">bp_sigs_gn</span><span class="op">)</span></span>
@@ -1045,8 +1139,8 @@ metasignatures</p>
 <span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  38.186   0.016  38.203</span></span></code></pre></div>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;  38.449   0.008  38.458</span></span></code></pre></div>
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_meta_BSDB_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
 <span>        <span class="va">metasigs_sp</span>, <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk_BSDB_sp</span>, <span class="va">bp_sigs_sp</span><span class="op">)</span></span>
@@ -1054,8 +1148,8 @@ metasignatures</p>
 <span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  31.202   0.016  31.218</span></span></code></pre></div>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;  31.907   0.008  31.916</span></span></code></pre></div>
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_meta_BSDB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_meta_BSDB_gn</span>, <span class="va">en_meta_BSDB_sp</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fdr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">fdr</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
@@ -1064,7 +1158,7 @@ metasignatures</p>
 <h3 id="background-bsdb_bs-1">Background: BSDB_BS<a class="anchor" aria-label="anchor" href="#background-bsdb_bs-1"></a>
 </h3>
 <p>genus:</p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_meta_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1078,9 +1172,9 @@ metasignatures</p>
 <span>    <span class="va">en_meta_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_meta_BSDB_BS_gn</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  37.531   0.004  37.537</span></span></code></pre></div>
+<span><span class="co">#&gt;  37.810   0.008  37.819</span></span></code></pre></div>
 <p>species:</p>
-<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_meta_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1094,8 +1188,8 @@ metasignatures</p>
 <span>    <span class="va">en_meta_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_meta_BSDB_BS_sp</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  30.298   0.016  30.316</span></span></code></pre></div>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;  30.035   0.008  30.044</span></span></code></pre></div>
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_meta_BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_meta_BSDB_BS_gn</span>, <span class="va">en_meta_BSDB_BS_sp</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fdr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">fdr</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
@@ -1103,7 +1197,7 @@ metasignatures</p>
 <div class="section level3">
 <h3 id="background-tms_bsdb-1">Background: TMS_BSDB<a class="anchor" aria-label="anchor" href="#background-tms_bsdb-1"></a>
 </h3>
-<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_meta_TMS_BSDB_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
 <span>        .x <span class="op">=</span> <span class="va">metasigs_gn</span>,</span>
@@ -1112,9 +1206,9 @@ metasignatures</p>
 <span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  38.336   0.012  38.350</span></span></code></pre></div>
+<span><span class="co">#&gt;  39.337   0.024  39.364</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
-<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_meta_TMS_BSDB_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
 <span>        .x <span class="op">=</span> <span class="va">metasigs_sp</span>,</span>
@@ -1123,8 +1217,8 @@ metasignatures</p>
 <span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  32.166   0.012  32.180</span></span></code></pre></div>
-<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;  32.757   0.008  32.766</span></span></code></pre></div>
+<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_meta_TMS_BSDB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_meta_TMS_BSDB_gn</span>, <span class="va">en_meta_TMS_BSDB_sp</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fdr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">fdr</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
@@ -1132,7 +1226,7 @@ metasignatures</p>
 <div class="section level3">
 <h3 id="background-tms_bsdb_bs-1">Background: TMS_BSDB_BS<a class="anchor" aria-label="anchor" href="#background-tms_bsdb_bs-1"></a>
 </h3>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_meta_TMS_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1146,8 +1240,8 @@ metasignatures</p>
 <span>    <span class="va">en_meta_TMS_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_meta_TMS_BSDB_BS_gn</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  37.583   0.008  37.592</span></span></code></pre></div>
-<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;  38.261   0.012  38.278</span></span></code></pre></div>
+<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_meta_TMS_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1161,8 +1255,8 @@ metasignatures</p>
 <span>    <span class="va">en_meta_TMS_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_meta_TMS_BSDB_BS_sp</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  30.634   0.012  30.646</span></span></code></pre></div>
-<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;  31.408   0.004  31.414</span></span></code></pre></div>
+<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_meta_TMS_BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
 <span>    <span class="va">en_meta_TMS_BSDB_BS_gn</span>, <span class="va">en_meta_TMS_BSDB_BS_sp</span></span>
 <span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -1172,14 +1266,14 @@ metasignatures</p>
 <div class="section level3">
 <h3 id="background-tms_bsdb_intersect-1">Background: TMS_BSDB_intersect<a class="anchor" aria-label="anchor" href="#background-tms_bsdb_intersect-1"></a>
 </h3>
-<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">meta_bsdb_gn_y</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">metasigs_gn</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">bk_meta_TMS_BSDB_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">tms_gn_x</span>, <span class="va">meta_bsdb_gn_y</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">meta_bsdb_sp_y</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">metasigs_sp</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">bk_meta_TMS_BSDB_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">tms_sp_x</span>, <span class="va">meta_bsdb_sp_y</span><span class="op">)</span></span></code></pre></div>
 <p>genus:</p>
-<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_meta_TMS_BSDB_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
 <span>        <span class="va">metasigs_gn</span>,</span>
@@ -1188,9 +1282,9 @@ metasignatures</p>
 <span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  36.484   0.008  36.494</span></span></code></pre></div>
+<span><span class="co">#&gt;  37.305   0.016  37.324</span></span></code></pre></div>
 <p>species:</p>
-<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_meta_TMS_BSDB_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
 <span>        <span class="va">metasigs_sp</span>,</span>
@@ -1199,8 +1293,8 @@ metasignatures</p>
 <span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  29.148   0.012  29.161</span></span></code></pre></div>
-<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;  30.591   0.000  30.591</span></span></code></pre></div>
+<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_meta_TMS_BSDB_intersect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
 <span>    <span class="va">en_meta_TMS_BSDB_intersect_gn</span>, <span class="va">en_meta_TMS_BSDB_intersect_sp</span></span>
 <span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -1210,7 +1304,7 @@ metasignatures</p>
 <div class="section level3">
 <h3 id="bacgkround-tms_bsdb_bs_intersect">Bacgkround: TMS_BSDB_BS_intersect<a class="anchor" aria-label="anchor" href="#bacgkround-tms_bsdb_bs_intersect"></a>
 </h3>
-<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metasigs_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">metasigs_BS_gn</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>   <span class="va">rx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"^"</span>, <span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">"-%-%-"</span>, <span class="st">"genus"</span><span class="op">)</span></span>
@@ -1237,7 +1331,7 @@ metasignatures</p>
 <span><span class="op">}</span></span>
 <span><span class="va">metasigs_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/keep.html" class="external-link">discard</a></span><span class="op">(</span><span class="va">metasigs_BS_sp</span>, <span class="va">is.null</span><span class="op">)</span></span></code></pre></div>
 <p>Backgrounds</p>
-<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bk_meta_TMS_BSDB_BS_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">body_sites</span>, <span class="op">~</span> <span class="op">{</span></span>
 <span>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">metasigs_BS_gn</span><span class="op">[[</span><span class="va">.x</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">tms_sigs_gn</span><span class="op">[[</span><span class="va">.x</span><span class="op">]</span><span class="op">]</span></span>
@@ -1267,7 +1361,7 @@ metasignatures</p>
 <span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://rlang.r-lib.org/reference/set_names.html" class="external-link">set_names</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="va">both</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_meta_TMS_BSDB_BS_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1283,8 +1377,8 @@ metasignatures</p>
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  36.074   0.020  36.099</span></span></code></pre></div>
-<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;  36.118   0.016  36.134</span></span></code></pre></div>
+<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">en_meta_TMS_BSDB_BS_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1300,8 +1394,8 @@ metasignatures</p>
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  28.673   0.012  28.688</span></span></code></pre></div>
-<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;  28.209   0.008  28.218</span></span></code></pre></div>
+<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_meta_TMS_BSDB_BS_intersect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
 <span>    <span class="va">en_meta_TMS_BSDB_BS_intersect_gn</span>, <span class="va">en_meta_TMS_BSDB_BS_intersect_sp</span></span>
 <span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -1311,7 +1405,7 @@ metasignatures</p>
 <div class="section level3">
 <h3 id="background-tms_1bsdb_bs-1">Background: TMS_1BSDB_BS<a class="anchor" aria-label="anchor" href="#background-tms_1bsdb_bs-1"></a>
 </h3>
-<div class="sourceCode" id="cb70"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metasigs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">metasigs_gn</span>, <span class="va">metasigs_sp</span><span class="op">)</span></span>
 <span><span class="va">bk_meta_TMS_1BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">metasigs</span><span class="op">)</span><span class="op">)</span> </span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">bk_meta_TMS_1BSDB_BS</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1325,7 +1419,7 @@ metasignatures</p>
 <span>    <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Enrichment at the genus level:</p>
-<div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb72"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">bk_meta_TMS_1BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="va">bk_meta_TMS_1BSDB_BS</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">metasigs_gn</span><span class="op">)</span><span class="op">]</span></span>
 <span>    <span class="va">en_meta_TMS_1BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html" class="external-link">map2</a></span><span class="op">(</span><span class="va">metasigs_gn</span>, <span class="va">bk_meta_TMS_1BSDB_BS_gn</span>, <span class="op">~</span> <span class="op">{</span></span>
@@ -1334,9 +1428,9 @@ metasignatures</p>
 <span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  36.249   0.016  36.267</span></span></code></pre></div>
+<span><span class="co">#&gt;  35.910   0.012  35.923</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
-<div class="sourceCode" id="cb72"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>    <span class="va">bk_meta_TMS_1BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="va">bk_meta_TMS_1BSDB_BS</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">metasigs_sp</span><span class="op">)</span><span class="op">]</span></span>
 <span>    <span class="va">en_meta_TMS_1BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html" class="external-link">map2</a></span><span class="op">(</span><span class="va">metasigs_sp</span>, <span class="va">bk_meta_TMS_1BSDB_BS_sp</span>, <span class="op">~</span> <span class="op">{</span></span>
@@ -1345,8 +1439,8 @@ metasignatures</p>
 <span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  29.133   0.012  29.147</span></span></code></pre></div>
-<div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;  29.218   0.012  29.232</span></span></code></pre></div>
+<div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en_meta_TMS_1BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
 <span>    <span class="va">en_meta_TMS_1BSDB_BS_gn</span>, <span class="va">en_meta_TMS_1BSDB_BS_sp</span></span>
 <span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -1356,7 +1450,7 @@ metasignatures</p>
 <div class="section level3">
 <h3 id="combine-ora-results-1">Combine ORA results<a class="anchor" aria-label="anchor" href="#combine-ora-results-1"></a>
 </h3>
-<div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">meta_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    BSDB <span class="op">=</span> <span class="va">en_meta_BSDB</span>,</span>
 <span>    BSDB_BS <span class="op">=</span> <span class="va">en_meta_BSDB_BS</span>,</span>
@@ -1374,28 +1468,381 @@ metasignatures</p>
 <div class="section level3">
 <h3 id="visualization-1">Visualization<a class="anchor" aria-label="anchor" href="#visualization-1"></a>
 </h3>
-<div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb76"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">meta_lmat_down</span> <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">meta_results</span>, <span class="op">~</span> <span class="fu">createMat</span><span class="op">(</span><span class="va">.x</span>, dir <span class="op">=</span> <span class="st">"decreased"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">meta_lmat_up</span> <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">meta_results</span>, <span class="op">~</span> <span class="fu">createMat</span><span class="op">(</span><span class="va">.x</span>, dir <span class="op">=</span> <span class="st">"increased"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">max_count</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">meta_lmat_down</span>, <span class="va">meta_lmat_up</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">color_fun</span> <span class="op">&lt;-</span> <span class="fu">circlize</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/circlize/man/colorRamp2.html" class="external-link">colorRamp2</a></span><span class="op">(</span></span>
-<span>    breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">1</span>, <span class="va">max_count</span><span class="op">)</span><span class="op">)</span>, </span>
-<span>    colors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="fu">viridis</span><span class="fu">::</span><span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span><span class="va">max_count</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb76"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">meta_ht_comb_up</span> <span class="op">&lt;-</span> <span class="fu">combinationHt</span><span class="op">(</span><span class="va">meta_lmat_up</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">meta_ht_comb_up</span>, column_title <span class="op">=</span> <span class="st">"Increased"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-76-1.png" width="960"></p>
+<span><span class="va">maxCountMeta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">meta_lmat_down</span>, <span class="va">meta_lmat_up</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb77"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">meta_ht_comb_down</span> <span class="op">&lt;-</span> <span class="fu">combinationHt</span><span class="op">(</span><span class="va">meta_lmat_down</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">meta_ht_comb_down</span>, column_title <span class="op">=</span> <span class="st">"decreased"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">meta_ht_comb_up</span> <span class="op">&lt;-</span> <span class="fu">combinationHt</span><span class="op">(</span><span class="va">meta_lmat_up</span>, <span class="va">maxCountMeta</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">meta_ht_comb_up</span>, column_title <span class="op">=</span> <span class="st">"Increased"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-77-1.png" width="960"></p>
+<div class="sourceCode" id="cb78"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">meta_ht_comb_down</span> <span class="op">&lt;-</span> <span class="fu">combinationHt</span><span class="op">(</span><span class="va">meta_lmat_down</span>, <span class="va">maxCountMeta</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">meta_ht_comb_down</span>, column_title <span class="op">=</span> <span class="st">"decreased"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-78-1.png" width="960"></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="ora-with-bsdb-unique-meta-signatures">ORA with BSDB unique meta-signatures<a class="anchor" aria-label="anchor" href="#ora-with-bsdb-unique-meta-signatures"></a>
+</h2>
+<div class="section level3">
+<h3 id="background-bsdb-2">Background: BSDB<a class="anchor" aria-label="anchor" href="#background-bsdb-2"></a>
+</h3>
+<div class="sourceCode" id="cb79"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">en_umeta_BSDB_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
+<span>        <span class="va">umetasigs_gn</span>, <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk_BSDB_gn</span>, <span class="va">bp_sigs_gn</span><span class="op">)</span></span>
+<span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  37.575   0.004  37.580</span></span></code></pre></div>
+<div class="sourceCode" id="cb80"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">en_umeta_BSDB_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
+<span>        <span class="va">umetasigs_sp</span>, <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk_BSDB_sp</span>, <span class="va">bp_sigs_sp</span><span class="op">)</span></span>
+<span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  31.091   0.008  31.100</span></span></code></pre></div>
+<div class="sourceCode" id="cb81"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">en_umeta_BSDB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_umeta_BSDB_gn</span>, <span class="va">en_umeta_BSDB_sp</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fdr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">fdr</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="background-bsdb_bs-2">Background: BSDB_BS<a class="anchor" aria-label="anchor" href="#background-bsdb_bs-2"></a>
+</h3>
+<p>genus:</p>
+<div class="sourceCode" id="cb82"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">en_umeta_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">bk</span> <span class="op">&lt;-</span> <span class="va">bk_BSDB_BS_gn</span><span class="op">[[</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">]</span></span>
+<span>        <span class="va">rx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">"-%-%-"</span><span class="op">)</span></span>
+<span>        <span class="va">sig_list</span> <span class="op">&lt;-</span> <span class="va">umetasigs_gn</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="va">rx</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_gn</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span>        <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">sig_list</span>, <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk</span>, <span class="va">bp_sigs_gn</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span>        <span class="va">en_umeta_BSDB_BS_gn</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">res</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">en_umeta_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_umeta_BSDB_BS_gn</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  36.759   0.012  36.771</span></span></code></pre></div>
+<p>species:</p>
+<div class="sourceCode" id="cb83"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">en_umeta_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">bk</span> <span class="op">&lt;-</span> <span class="va">bk_BSDB_BS_sp</span><span class="op">[[</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">]</span></span>
+<span>        <span class="va">rx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">"-%-%-"</span><span class="op">)</span></span>
+<span>        <span class="va">sig_list</span> <span class="op">&lt;-</span> <span class="va">umetasigs_sp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="va">rx</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_sp</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span>        <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">sig_list</span>, <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk</span>, <span class="va">bp_sigs_sp</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span>  </span>
+<span>            <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span>        <span class="va">en_umeta_BSDB_BS_sp</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">res</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">en_umeta_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_umeta_BSDB_BS_sp</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  29.785   0.012  29.797</span></span></code></pre></div>
+<div class="sourceCode" id="cb84"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">en_umeta_BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_umeta_BSDB_BS_gn</span>, <span class="va">en_umeta_BSDB_BS_sp</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fdr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">fdr</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="background-tms_bsdb-2">Background: TMS_BSDB<a class="anchor" aria-label="anchor" href="#background-tms_bsdb-2"></a>
+</h3>
+<div class="sourceCode" id="cb85"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
+<span>        .x <span class="op">=</span> <span class="va">umetasigs_gn</span>,</span>
+<span>        .f <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk_TMS_BSDB_gn</span>, <span class="va">bp_sigs_gn</span><span class="op">)</span></span>
+<span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  38.239   0.008  38.248</span></span></code></pre></div>
+<p>Enrichment at the species level:</p>
+<div class="sourceCode" id="cb86"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
+<span>        .x <span class="op">=</span> <span class="va">umetasigs_sp</span>,</span>
+<span>        .f <span class="op">=</span> <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk_TMS_BSDB_sp</span>, <span class="va">bp_sigs_sp</span><span class="op">)</span></span>
+<span>        <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  34.288   0.012  34.302</span></span></code></pre></div>
+<div class="sourceCode" id="cb87"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">en_umeta_TMS_BSDB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_umeta_TMS_BSDB_gn</span>, <span class="va">en_umeta_TMS_BSDB_sp</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fdr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">fdr</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="background-tms_bsdb_bs-2">Background: TMS_BSDB_BS<a class="anchor" aria-label="anchor" href="#background-tms_bsdb_bs-2"></a>
+</h3>
+<div class="sourceCode" id="cb88"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">bk</span> <span class="op">&lt;-</span> <span class="va">bk_TMS_BSDB_BS_gn</span><span class="op">[[</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">]</span></span>
+<span>        <span class="va">rx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">"-%-%-"</span><span class="op">)</span></span>
+<span>        <span class="va">sig_list</span> <span class="op">&lt;-</span> <span class="va">umetasigs_gn</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="va">rx</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_gn</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span>        <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">sig_list</span>, <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk</span>, <span class="va">bp_sigs_gn</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span>        <span class="va">en_umeta_TMS_BSDB_BS_gn</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">res</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_umeta_TMS_BSDB_BS_gn</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  37.467   0.008  37.475</span></span></code></pre></div>
+<div class="sourceCode" id="cb89"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">bk</span> <span class="op">&lt;-</span> <span class="va">bk_TMS_BSDB_BS_sp</span><span class="op">[[</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">]</span></span>
+<span>        <span class="va">rx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">"-%-%-"</span><span class="op">)</span></span>
+<span>        <span class="va">sig_list</span> <span class="op">&lt;-</span> <span class="va">umetasigs_sp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="va">rx</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_sp</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span>        <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">sig_list</span>, <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk</span>, <span class="va">bp_sigs_sp</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span>        <span class="va">en_umeta_TMS_BSDB_BS_sp</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">res</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">en_umeta_TMS_BSDB_BS_sp</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  30.354   0.012  30.368</span></span></code></pre></div>
+<div class="sourceCode" id="cb90"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">en_umeta_TMS_BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_BS_gn</span>, <span class="va">en_umeta_TMS_BSDB_BS_sp</span></span>
+<span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fdr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">fdr</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="background-tms_bsdb_intersect-2">Background: TMS_BSDB_intersect<a class="anchor" aria-label="anchor" href="#background-tms_bsdb_intersect-2"></a>
+</h3>
+<div class="sourceCode" id="cb91"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">umeta_bsdb_gn_y</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">umetasigs_gn</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">bk_umeta_TMS_BSDB_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">tms_gn_x</span>, <span class="va">umeta_bsdb_gn_y</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">umeta_bsdb_sp_y</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">umetasigs_sp</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">bk_umeta_TMS_BSDB_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">tms_sp_x</span>, <span class="va">umeta_bsdb_sp_y</span><span class="op">)</span></span></code></pre></div>
+<p>genus:</p>
+<div class="sourceCode" id="cb92"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
+<span>        <span class="va">umetasigs_gn</span>,</span>
+<span>        <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk_umeta_TMS_BSDB_intersect_gn</span>, <span class="va">bp_sigs_gn</span><span class="op">)</span></span>
+<span>        <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  36.238   0.008  36.247</span></span></code></pre></div>
+<p>species:</p>
+<div class="sourceCode" id="cb93"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span></span>
+<span>        <span class="va">umetasigs_sp</span>,</span>
+<span>        <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk_umeta_TMS_BSDB_intersect_sp</span>, <span class="va">bp_sigs_sp</span><span class="op">)</span></span>
+<span>        <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  29.275   0.008  29.284</span></span></code></pre></div>
+<div class="sourceCode" id="cb94"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">en_umeta_TMS_BSDB_intersect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_intersect_gn</span>, <span class="va">en_umeta_TMS_BSDB_intersect_sp</span></span>
+<span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fdr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">fdr</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="bacgkround-tms_bsdb_bs_intersect-1">Bacgkround: TMS_BSDB_BS_intersect<a class="anchor" aria-label="anchor" href="#bacgkround-tms_bsdb_bs_intersect-1"></a>
+</h3>
+<div class="sourceCode" id="cb95"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">umetasigs_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">umetasigs_BS_gn</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>   <span class="va">rx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"^"</span>, <span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">"-%-%-"</span>, <span class="st">"genus"</span><span class="op">)</span></span>
+<span>   <span class="va">sigsL</span> <span class="op">&lt;-</span> <span class="va">umetasigs_gn</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="va">rx</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_gn</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sigsL</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_gn</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="va">rx</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_gn</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span>   <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">sigsL</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>       <span class="kw">next</span></span>
+<span>   <span class="op">}</span></span>
+<span>   <span class="va">umetasigs_BS_gn</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">sigsL</span></span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_BS_gn</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">umetasigs_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/keep.html" class="external-link">discard</a></span><span class="op">(</span><span class="va">umetasigs_BS_gn</span>, <span class="va">is.null</span><span class="op">)</span></span>
+<span>        </span>
+<span><span class="va">umetasigs_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">umetasigs_BS_sp</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>   <span class="va">rx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"^"</span>, <span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">"-%-%-"</span>, <span class="st">"species"</span><span class="op">)</span></span>
+<span>   <span class="va">sigsL</span> <span class="op">&lt;-</span> <span class="va">umetasigs_sp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="va">rx</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_sp</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sigsL</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_sp</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="va">rx</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_sp</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span>   <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">sigsL</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>       <span class="kw">next</span></span>
+<span>   <span class="op">}</span></span>
+<span>   <span class="va">umetasigs_BS_sp</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">sigsL</span></span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_BS_sp</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">umetasigs_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/keep.html" class="external-link">discard</a></span><span class="op">(</span><span class="va">umetasigs_BS_sp</span>, <span class="va">is.null</span><span class="op">)</span></span></code></pre></div>
+<p>Backgrounds</p>
+<div class="sourceCode" id="cb96"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bk_umeta_TMS_BSDB_BS_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">body_sites</span>, <span class="op">~</span> <span class="op">{</span></span>
+<span>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">umetasigs_BS_gn</span><span class="op">[[</span><span class="va">.x</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">tms_sigs_gn</span><span class="op">[[</span><span class="va">.x</span><span class="op">]</span><span class="op">]</span></span>
+<span>    <span class="va">xy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span>
+<span>    <span class="va">x_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">xy</span><span class="op">)</span></span>
+<span>    <span class="va">y_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">xy</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>        bsdb_only <span class="op">=</span> <span class="va">x_</span>,</span>
+<span>        tms_only <span class="op">=</span> <span class="va">y_</span>,</span>
+<span>        both <span class="op">=</span> <span class="va">xy</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rlang.r-lib.org/reference/set_names.html" class="external-link">set_names</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="va">both</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">bk_umeta_TMS_BSDB_BS_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">body_sites</span>, <span class="op">~</span> <span class="op">{</span></span>
+<span>    <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">umetasigs_BS_sp</span><span class="op">[[</span><span class="va">.x</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">y</span> <span class="op">&lt;-</span> <span class="va">tms_sigs_sp</span><span class="op">[[</span><span class="va">.x</span><span class="op">]</span><span class="op">]</span></span>
+<span>    <span class="va">xy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">intersect</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span></span>
+<span>    <span class="va">x_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">xy</span><span class="op">)</span></span>
+<span>    <span class="va">y_</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">xy</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>        bsdb_only <span class="op">=</span> <span class="va">x_</span>,</span>
+<span>        tms_only <span class="op">=</span> <span class="va">y_</span>,</span>
+<span>        both <span class="op">=</span> <span class="va">xy</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rlang.r-lib.org/reference/set_names.html" class="external-link">set_names</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="va">.x</span><span class="op">$</span><span class="va">both</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb97"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_BS_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">bk</span> <span class="op">&lt;-</span> <span class="va">bk_umeta_TMS_BSDB_BS_intersect_gn</span><span class="op">[[</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">]</span></span>
+<span>        <span class="va">rx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">"-%-%-"</span><span class="op">)</span></span>
+<span>        <span class="va">sig_list</span> <span class="op">&lt;-</span> <span class="va">umetasigs_gn</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="va">rx</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_gn</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span>        <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">sig_list</span>, <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk</span>, <span class="va">bp_sigs_gn</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span>        <span class="va">en_umeta_TMS_BSDB_BS_intersect_gn</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">res</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_BS_intersect_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
+<span>        <span class="va">en_umeta_TMS_BSDB_BS_intersect_gn</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  35.441   0.004  35.445</span></span></code></pre></div>
+<div class="sourceCode" id="cb98"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_BS_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">bk</span> <span class="op">&lt;-</span> <span class="va">bk_umeta_TMS_BSDB_BS_intersect_sp</span><span class="op">[[</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">]</span></span>
+<span>        <span class="va">rx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">body_sites</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">"-%-%-"</span><span class="op">)</span></span>
+<span>        <span class="va">sig_list</span> <span class="op">&lt;-</span> <span class="va">umetasigs_sp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="va">rx</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_sp</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span>        <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">sig_list</span>, <span class="op">~</span> <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span><span class="va">.x</span>, <span class="va">bk</span>, <span class="va">bp_sigs_sp</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span>        <span class="va">en_umeta_TMS_BSDB_BS_intersect_sp</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">res</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_BS_intersect_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
+<span>        <span class="va">en_umeta_TMS_BSDB_BS_intersect_sp</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  28.363   0.024  28.391</span></span></code></pre></div>
+<div class="sourceCode" id="cb99"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">en_umeta_TMS_BSDB_BS_intersect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
+<span>    <span class="va">en_umeta_TMS_BSDB_BS_intersect_gn</span>, <span class="va">en_umeta_TMS_BSDB_BS_intersect_sp</span></span>
+<span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fdr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">fdr</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="background-tms_1bsdb_bs-2">Background: TMS_1BSDB_BS<a class="anchor" aria-label="anchor" href="#background-tms_1bsdb_bs-2"></a>
+</h3>
+<div class="sourceCode" id="cb100"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">umetasigs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">umetasigs_gn</span>, <span class="va">umetasigs_sp</span><span class="op">)</span></span>
+<span><span class="va">bk_umeta_TMS_1BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">umetasigs</span><span class="op">)</span><span class="op">)</span> </span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">bk_umeta_TMS_1BSDB_BS</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">sig_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bk_umeta_TMS_1BSDB_BS</span><span class="op">)</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">sig_name</span></span>
+<span>    <span class="va">bodysite_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^(\\w+)-%-%-(species|genus)-%-%-.*$"</span>, <span class="st">"\\1"</span>, <span class="va">sig_name</span><span class="op">)</span></span>
+<span>    <span class="va">rank_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^(\\w+)-%-%-(species|genus)-%-%-.*$"</span>, <span class="st">"\\2"</span>, <span class="va">sig_name</span><span class="op">)</span></span>
+<span>    <span class="va">tms_sig_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">bodysite_name</span>, <span class="st">"_"</span>, <span class="va">rank_name</span><span class="op">)</span></span>
+<span>    <span class="va">bk_umeta_TMS_1BSDB_BS</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">bsdb_sigs</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">tms_sigs</span><span class="op">[[</span><span class="va">tms_sig_name</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>Enrichment at the genus level:</p>
+<div class="sourceCode" id="cb101"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">bk_umeta_TMS_1BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="va">bk_umeta_TMS_1BSDB_BS</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_gn</span><span class="op">)</span><span class="op">]</span></span>
+<span>    <span class="va">en_umeta_TMS_1BSDB_BS_gn</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html" class="external-link">map2</a></span><span class="op">(</span><span class="va">umetasigs_gn</span>, <span class="va">bk_umeta_TMS_1BSDB_BS_gn</span>, <span class="op">~</span> <span class="op">{</span></span>
+<span>        <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span>set <span class="op">=</span> <span class="va">.x</span>, reference <span class="op">=</span> <span class="va">.y</span>, sigs <span class="op">=</span> <span class="va">bp_sigs_gn</span><span class="op">)</span></span>
+<span>    <span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  35.600   0.016  35.618</span></span></code></pre></div>
+<p>Enrichment at the species level:</p>
+<div class="sourceCode" id="cb102"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>    <span class="va">bk_umeta_TMS_1BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="va">bk_umeta_TMS_1BSDB_BS</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">umetasigs_sp</span><span class="op">)</span><span class="op">]</span></span>
+<span>    <span class="va">en_umeta_TMS_1BSDB_BS_sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map2.html" class="external-link">map2</a></span><span class="op">(</span><span class="va">umetasigs_sp</span>, <span class="va">bk_umeta_TMS_1BSDB_BS_sp</span>, <span class="op">~</span> <span class="op">{</span></span>
+<span>        <span class="fu"><a href="../reference/microbeSetEnrichment.html">microbeSetEnrichment</a></span><span class="op">(</span>set <span class="op">=</span> <span class="va">.x</span>, reference <span class="op">=</span> <span class="va">.y</span>, sigs <span class="op">=</span> <span class="va">bp_sigs_sp</span><span class="op">)</span></span>
+<span>    <span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>        <span class="fu">formatEnMetSig</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  29.092   0.004  29.097</span></span></code></pre></div>
+<div class="sourceCode" id="cb103"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">en_umeta_TMS_1BSDB_BS</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span></span>
+<span>    <span class="va">en_umeta_TMS_1BSDB_BS_gn</span>, <span class="va">en_umeta_TMS_1BSDB_BS_sp</span></span>
+<span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>fdr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">fdr</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="combine-ora-results-2">Combine ORA results<a class="anchor" aria-label="anchor" href="#combine-ora-results-2"></a>
+</h3>
+<div class="sourceCode" id="cb104"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">umeta_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    BSDB <span class="op">=</span> <span class="va">en_umeta_BSDB</span>,</span>
+<span>    BSDB_BS <span class="op">=</span> <span class="va">en_umeta_BSDB_BS</span>,</span>
+<span>    TMS_BSDB <span class="op">=</span> <span class="va">en_umeta_TMS_BSDB</span>,</span>
+<span>    TMS_BSDB_BS <span class="op">=</span> <span class="va">en_umeta_TMS_BSDB_BS</span>,</span>
+<span>    TMS_BSDB_intersect <span class="op">=</span> <span class="va">en_umeta_TMS_BSDB_intersect</span>,</span>
+<span>    TMS_BSDB_BS_intersect <span class="op">=</span> <span class="va">en_umeta_TMS_BSDB_BS_intersect</span>,</span>
+<span>    TMS_1BSDB_BS <span class="op">=</span> <span class="va">en_umeta_TMS_1BSDB_BS</span> </span>
+<span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="va">.x</span>, combination <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span></span>
+<span>        <span class="va">body_site</span>, <span class="st">"-#-#-"</span>, <span class="va">direction</span>, <span class="st">"-#-#-"</span>, <span class="va">rank</span>, <span class="st">"-#-#-"</span>,</span>
+<span>        <span class="va">condition</span>, <span class="st">"-#-#-"</span>, <span class="va">sig_name</span><span class="op">)</span></span>
+<span>    <span class="op">)</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="visualization-2">Visualization<a class="anchor" aria-label="anchor" href="#visualization-2"></a>
+</h3>
+<div class="sourceCode" id="cb105"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">umeta_lmat_down</span> <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">umeta_results</span>, <span class="op">~</span> <span class="fu">createMat</span><span class="op">(</span><span class="va">.x</span>, dir <span class="op">=</span> <span class="st">"decreased"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">umeta_lmat_up</span> <span class="op">=</span> <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="va">umeta_results</span>, <span class="op">~</span> <span class="fu">createMat</span><span class="op">(</span><span class="va">.x</span>, dir <span class="op">=</span> <span class="st">"increased"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">maxCountumeta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">umeta_lmat_down</span>, <span class="va">umeta_lmat_up</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb106"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">umeta_ht_comb_up</span> <span class="op">&lt;-</span> <span class="fu">combinationHt</span><span class="op">(</span><span class="va">umeta_lmat_up</span>, <span class="va">maxCountumeta</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">umeta_ht_comb_up</span>, column_title <span class="op">=</span> <span class="st">"Increased"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-106-1.png" width="960"></p>
+<div class="sourceCode" id="cb107"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">umeta_ht_comb_down</span> <span class="op">&lt;-</span> <span class="fu">combinationHt</span><span class="op">(</span><span class="va">umeta_lmat_down</span>, <span class="va">maxCountumeta</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/ComplexHeatmap/man/draw-dispatch.html" class="external-link">draw</a></span><span class="op">(</span><span class="va">umeta_ht_comb_down</span>, column_title <span class="op">=</span> <span class="st">"decreased"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="bsdb_signatures_files/figure-html/unnamed-chunk-107-1.png" width="960"></p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<div class="sourceCode" id="cb78"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb108"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/sessioninfo/reference/session_info.html" class="external-link">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Session info ───────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">setting </span> <span style="color: #555555; font-style: italic;">value</span></span></span>
@@ -1505,8 +1952,6 @@ metasignatures</p>
 <span><span class="co">#&gt;  utf8               1.2.4    <span style="color: #555555;">2023-10-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  uuid               1.2-0    <span style="color: #555555;">2024-01-14</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  vctrs              0.6.5    <span style="color: #555555;">2023-12-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  viridis            0.6.5    <span style="color: #555555;">2024-01-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
-<span><span class="co">#&gt;  viridisLite        0.4.2    <span style="color: #555555;">2023-05-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  vroom              1.6.5    <span style="color: #555555;">2023-12-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  withr              3.0.0    <span style="color: #555555;">2024-01-16</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
 <span><span class="co">#&gt;  xfun               0.42     <span style="color: #555555;">2024-02-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.3.0)</span></span></span>
