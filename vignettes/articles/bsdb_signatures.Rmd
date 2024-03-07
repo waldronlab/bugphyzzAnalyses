@@ -261,6 +261,97 @@ metasigs_gn <- c(metasigs_gn_up, metasigs_gn_down)
 metasigs_sp <- c(metasigs_sp_up, metasigs_sp_down)
 ```
 
+
+# Meta-sigantures without intersection
+
+```{r, message=FALSE}
+removeRepeatedTaxa <- function(up, down) {
+    x <- map(down, ~ tibble(down = paste0(.x, collapse = ";"))) |> 
+        bind_rows(.id = "name") |> 
+        separate(
+            col = "name",
+            into = c("body_site", "rank", "direction", "condition"),
+            sep = "-%-%-"
+        ) |> 
+        select(-direction) |> 
+        mutate(down = strsplit(down, ";"))
+    
+    y <- map(up, ~ tibble(up = paste0(.x, collapse = ";"))) |> 
+        bind_rows(.id = "name") |> 
+        separate(
+            col = "name",
+            into = c("body_site", "rank", "direction", "condition"),
+            sep = "-%-%-"
+        ) |> 
+        select(-direction) |> 
+        mutate(up = strsplit(up, ";"))
+    
+    z <- full_join(x, y)
+    
+    a <- z |> 
+        rowwise() |> 
+        mutate(intersect = list(intersect(up, down))) |> 
+        mutate(up_unique = list(setdiff(up, intersect))) |> 
+        mutate(down_unique = list(setdiff(down, intersect))) |> 
+        ungroup() |> 
+        select(-down, -up, -intersect)
+    
+    b <- a |> 
+        rowwise() |> 
+        filter(length(up_unique) > 0) |> 
+        mutate(name = paste0(
+            body_site, "-%-%-", rank, "-%-%-increased-%-%-", condition
+        )) |> 
+        ungroup() |> 
+        select(name, up_unique)
+    
+    c <- a |> 
+        rowwise() |> 
+        filter(length(down_unique) > 0) |> 
+        mutate(name = paste0(
+            body_site, "-%-%-", rank, "-%-%-decreased-%-%-", condition
+        )) |> 
+        ungroup() |> 
+        select(name, down_unique)
+    
+    output1 <- vector("list", nrow(b))
+    for (i in seq_along(output1)) {
+        output1[[i]] <- b |> 
+            slice(i) |> 
+            pull(up_unique) |> 
+            unlist()
+        names(output1)[[i]] <- b |> 
+            slice(i) |> 
+            pull(name)
+    }
+    
+    output2 <- vector("list", nrow(c))
+    for (i in seq_along(output2)) {
+        output2[[i]] <- c |> 
+            slice(i) |> 
+            pull(down_unique) |> 
+            unlist()
+        names(output2)[[i]] <- c |> 
+            slice(i) |> 
+            pull(name)
+    }
+    
+    list(up = output1, down = output2)
+}
+
+umetasigs_gn_list <- removeRepeatedTaxa(metasigs_gn_up, metasigs_gn_down)
+umetasigs_gn <- umetasigs_gn_list |> 
+    list_flatten(name_spec = "{inner}")
+umetasigs_gn_up <- umetasigs_gn_list$up
+umetasigs_gn_down <- umetasigs_gn_list$down
+
+umetasigs_sp_list <- removeRepeatedTaxa(metasigs_sp_up, metasigs_sp_down)
+umetasigs_sp <- umetasigs_sp_list |> 
+    list_flatten(name_spec = "{inner}")
+umetasigs_sp_up <- umetasigs_sp_list$up
+umetasigs_sp_down <- umetasigs_sp_list$down
+```
+
 # ORA with BSDB signatures
 
 Define function fo format enrichment results (sigs)
@@ -754,7 +845,11 @@ createMat <- function(dat, fdr_th = 0.1, dir) {
    output
 }
 
-createHt <- function(x) {
+createHt <- function(x, max_count) {
+    color_fun <- circlize::colorRamp2(
+        breaks = c(0, max_count), 
+        colors = c("white", "brown")
+    )
     lht <- vector("list", length(x))
     for (i in seq_along(x)) {
         xmat <- x[[i]]
@@ -778,7 +873,7 @@ createHt <- function(x) {
                     rownames(xmat),
                     gp = gpar(fontsize = 12)
                 ),
-                rect_gp = gpar(col = "gray70", lwd = 1)
+                rect_gp = gpar(col = "gray60", lwd = 1)
             )
         } else {
             lht[[i]] <- Heatmap(
@@ -798,7 +893,7 @@ createHt <- function(x) {
                     rownames(xmat),
                     gp = gpar(fontsize = 12)
                 ),
-                rect_gp = gpar(col = "gray70", lwd = 1)
+                rect_gp = gpar(col = "gray60", lwd = 1)
             )
         }
     }
@@ -816,7 +911,11 @@ myFun <- function(x) {
         unite(col = "combination", sep = " |---| ", sig, condition)
 }
 
-combinationHt <- function(l) {
+combinationHt <- function(l, max_count) {
+    color_fun <- circlize::colorRamp2(
+        breaks = c(0, max_count), 
+        colors = c("white", "brown")
+    )
     xvar <- l |> 
         map(~ map(.x, function(x) myFun(x))) |> 
         map(~ distinct(bind_rows(.x, .id = "bs"))) |> 
@@ -863,7 +962,7 @@ combinationHt <- function(l) {
                     rownames(.x),
                     gp = gpar(fontsize = 12)
                 ),
-                rect_gp = gpar(col = "gray70", lwd = 1),
+                rect_gp = gpar(col = "gray60", lwd = 1),
                 border = TRUE
             )
         })
@@ -878,11 +977,7 @@ lmat_down = map(results, ~ createMat(.x, dir = "decreased"))
 lmat_up = map(results, ~ createMat(.x, dir = "increased"))
 
 ## This variables are used in the functions defined above
-max_count <- max(unlist(c(lmat_down, lmat_up)))
-color_fun <- circlize::colorRamp2(
-    breaks = c(0, seq(1, max_count)), 
-    colors = c("white", viridis::viridis(max_count))
-)
+maxCountSig <- max(unlist(c(lmat_down, lmat_up)))
 
 ## Create heatmaps, but don't display them unless it's required
 # l_ht_down <- map(lmat_down, createHt)
@@ -890,12 +985,12 @@ color_fun <- circlize::colorRamp2(
 ```
 
 ```{r, fig.height=30, fig.width=10, warning=FALSE}
-ht_comb_up <- combinationHt(lmat_up)
+ht_comb_up <- combinationHt(lmat_up, maxCountSig)
 draw(ht_comb_up, column_title = "Increased")
 ```
 
 ```{r, fig.height=30, fig.width=10, warning=FALSE}
-ht_comb_down <- combinationHt(lmat_down)
+ht_comb_down <- combinationHt(lmat_down, maxCountSig)
 draw(ht_comb_down, column_title = "Decreased")
 ```
 
@@ -1287,22 +1382,395 @@ meta_results <- list(
 ```{r}
 meta_lmat_down = map(meta_results, ~ createMat(.x, dir = "decreased"))
 meta_lmat_up = map(meta_results, ~ createMat(.x, dir = "increased"))
-max_count <- max(unlist(c(meta_lmat_down, meta_lmat_up)))
-color_fun <- circlize::colorRamp2(
-    breaks = c(0, seq(1, max_count)), 
-    colors = c("white", viridis::viridis(max_count))
-)
+maxCountMeta <- max(unlist(c(meta_lmat_down, meta_lmat_up)))
 ```
 
 ```{r, warning=FALSE, fig.height=30, fig.width=10}
-meta_ht_comb_up <- combinationHt(meta_lmat_up)
+meta_ht_comb_up <- combinationHt(meta_lmat_up, maxCountMeta)
 draw(meta_ht_comb_up, column_title = "Increased")
 ```
 
 ```{r, warning=FALSE, fig.height=30, fig.width=10}
-meta_ht_comb_down <- combinationHt(meta_lmat_down)
+meta_ht_comb_down <- combinationHt(meta_lmat_down, maxCountMeta)
 draw(meta_ht_comb_down, column_title = "decreased")
 ```
+
+# ORA with BSDB unique meta-signatures
+
+## Background: BSDB
+
+```{r}
+system.time({
+    en_umeta_BSDB_gn <- map(
+        umetasigs_gn, ~ microbeSetEnrichment(.x, bk_BSDB_gn, bp_sigs_gn)
+    ) |> 
+        formatEnMetSig()
+})
+```
+
+```{r}
+system.time({
+    en_umeta_BSDB_sp <- map(
+        umetasigs_sp, ~ microbeSetEnrichment(.x, bk_BSDB_sp, bp_sigs_sp)
+    ) |> 
+        formatEnMetSig()
+})
+```
+
+```{r}
+en_umeta_BSDB <- bind_rows(en_umeta_BSDB_gn, en_umeta_BSDB_sp) |> 
+    mutate(fdr = p.adjust(p_value)) |> 
+    filter(fdr < 0.1)
+```
+
+## Background: BSDB_BS
+
+genus:
+
+```{r}
+system.time({
+    en_umeta_BSDB_BS_gn <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_BSDB_BS_gn[[body_sites[i]]]
+        rx <- paste0(body_sites[i], "-%-%-")
+        sig_list <- umetasigs_gn[grep(rx, names(umetasigs_gn))]
+        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_gn)) |> 
+            formatEnMetSig()
+        en_umeta_BSDB_BS_gn[[i]] <- res
+    }
+    en_umeta_BSDB_BS_gn <- bind_rows(en_umeta_BSDB_BS_gn)
+})
+```
+
+species:
+
+```{r}
+system.time({
+    en_umeta_BSDB_BS_sp <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_BSDB_BS_sp[[body_sites[i]]]
+        rx <- paste0(body_sites[i], "-%-%-")
+        sig_list <- umetasigs_sp[grep(rx, names(umetasigs_sp))]
+        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |>  
+            formatEnMetSig()
+        en_umeta_BSDB_BS_sp[[i]] <- res
+    }
+    en_umeta_BSDB_BS_sp <- bind_rows(en_umeta_BSDB_BS_sp)
+})
+```
+
+
+```{r}
+en_umeta_BSDB_BS <- bind_rows(en_umeta_BSDB_BS_gn, en_umeta_BSDB_BS_sp) |> 
+    mutate(fdr = p.adjust(p_value)) |> 
+    filter(fdr < 0.1)
+```
+
+## Background: TMS_BSDB
+
+```{r}
+system.time({
+    en_umeta_TMS_BSDB_gn <- map(
+        .x = umetasigs_gn,
+        .f = ~ microbeSetEnrichment(.x, bk_TMS_BSDB_gn, bp_sigs_gn)
+    ) |> 
+        formatEnMetSig()
+})
+```
+
+Enrichment at the species level:
+
+```{r}
+system.time({
+    en_umeta_TMS_BSDB_sp <- map(
+        .x = umetasigs_sp,
+        .f = ~ microbeSetEnrichment(.x, bk_TMS_BSDB_sp, bp_sigs_sp)
+        ) |> 
+        formatEnMetSig()
+})
+```
+
+```{r}
+en_umeta_TMS_BSDB <- bind_rows(en_umeta_TMS_BSDB_gn, en_umeta_TMS_BSDB_sp) |> 
+    mutate(fdr = p.adjust(p_value)) |> 
+    filter(fdr < 0.1)
+```
+
+## Background: TMS_BSDB_BS
+
+```{r}
+system.time({
+    en_umeta_TMS_BSDB_BS_gn <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_TMS_BSDB_BS_gn[[body_sites[i]]]
+        rx <- paste0(body_sites[i], "-%-%-")
+        sig_list <- umetasigs_gn[grep(rx, names(umetasigs_gn))]
+        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_gn)) |> 
+            formatEnMetSig()
+        en_umeta_TMS_BSDB_BS_gn[[i]] <- res
+    }
+    en_umeta_TMS_BSDB_BS_gn <- bind_rows(en_umeta_TMS_BSDB_BS_gn)
+})
+
+```
+
+
+```{r}
+system.time({
+    en_umeta_TMS_BSDB_BS_sp <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_TMS_BSDB_BS_sp[[body_sites[i]]]
+        rx <- paste0(body_sites[i], "-%-%-")
+        sig_list <- umetasigs_sp[grep(rx, names(umetasigs_sp))]
+        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |> 
+            formatEnMetSig()
+        en_umeta_TMS_BSDB_BS_sp[[i]] <- res
+    }
+    en_umeta_TMS_BSDB_BS_sp <- bind_rows(en_umeta_TMS_BSDB_BS_sp)
+})
+```
+
+```{r}
+en_umeta_TMS_BSDB_BS <- bind_rows(
+    en_umeta_TMS_BSDB_BS_gn, en_umeta_TMS_BSDB_BS_sp
+    ) |> 
+    mutate(fdr = p.adjust(p_value)) |> 
+    filter(fdr < 0.1)
+```
+
+## Background: TMS_BSDB_intersect
+
+```{r}
+umeta_bsdb_gn_y = unique(unlist(umetasigs_gn))
+bk_umeta_TMS_BSDB_intersect_gn <- intersect(tms_gn_x, umeta_bsdb_gn_y)
+
+umeta_bsdb_sp_y = unique(unlist(umetasigs_sp))
+bk_umeta_TMS_BSDB_intersect_sp <- intersect(tms_sp_x, umeta_bsdb_sp_y)
+```
+
+genus:
+
+```{r}
+system.time({
+    en_umeta_TMS_BSDB_intersect_gn <- map(
+        umetasigs_gn,
+        ~ microbeSetEnrichment(.x, bk_umeta_TMS_BSDB_intersect_gn, bp_sigs_gn)
+        ) |> 
+        formatEnMetSig()
+})
+```
+
+species:
+
+```{r}
+system.time({
+    en_umeta_TMS_BSDB_intersect_sp <- map(
+        umetasigs_sp,
+        ~ microbeSetEnrichment(.x, bk_umeta_TMS_BSDB_intersect_sp, bp_sigs_sp)
+        ) |> 
+        formatEnMetSig()
+})
+```
+
+```{r}
+en_umeta_TMS_BSDB_intersect <- bind_rows(
+    en_umeta_TMS_BSDB_intersect_gn, en_umeta_TMS_BSDB_intersect_sp
+    ) |> 
+    mutate(fdr = p.adjust(p_value)) |> 
+    filter(fdr < 0.1)
+```
+
+## Bacgkround: TMS_BSDB_BS_intersect
+
+```{r}
+umetasigs_BS_gn <- vector("list", length(body_sites))
+for (i in seq_along(umetasigs_BS_gn)) {
+   rx <- paste0("^", body_sites[i], "-%-%-", "genus")
+   sigsL <- umetasigs_gn[grep(rx, names(umetasigs_gn))]
+   names(sigsL) <- names(umetasigs_gn)[grep(rx, names(umetasigs_gn))]
+   if (is.null(sigsL)) {
+       next
+   }
+   umetasigs_BS_gn[[i]] <- sigsL
+   names(umetasigs_BS_gn)[i] <- body_sites[i]
+}
+umetasigs_BS_gn <- discard(umetasigs_BS_gn, is.null)
+        
+umetasigs_BS_sp <- vector("list", length(body_sites))
+for (i in seq_along(umetasigs_BS_sp)) {
+   rx <- paste0("^", body_sites[i], "-%-%-", "species")
+   sigsL <- umetasigs_sp[grep(rx, names(umetasigs_sp))]
+   names(sigsL) <- names(umetasigs_sp)[grep(rx, names(umetasigs_sp))]
+   if (is.null(sigsL)) {
+       next
+   }
+   umetasigs_BS_sp[[i]] <- sigsL
+   names(umetasigs_BS_sp)[i] <- body_sites[i]
+}
+umetasigs_BS_sp <- discard(umetasigs_BS_sp, is.null)
+```
+
+Backgrounds
+
+```{r}
+bk_umeta_TMS_BSDB_BS_intersect_gn <- map(body_sites, ~ {
+    x <- unique(unlist(umetasigs_BS_gn[[.x]]))
+    y <- tms_sigs_gn[[.x]]
+    xy <- intersect(x, y)
+    x_ <- setdiff(x, xy)
+    y_ <- setdiff(y, xy)
+    list(
+        bsdb_only = x_,
+        tms_only = y_,
+        both = xy
+    )
+}) |> 
+    set_names(body_sites) |> 
+    map(~ .x$both)
+
+bk_umeta_TMS_BSDB_BS_intersect_sp <- map(body_sites, ~ {
+    x <- unique(unlist(umetasigs_BS_sp[[.x]]))
+    y <- tms_sigs_sp[[.x]]
+    xy <- intersect(x, y)
+    x_ <- setdiff(x, xy)
+    y_ <- setdiff(y, xy)
+    list(
+        bsdb_only = x_,
+        tms_only = y_,
+        both = xy
+    )
+}) |> 
+    set_names(body_sites) |> 
+    map(~ .x$both)
+```
+
+```{r}
+system.time({
+    en_umeta_TMS_BSDB_BS_intersect_gn <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_umeta_TMS_BSDB_BS_intersect_gn[[body_sites[i]]]
+        rx <- paste0(body_sites[i], "-%-%-")
+        sig_list <- umetasigs_gn[grep(rx, names(umetasigs_gn))]
+        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_gn)) |> 
+            formatEnMetSig()
+        en_umeta_TMS_BSDB_BS_intersect_gn[[i]] <- res
+    }
+    en_umeta_TMS_BSDB_BS_intersect_gn <- bind_rows(
+        en_umeta_TMS_BSDB_BS_intersect_gn
+    )
+})
+```
+
+```{r}
+system.time({
+    en_umeta_TMS_BSDB_BS_intersect_sp <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_umeta_TMS_BSDB_BS_intersect_sp[[body_sites[i]]]
+        rx <- paste0(body_sites[i], "-%-%-")
+        sig_list <- umetasigs_sp[grep(rx, names(umetasigs_sp))]
+        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |> 
+            formatEnMetSig()
+        en_umeta_TMS_BSDB_BS_intersect_sp[[i]] <- res
+    }
+    en_umeta_TMS_BSDB_BS_intersect_sp <- bind_rows(
+        en_umeta_TMS_BSDB_BS_intersect_sp
+    )
+})
+```
+
+```{r}
+en_umeta_TMS_BSDB_BS_intersect <- bind_rows(
+    en_umeta_TMS_BSDB_BS_intersect_gn, en_umeta_TMS_BSDB_BS_intersect_sp
+    ) |> 
+    mutate(fdr = p.adjust(p_value)) |> 
+    filter(fdr < 0.1)
+```
+
+## Background: TMS_1BSDB_BS
+
+```{r}
+umetasigs <- c(umetasigs_gn, umetasigs_sp)
+bk_umeta_TMS_1BSDB_BS <- vector("list", length(umetasigs)) 
+for (i in seq_along(bk_umeta_TMS_1BSDB_BS)) {
+    sig_name <- names(umetasigs)[i]
+    names(bk_umeta_TMS_1BSDB_BS)[i] <- sig_name
+    bodysite_name <- sub("^(\\w+)-%-%-(species|genus)-%-%-.*$", "\\1", sig_name)
+    rank_name <- sub("^(\\w+)-%-%-(species|genus)-%-%-.*$", "\\2", sig_name)
+    tms_sig_name <- paste0(bodysite_name, "_", rank_name)
+    bk_umeta_TMS_1BSDB_BS[[i]] <- unique(
+        c(as.character(bsdb_sigs[[i]]), as.character(tms_sigs[[tms_sig_name]]))
+    )
+}
+```
+
+Enrichment at the genus level:
+
+```{r}
+system.time({
+    bk_umeta_TMS_1BSDB_BS_gn <- bk_umeta_TMS_1BSDB_BS[names(umetasigs_gn)]
+    en_umeta_TMS_1BSDB_BS_gn <- map2(umetasigs_gn, bk_umeta_TMS_1BSDB_BS_gn, ~ {
+        microbeSetEnrichment(set = .x, reference = .y, sigs = bp_sigs_gn)
+    }) |> 
+        formatEnMetSig()
+})
+```
+
+Enrichment at the species level:
+
+```{r}
+system.time({
+    bk_umeta_TMS_1BSDB_BS_sp <- bk_umeta_TMS_1BSDB_BS[names(umetasigs_sp)]
+    en_umeta_TMS_1BSDB_BS_sp <- map2(umetasigs_sp, bk_umeta_TMS_1BSDB_BS_sp, ~ {
+        microbeSetEnrichment(set = .x, reference = .y, sigs = bp_sigs_sp)
+    }) |> 
+        formatEnMetSig()
+})
+```
+
+```{r}
+en_umeta_TMS_1BSDB_BS <- bind_rows(
+    en_umeta_TMS_1BSDB_BS_gn, en_umeta_TMS_1BSDB_BS_sp
+    ) |> 
+    mutate(fdr = p.adjust(p_value)) |> 
+    filter(fdr < 0.1)
+```
+
+## Combine ORA results
+
+```{r}
+umeta_results <- list(
+    BSDB = en_umeta_BSDB,
+    BSDB_BS = en_umeta_BSDB_BS,
+    TMS_BSDB = en_umeta_TMS_BSDB,
+    TMS_BSDB_BS = en_umeta_TMS_BSDB_BS,
+    TMS_BSDB_intersect = en_umeta_TMS_BSDB_intersect,
+    TMS_BSDB_BS_intersect = en_umeta_TMS_BSDB_BS_intersect,
+    TMS_1BSDB_BS = en_umeta_TMS_1BSDB_BS 
+) |> 
+    map(~ mutate(.x, combination = paste0(
+        body_site, "-#-#-", direction, "-#-#-", rank, "-#-#-",
+        condition, "-#-#-", sig_name)
+    ))
+```
+
+## Visualization
+
+```{r}
+umeta_lmat_down = map(umeta_results, ~ createMat(.x, dir = "decreased"))
+umeta_lmat_up = map(umeta_results, ~ createMat(.x, dir = "increased"))
+maxCountumeta <- max(unlist(c(umeta_lmat_down, umeta_lmat_up)))
+```
+
+```{r, warning=FALSE, fig.height=30, fig.width=10}
+umeta_ht_comb_up <- combinationHt(umeta_lmat_up, maxCountumeta)
+draw(umeta_ht_comb_up, column_title = "Increased")
+```
+
+```{r, warning=FALSE, fig.height=30, fig.width=10}
+umeta_ht_comb_down <- combinationHt(umeta_lmat_down, maxCountumeta)
+draw(umeta_ht_comb_down, column_title = "decreased")
+```
+
 
 # Session info
 
