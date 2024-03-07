@@ -500,8 +500,8 @@ tms_gn_x = unique(unlist(tms_sigs_gn))
 bsdb_gn_y = unique(unlist(bsdb_sigs_gn))
 bk_TMS_BSDB_intersect_gn <- intersect(tms_gn_x, bsdb_gn_y)
 data.frame(
-    tms_genus_only = length(setdiff(tms_gn_x, tms_bsdb_gn_xy)),
-    bsdb_genus_only = length(setdiff(bsdb_gn_y, tms_bsdb_gn_xy)),
+    tms_genus_only = length(setdiff(tms_gn_x, bk_TMS_BSDB_intersect_gn)),
+    bsdb_genus_only = length(setdiff(bsdb_gn_y, bk_TMS_BSDB_intersect_gn)),
     tms_bsdb_genus_intersect = length(bk_TMS_BSDB_intersect_gn)
 )
 ```
@@ -513,8 +513,8 @@ tms_sp_x = unique(unlist(tms_sigs_sp))
 bsdb_sp_y = unique(unlist(bsdb_sigs_sp))
 bk_TMS_BSDB_intersect_sp <- intersect(tms_sp_x, bsdb_sp_y)
 data.frame(
-    tms_species_only = length(setdiff(tms_sp_x, tms_bsdb_sp_xy)),
-    bsdb_species_only = length(setdiff(bsdb_sp_y, tms_bsdb_sp_xy)),
+    tms_species_only = length(setdiff(tms_sp_x, bk_TMS_BSDB_intersect_sp)),
+    bsdb_species_only = length(setdiff(bsdb_sp_y, bk_TMS_BSDB_intersect_sp)),
     tms_bsdb_species_intersect = length(bk_TMS_BSDB_intersect_sp)
 )
 ```
