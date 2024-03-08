@@ -1042,9 +1042,7 @@ system.time({
 ```
 
 ```{r}
-en_meta_BSDB <- bind_rows(en_meta_BSDB_gn, en_meta_BSDB_sp) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+en_meta_BSDB <- bind_rows(en_meta_BSDB_gn, en_meta_BSDB_sp) 
 ```
 
 ## Background: BSDB_BS
@@ -1085,9 +1083,7 @@ system.time({
 
 
 ```{r}
-en_meta_BSDB_BS <- bind_rows(en_meta_BSDB_BS_gn, en_meta_BSDB_BS_sp) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+en_meta_BSDB_BS <- bind_rows(en_meta_BSDB_BS_gn, en_meta_BSDB_BS_sp)
 ```
 
 ## Background: TMS_BSDB
@@ -1115,9 +1111,7 @@ system.time({
 ```
 
 ```{r}
-en_meta_TMS_BSDB <- bind_rows(en_meta_TMS_BSDB_gn, en_meta_TMS_BSDB_sp) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+en_meta_TMS_BSDB <- bind_rows(en_meta_TMS_BSDB_gn, en_meta_TMS_BSDB_sp)
 ```
 
 ## Background: TMS_BSDB_BS
@@ -1157,9 +1151,7 @@ system.time({
 ```{r}
 en_meta_TMS_BSDB_BS <- bind_rows(
     en_meta_TMS_BSDB_BS_gn, en_meta_TMS_BSDB_BS_sp
-    ) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+    ) 
 ```
 
 ## Background: TMS_BSDB_intersect
@@ -1199,9 +1191,7 @@ system.time({
 ```{r}
 en_meta_TMS_BSDB_intersect <- bind_rows(
     en_meta_TMS_BSDB_intersect_gn, en_meta_TMS_BSDB_intersect_sp
-    ) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+    )
 ```
 
 ## Bacgkround: TMS_BSDB_BS_intersect
@@ -1305,9 +1295,7 @@ system.time({
 ```{r}
 en_meta_TMS_BSDB_BS_intersect <- bind_rows(
     en_meta_TMS_BSDB_BS_intersect_gn, en_meta_TMS_BSDB_BS_intersect_sp
-    ) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+    ) 
 ```
 
 ## Background: TMS_1BSDB_BS
@@ -1354,9 +1342,7 @@ system.time({
 ```{r}
 en_meta_TMS_1BSDB_BS <- bind_rows(
     en_meta_TMS_1BSDB_BS_gn, en_meta_TMS_1BSDB_BS_sp
-    ) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+    )
 ```
 
 ## Combine ORA results
@@ -1371,17 +1357,27 @@ meta_results <- list(
     TMS_BSDB_BS_intersect = en_meta_TMS_BSDB_BS_intersect,
     TMS_1BSDB_BS = en_meta_TMS_1BSDB_BS 
 ) |> 
+    map(~ mutate(.x, fdr = p.adjust(p_value))) |> 
     map(~ mutate(.x, combination = paste0(
         body_site, "-#-#-", direction, "-#-#-", rank, "-#-#-",
         condition, "-#-#-", sig_name)
     ))
 ```
 
+
+Adjust p-value and filter by FDR:
+
+```{r}
+filtered_meta_results <- map(meta_results, ~ filter(.x, fdr < 0.1))
+map(filtered_meta_results, dim)
+
+```
+
 ## Visualization
 
 ```{r}
-meta_lmat_down = map(meta_results, ~ createMat(.x, dir = "decreased"))
-meta_lmat_up = map(meta_results, ~ createMat(.x, dir = "increased"))
+meta_lmat_down = map(filtered_meta_results, ~ createMat(.x, dir = "decreased"))
+meta_lmat_up = map(filtered_meta_results, ~ createMat(.x, dir = "increased"))
 maxCountMeta <- max(unlist(c(meta_lmat_down, meta_lmat_up)))
 ```
 
@@ -1418,9 +1414,7 @@ system.time({
 ```
 
 ```{r}
-en_umeta_BSDB <- bind_rows(en_umeta_BSDB_gn, en_umeta_BSDB_sp) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+en_umeta_BSDB <- bind_rows(en_umeta_BSDB_gn, en_umeta_BSDB_sp)
 ```
 
 ## Background: BSDB_BS
@@ -1461,9 +1455,7 @@ system.time({
 
 
 ```{r}
-en_umeta_BSDB_BS <- bind_rows(en_umeta_BSDB_BS_gn, en_umeta_BSDB_BS_sp) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+en_umeta_BSDB_BS <- bind_rows(en_umeta_BSDB_BS_gn, en_umeta_BSDB_BS_sp)
 ```
 
 ## Background: TMS_BSDB
@@ -1491,9 +1483,7 @@ system.time({
 ```
 
 ```{r}
-en_umeta_TMS_BSDB <- bind_rows(en_umeta_TMS_BSDB_gn, en_umeta_TMS_BSDB_sp) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+en_umeta_TMS_BSDB <- bind_rows(en_umeta_TMS_BSDB_gn, en_umeta_TMS_BSDB_sp)
 ```
 
 ## Background: TMS_BSDB_BS
@@ -1533,9 +1523,7 @@ system.time({
 ```{r}
 en_umeta_TMS_BSDB_BS <- bind_rows(
     en_umeta_TMS_BSDB_BS_gn, en_umeta_TMS_BSDB_BS_sp
-    ) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+    )
 ```
 
 ## Background: TMS_BSDB_intersect
@@ -1575,9 +1563,7 @@ system.time({
 ```{r}
 en_umeta_TMS_BSDB_intersect <- bind_rows(
     en_umeta_TMS_BSDB_intersect_gn, en_umeta_TMS_BSDB_intersect_sp
-    ) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+    )
 ```
 
 ## Bacgkround: TMS_BSDB_BS_intersect
@@ -1681,9 +1667,7 @@ system.time({
 ```{r}
 en_umeta_TMS_BSDB_BS_intersect <- bind_rows(
     en_umeta_TMS_BSDB_BS_intersect_gn, en_umeta_TMS_BSDB_BS_intersect_sp
-    ) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+    )
 ```
 
 ## Background: TMS_1BSDB_BS
@@ -1730,9 +1714,7 @@ system.time({
 ```{r}
 en_umeta_TMS_1BSDB_BS <- bind_rows(
     en_umeta_TMS_1BSDB_BS_gn, en_umeta_TMS_1BSDB_BS_sp
-    ) |> 
-    mutate(fdr = p.adjust(p_value)) |> 
-    filter(fdr < 0.1)
+    )
 ```
 
 ## Combine ORA results
@@ -1747,17 +1729,30 @@ umeta_results <- list(
     TMS_BSDB_BS_intersect = en_umeta_TMS_BSDB_BS_intersect,
     TMS_1BSDB_BS = en_umeta_TMS_1BSDB_BS 
 ) |> 
+    map(~ mutate(.x, fdr = p.adjust(p_value))) |>
     map(~ mutate(.x, combination = paste0(
         body_site, "-#-#-", direction, "-#-#-", rank, "-#-#-",
         condition, "-#-#-", sig_name)
     ))
 ```
 
+
+Filter results
+
+```{r}
+filtered_umeta_results <- map(umeta_results, ~ filter(.x, fdr < 0.1))
+map(filtered_umeta_results, dim)
+```
+
 ## Visualization
 
 ```{r}
-umeta_lmat_down = map(umeta_results, ~ createMat(.x, dir = "decreased"))
-umeta_lmat_up = map(umeta_results, ~ createMat(.x, dir = "increased"))
+umeta_lmat_down = map(
+    filtered_umeta_results, ~ createMat(.x, dir = "decreased")
+)
+umeta_lmat_up = map(
+    filtered_umeta_results, ~ createMat(.x, dir = "increased")
+)
 maxCountumeta <- max(unlist(c(umeta_lmat_down, umeta_lmat_up)))
 ```
 
@@ -1771,6 +1766,31 @@ umeta_ht_comb_down <- combinationHt(umeta_lmat_down, maxCountumeta)
 draw(umeta_ht_comb_down, column_title = "decreased")
 ```
 
+# Tables
+
+Results of enrichment using signatures
+
+```{r}
+resDF <- filtered_results |> 
+    bind_rows(.id = "background")
+myDataTable(resDF)
+```
+
+Results of enrichment using meta-signatures
+
+```{r}
+metaResDF <- filtered_meta_results |> 
+    bind_rows(.id = "background")
+myDataTable(metaResDF)
+```
+
+Results of enrichment using unique meta-signatures
+
+```{r}
+umetaResDF <- filtered_umeta_results |> 
+    bind_rows(.id = "background") 
+myDataTable(umetaResDF)
+```
 
 # Session info
 
