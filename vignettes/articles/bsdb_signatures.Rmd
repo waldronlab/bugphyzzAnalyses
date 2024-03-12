@@ -23,14 +23,16 @@ library(ComplexHeatmap)
 library(gridExtra)
 library(ggplot2)
 
-body_sites <- c("skin", "vagina", "mouth", "feces")
-ranks <- c("genus", "species")
-directions <- c("increased", "decreased")
+body_sites <- c(
+    skin = "skin", vagina = "vagina", mouth = "mouth", feces = "feces"
+)
+ranks <- c(genus = "genus", species = "species")
+directions <- c(increased = "increased", decreased = "decreased")
 ```
 
 # Data
 
-TypicalMicrobiomeSignatures (TMS):
+Import TypicalMicrobiomeSignatures (TMS):
 
 ```{r, message=FALSE}
 tms <- importTMS() |> 
@@ -38,7 +40,7 @@ tms <- importTMS() |>
 glimpse(tms, 50)
 ```
 
-BugSigDB:
+Import BugSigDB v1.2.1:
 
 ```{r, message=FALSE}
 bsdb_doi <- "10.5281/zenodo.10627578" # v1.2.1
@@ -60,7 +62,6 @@ BugSigDB subsets by body site:
 
 ```{r, message=FALSE}
 uberon <- getOntology(onto = "uberon")
-body_sites <- unique(tms$`Body site`)
 bsdb_subsets_by_bodysite <- vector("list", length(body_sites))
 names(bsdb_subsets_by_bodysite) <- body_sites
 for (i in seq_along(bsdb_subsets_by_bodysite)) {
@@ -84,21 +85,49 @@ names(bp)
 
 # Signatures
 
+Typical Microbiome Signatures:
+
+```{r}
+thrs <- elbows()
+tms_sigs <- vector("list", length(body_sites) * length(ranks))
+counter <- 1
+for (i in seq_along(body_sites)) {
+    for (j in seq_along(ranks)) {
+        tms_name <- paste0(body_sites[i], "_", ranks[j])
+        names(tms_sigs)[counter] <- tms_name
+        tms_sigs[[counter]] <- tms |> 
+            filter(`Body site` == body_sites[i], Rank == ranks[j]) |> 
+            filter(Prevalence >= thrs[tms_name]) |> 
+            pull(`NCBI ID`) |> 
+            unique()
+        counter <- counter + 1
+    }
+}
+tms_sigs_BS_gn <- tms_sigs[grep("genus", names(tms_sigs))]
+tms_sigs_BS_sp <- tms_sigs[grep("species", names(tms_sigs))]
+names(tms_sigs_BS_gn) <- sub("_genus", "", names(tms_sigs_BS_gn))
+names(tms_sigs_BS_sp) <- sub("_species", "", names(tms_sigs_BS_sp))
+
+print("Number of taxa")
+list(
+    tms_sigs_BS_gn = lengths(tms_sigs_BS_gn),
+    tms_sigs_BS_sp = lengths(tms_sigs_BS_sp)
+)
+```
+
 BugSigDB signatures:
 
 ```{r}
-bsdb_sigs <- vector(
-    mode = "list", 
-    length = length(body_sites) * length(ranks) * length(directions)
-)
+vec_len <- length(body_sites) * length(ranks) * length(directions)
+bsdb_sigs <- vector("list", vec_len)
 counter <- 1
 for (i in seq_along(body_sites)) {
     for (j in seq_along(ranks)) {
         for (k in seq_along(directions)) {
-            myDF <- bsdb_subsets_by_bodysite[[i]] |> 
+            dat <- bsdb_subsets_by_bodysite[[i]] |> 
                 filter(`Abundance in Group 1` == directions[k])
             sigs <- getSignatures(
-                df = myDF,
+                df = dat,
                 tax.id.type = "ncbi", tax.level = ranks[j],
                 exact.tax.level = FALSE, min.size = 5
             ) |>  
@@ -112,11 +141,10 @@ for (i in seq_along(body_sites)) {
                 replacement = "\\1",
                 x = names(sigs)
             )
-            
-            pos <- map_int(bsdb_id, ~ which(myDF$`BSDB ID` == .x))
+            pos <- map_int(bsdb_id, ~ which(dat$`BSDB ID` == .x))
             new_sigs_names <- paste0(
                 body_sites[i], "-%-%-", ranks[j], "-%-%-", directions[k],
-                "-%-%-", tolower(myDF$Condition[pos]), "-%-%-",
+                "-%-%-", tolower(dat$Condition[pos]), "-%-%-",
                 names(sigs)
             )
             names(sigs) <- new_sigs_names
@@ -127,36 +155,29 @@ for (i in seq_along(body_sites)) {
 }
 bsdb_sigs <- list_flatten(bsdb_sigs)
 bsdb_sigs <- discard(bsdb_sigs, is.null)
+
+bsdb_sigs_gn <- bsdb_sigs[grep("-%-%-genus-%-%-", names(bsdb_sigs))]
+bsdb_sigs_sp <- bsdb_sigs[grep("-%-%-species-%-%-", names(bsdb_sigs))]
+
+bsdb_sigs_BS_gn <- map(body_sites, ~ {
+    re <- paste0("^", .x, "-%-%-")
+    bsdb_sigs_gn[grep(re, names(bsdb_sigs_gn))]
+})
+
+bsdb_sigs_BS_sp <- map(body_sites, ~ {
+    re <- paste0("^", .x, "-%-%-")
+    bsdb_sigs_sp[grep(re, names(bsdb_sigs_sp))]
+})
+
+print("Number of signatures")
+list(
+    bsdb_sigs = length(bsdb_sigs),
+    bsdb_sigs_gn = length(bsdb_sigs_gn), 
+    bsdb_sigs_sp =length(bsdb_sigs_sp),
+    bsdb_sigs_BS_gn = lengths(bsdb_sigs_BS_gn),
+    bsdb_sigs_BS_sp = lengths(bsdb_sigs_BS_sp)
+)
 ```
-
-Separate BSDB signatures by body site and rank:
-
-```{r}
-bsdb_sigs_BS_gn <- vector("list", length(body_sites))
-for (i in seq_along(bsdb_sigs_BS_gn)) {
-   rx <- paste0("^", body_sites[i], "-%-%-", "genus")
-   sigsL <- bsdb_sigs[grep(rx, names(bsdb_sigs))]
-   names(sigsL) <- names(bsdb_sigs)[grep(rx, names(bsdb_sigs))]
-   if (is.null(sigsL)) {
-       next
-   }
-   bsdb_sigs_BS_gn[[i]] <- sigsL
-   names(bsdb_sigs_BS_gn)[i] <- body_sites[i]
-}
-
-bsdb_sigs_BS_sp <- vector("list", length(body_sites))
-for (i in seq_along(bsdb_sigs_BS_sp)) {
-   rx <- paste0("^", body_sites[i], "-%-%-", "species")
-   sigsL <- bsdb_sigs[grep(rx, names(bsdb_sigs))]
-   names(sigsL) <- names(bsdb_sigs)[grep(rx, names(bsdb_sigs))]
-   if (is.null(sigsL)) {
-       next
-   }
-   bsdb_sigs_BS_sp[[i]] <- sigsL
-   names(bsdb_sigs_BS_sp)[i] <- body_sites[i]
-}
-```
-
 bugphyzz signatures:
 
 ```{r, warning=FALSE}
@@ -182,32 +203,7 @@ bp_sigs_sp <- map(bp, ~ {
     map(as.character)
 names(bp_sigs_sp) <- paste0(names(bp_sigs_sp), "|species")
 bp_sigs <- c(bp_sigs_gn, bp_sigs_sp)
-```
-
-Typical Microbiome Signatures:
-
-```{r}
-thrs <- elbows()
-tms_sigs <- vector("list", length(body_sites) * length(ranks))
-counter <- 1
-for (i in seq_along(body_sites)) {
-    for (j in seq_along(ranks)) {
-        tms_name <- paste0(body_sites[i], "_", ranks[j])
-        names(tms_sigs)[counter] <- tms_name
-        print(tms_name)
-        tms_sigs[[counter]] <- tms |> 
-            filter(`Body site` == body_sites[i], Rank == ranks[j]) |> 
-            filter(Prevalence >= thrs[tms_name]) |> 
-            pull(`NCBI ID`)
-        counter <- counter + 1
-    }
-}
-
-tms_sigs_gn <- tms_sigs[grep("genus", names(tms_sigs))]
-tms_sigs_sp <- tms_sigs[grep("species", names(tms_sigs))]
-
-names(tms_sigs_gn) <- sub("_genus", "", names(tms_sigs_gn))
-names(tms_sigs_sp) <- sub("_species", "", names(tms_sigs_sp))
+length(bp_sigs)
 ```
 
 # Meta-signatures
@@ -354,10 +350,12 @@ umetasigs_sp_down <- umetasigs_sp_list$down
 
 # ORA with BSDB signatures
 
-Define function fo format enrichment results (sigs)
+Define a function to format the enrichment results for signatures:
 
 ```{r}
 formatEnSigs <- function(l) {
+    ## Name is short for: Format Enriched Signatures
+    ## l is the output of microbeSetEnrichment
     l |> 
         bind_rows(.id = "bsdb_sig") |> 
         separate(
@@ -378,122 +376,19 @@ formatEnSigs <- function(l) {
 }
 ```
 
-## Background: BSDB
-
-BSDB: Union of all BSDB signatures by rank
-
-```{r}
-bsdb_sigs_gn <- bsdb_sigs[grep("-%-%-genus-%-%-", names(bsdb_sigs))]
-bsdb_sigs_sp <- bsdb_sigs[grep("-%-%-species-%-%-", names(bsdb_sigs))]
-bk_BSDB_gn <- unique(unlist(bsdb_sigs_gn))
-bk_BSDB_sp <- unique(unlist(bsdb_sigs_sp))
-```
-
-ORA at the genus level:
-
-```{r}
-system.time({
-    en_BSDB_gn <- map(
-        .x = bsdb_sigs_gn,
-        .f = ~ microbeSetEnrichment(.x, bk_BSDB_gn, bp_sigs_gn)
-    ) |> 
-        formatEnSigs()
-})
-```
-
-ORA at the species level:
-
-```{r}
-system.time({
-    en_BSDB_sp <- map(
-        .x = bsdb_sigs_sp,
-        .f = ~ microbeSetEnrichment(.x, bk_BSDB_sp, bp_sigs_sp)
-    ) |> 
-        formatEnSigs()
-})
-```
-
-Combine results:
-
-```{r}
-en_BSDB <- bind_rows(en_BSDB_gn, en_BSDB_sp)
-```
-
-## Background: BSDB_BS
-
-BSDB_BS: Union of all BSDB signatures by body site by rank
-
-```{r}
-bk_BSDB_BS_gn <- vector("list", length(body_sites))
-names(bk_BSDB_BS_gn) <- body_sites
-for (i in seq_along(bk_BSDB_BS_gn)) {
-    res <- bsdb_sigs_gn[grep(body_sites[[i]], names(bsdb_sigs_gn))]
-    if (is.null(res)) {
-        next
-    }
-    bk_BSDB_BS_gn[[i]] <- unique(unlist(res))
-}
-bk_BSDB_BS_gn <- discard(bk_BSDB_BS_gn, is.null)
-
-bk_BSDB_BS_sp <- vector("list", length(body_sites))
-names(bk_BSDB_BS_sp) <- body_sites
-for (i in seq_along(bk_BSDB_BS_sp)) {
-    res <- bsdb_sigs_sp[grep(body_sites[[i]], names(bsdb_sigs_sp))]
-    if (is.null(res)) {
-        next
-    }
-    bk_BSDB_BS_sp[[i]] <- unique(unlist(res))
-}
-bk_BSDB_BS_sp <- discard(bk_BSDB_BS_sp, is.null)
-```
-
-Enrichment at the genus level:
-
-```{r}
-system.time({
-    en_BSDB_BS_gn <- vector("list", length(body_sites))
-    for (i in seq_along(body_sites)) {
-        bk <- bk_BSDB_BS_gn[[body_sites[i]]]
-        rx <- paste0(body_sites[i], "-%-%-")
-        sig_list <- bsdb_sigs_gn[grep(rx, names(bsdb_sigs_gn))]
-        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_gn)) |> 
-            formatEnSigs()
-        en_BSDB_BS_gn[[i]] <- res
-    }
-    en_BSDB_BS_gn <- bind_rows(en_BSDB_BS_gn)
-})
-```
-
-Enrichment at the species level:
-
-```{r}
-system.time({
-    en_BSDB_BS_sp <- vector("list", length(body_sites))
-    for (i in seq_along(body_sites)) {
-        bk <- bk_BSDB_BS_sp[[body_sites[i]]]
-        rx <- paste0(body_sites[i], "-%-%-")
-        sig_list <- bsdb_sigs_sp[grep(rx, names(bsdb_sigs_sp))]
-        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |> 
-            formatEnSigs()
-        en_BSDB_BS_sp[[i]] <- res
-    }
-    en_BSDB_BS_sp <- bind_rows(en_BSDB_BS_sp)
-})
-```
-
-Combine results
-
-```{r}
-en_BSDB_BS <- bind_rows(en_BSDB_BS_gn, en_BSDB_BS_sp)
-```
-
 ## Background: TMS_BSDB
 
 Background: Union of all taxa in BSDB and TMS by rank
 
 ```{r}
-bk_TMS_BSDB_gn <- unique(unlist(c(tms_sigs_gn, bsdb_sigs_gn)))
-bk_TMS_BSDB_sp <- unique(unlist(c(tms_sigs_sp, bsdb_sigs_sp)))
+bk_TMS_BSDB_gn <- unique(c(
+    unlist(tms_sigs_BS_gn),
+    unlist(bsdb_sigs_BS_gn)
+))
+bk_TMS_BSDB_sp <- unique(c(
+    unlist(tms_sigs_BS_sp),
+    unlist(bsdb_sigs_BS_sp)
+))
 ```
 
 Enrichment at the genus level:
@@ -532,13 +427,17 @@ en_TMS_BSDB <- bind_rows(en_TMS_BSDB_gn, en_TMS_BSDB_sp)
 Backgrounds:
 
 ```{r}
-bk_TMS_BSDB_BS_gn <- map2(
-    tms_sigs_gn[body_sites], bk_BSDB_BS_gn[body_sites], ~ unique(c(.x, .y))
-)
+bk_TMS_BSDB_BS_gn <- map(body_sites, ~ {
+    tms_taxa <- tms_sigs_BS_gn[[.x]]
+    bsdb_taxa <- unlist(bsdb_sigs_BS_gn[[.x]])
+    unique(c(tms_taxa, bsdb_taxa))
+})
 
-bk_TMS_BSDB_BS_sp <- map2(
-    tms_sigs_sp[body_sites], bk_BSDB_BS_sp[body_sites], ~ unique(c(.x, .y))
-)
+bk_TMS_BSDB_BS_sp <- map(body_sites, ~ {
+    tms_taxa <- tms_sigs_BS_sp[[.x]]
+    bsdb_taxa <- unlist(bsdb_sigs_BS_sp[[.x]])
+    unique(c(tms_taxa, bsdb_taxa))
+})
 ```
 
 Enrichment at the genus level:
@@ -548,9 +447,8 @@ system.time({
     en_TMS_BSDB_BS_gn <- vector("list", length(body_sites))
     for (i in seq_along(body_sites)) {
         bk <- bk_TMS_BSDB_BS_gn[[body_sites[i]]]
-        rx <- paste0(body_sites[i], "-%-%-")
-        sig_list <- bsdb_sigs_gn[grep(rx, names(bsdb_sigs_gn))]
-        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_gn)) |> 
+        sigList <- bsdb_sigs_BS_gn[[body_sites[i]]]
+        res <- map(sigList, ~ microbeSetEnrichment(.x, bk, bp_sigs_gn)) |> 
             formatEnSigs()
         en_TMS_BSDB_BS_gn[[i]] <- res
     }
@@ -566,9 +464,8 @@ system.time({
     en_TMS_BSDB_BS_sp <- vector("list", length(body_sites))
     for (i in seq_along(body_sites)) {
         bk <- bk_TMS_BSDB_BS_sp[[body_sites[i]]]
-        rx <- paste0(body_sites[i], "-%-%-")
-        sig_list <- bsdb_sigs_sp[grep(rx, names(bsdb_sigs_sp))]
-        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |> 
+        sigList <- bsdb_sigs_BS_sp[[body_sites[i]]]
+        res <- map(sigList, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |> 
             formatEnSigs()
         en_TMS_BSDB_BS_sp[[i]] <- res
     }
@@ -579,46 +476,78 @@ system.time({
 Combine results:
 
 ```{r}
-en_TMS_BSDB_BS <- bind_rows(en_TMS_BSDB_gn, en_TMS_BSDB_sp)
+en_TMS_BSDB_BS <- bind_rows(en_TMS_BSDB_BS_gn, en_TMS_BSDB_BS_sp)
 ```
 
-## Background: TMS_BSDB_intersect
 
-Intersection at the genus level:
+
+## Background: BSDB
+
+BSDB: Union of all BSDB signatures by rank
 
 ```{r}
-tms_gn_x = unique(unlist(tms_sigs_gn))
-bsdb_gn_y = unique(unlist(bsdb_sigs_gn))
-bk_TMS_BSDB_intersect_gn <- intersect(tms_gn_x, bsdb_gn_y)
-data.frame(
-    tms_genus_only = length(setdiff(tms_gn_x, bk_TMS_BSDB_intersect_gn)),
-    bsdb_genus_only = length(setdiff(bsdb_gn_y, bk_TMS_BSDB_intersect_gn)),
-    tms_bsdb_genus_intersect = length(bk_TMS_BSDB_intersect_gn)
-)
+bk_BSDB_gn <- unique(unlist(bsdb_sigs_gn))
+bk_BSDB_sp <- unique(unlist(bsdb_sigs_sp))
 ```
 
-Intersection at the species level:
+ORA at the genus level:
 
 ```{r}
-tms_sp_x = unique(unlist(tms_sigs_sp))
-bsdb_sp_y = unique(unlist(bsdb_sigs_sp))
-bk_TMS_BSDB_intersect_sp <- intersect(tms_sp_x, bsdb_sp_y)
-data.frame(
-    tms_species_only = length(setdiff(tms_sp_x, bk_TMS_BSDB_intersect_sp)),
-    bsdb_species_only = length(setdiff(bsdb_sp_y, bk_TMS_BSDB_intersect_sp)),
-    tms_bsdb_species_intersect = length(bk_TMS_BSDB_intersect_sp)
-)
+## investigate warnings
+system.time({
+    en_BSDB_gn <- map(
+        .x = bsdb_sigs_gn,
+        .f = ~ microbeSetEnrichment(.x, bk_BSDB_gn, bp_sigs_gn)
+    ) |> 
+        formatEnSigs()
+})
+```
+
+ORA at the species level:
+
+```{r}
+system.time({
+    en_BSDB_sp <- map(
+        .x = bsdb_sigs_sp,
+        .f = ~ microbeSetEnrichment(.x, bk_BSDB_sp, bp_sigs_sp)
+    ) |> 
+        formatEnSigs()
+})
+```
+
+Combine results:
+
+```{r}
+en_BSDB <- bind_rows(en_BSDB_gn, en_BSDB_sp)
+```
+
+## Background: BSDB_BS
+
+Union of all BSDB signatures by body site by rank.
+
+Create backgrounds:
+
+```{r}
+bk_BSDB_BS_gn <- map(bsdb_sigs_BS_gn, ~ unique(unlist(.x))) |> 
+    discard(is.null)
+
+bk_BSDB_BS_sp <- map(bsdb_sigs_BS_sp, ~ unique(unlist(.x))) |> 
+    discard(is.null)
 ```
 
 Enrichment at the genus level:
 
 ```{r}
 system.time({
-    en_TMS_BSDB_intersect_gn <- map(
-        bsdb_sigs_gn,
-        ~ microbeSetEnrichment(.x, bk_TMS_BSDB_intersect_gn, bp_sigs_gn)
-        ) |> 
-        formatEnSigs()
+    en_BSDB_BS_gn <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_BSDB_BS_gn[[body_sites[i]]]
+        sigL <- bsdb_sigs_BS_gn[[body_sites[i]]]
+        res <- map(sigL, ~ microbeSetEnrichment(.x, bk, bp_sigs_gn)) |> 
+            formatEnSigs()
+        en_BSDB_BS_gn[[i]] <- res
+    }
+    en_BSDB_BS_gn <- bind_rows(en_BSDB_BS_gn)
 })
 ```
 
@@ -626,108 +555,23 @@ Enrichment at the species level:
 
 ```{r}
 system.time({
-    en_TMS_BSDB_intersect_sp <- map(
-        bsdb_sigs_sp,
-        ~ microbeSetEnrichment(.x, bk_TMS_BSDB_intersect_sp, bp_sigs_sp)
-        ) |> 
-        formatEnSigs()
+    en_BSDB_BS_sp <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_BSDB_BS_sp[[body_sites[i]]]
+        re <- paste0("^", body_sites[i], "-%-%-")
+        sigL <- bsdb_sigs_sp[grep(re, names(bsdb_sigs_sp))]
+        res <- map(sigL, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |> 
+            formatEnSigs()
+        en_BSDB_BS_sp[[i]] <- res
+    }
+    en_BSDB_BS_sp <- bind_rows(en_BSDB_BS_sp)
 })
 ```
 
 Combine results
 
 ```{r}
-en_TMS_BSDB_intersect <- bind_rows(
-    en_TMS_BSDB_intersect_gn, en_TMS_BSDB_intersect_sp
-)
-```
-
-## Background: TMS_BSDB_BS_intersect
-
-Intersection by body site at the genus level:
-
-```{r}
-l1 <- map(body_sites, ~ {
-    x <- unique(unlist(bsdb_sigs_BS_gn[[.x]]))
-    y <- tms_sigs_gn[[.x]]
-    xy <- intersect(x, y)
-    x_ <- setdiff(x, xy)
-    y_ <- setdiff(y, xy)
-    list(
-        bsdb_only = x_,
-        tms_only = y_,
-        both = xy
-    )
-}) |> 
-    set_names(body_sites)
-bk_TMS_BSDB_BS_intersect_gn <- map(l1, ~ .x$both)
-l1 |> 
-    map(~ as.data.frame(matrix(map_int(.x, length), nrow = 1))) |> 
-    bind_rows() |> 
-    set_names(c("bsdb_only", "tms_only", "both"))
-```
-
-Intersection by body site at the species level:
-
-```{r}
-l2 <- map(body_sites, ~ {
-    x <- unique(unlist(bsdb_sigs_BS_sp[[.x]]))
-    y <- tms_sigs_sp[[.x]]
-    xy <- intersect(x, y)
-    x_ <- setdiff(x, xy)
-    y_ <- setdiff(y, xy)
-    list(
-        bsdb_only = x_,
-        tms_only = y_,
-        both = xy
-    )
-}) |> 
-    set_names(body_sites)
-bk_TMS_BSDB_BS_intersect_sp <- map(l2, ~ .x$both)
-l2 |> 
-    map(~ as.data.frame(matrix(map_int(.x, length), nrow = 1))) |> 
-    bind_rows() |> 
-    set_names(c("bsdb_only", "tms_only", "both"))
-```
-
-Enrichment at the genus level:
-
-```{r}
-system.time({
-    en_TMS_BSDB_BS_intersect_gn <- vector("list", length(body_sites))
-    for (i in seq_along(body_sites)) {
-        bk <- bk_TMS_BSDB_BS_intersect_gn[[body_sites[i]]]
-        rx <- paste0(body_sites[i], "-%-%-")
-        sig_list <- bsdb_sigs_gn[grep(rx, names(bsdb_sigs_gn))]
-        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_gn)) |> 
-            formatEnSigs()
-        en_TMS_BSDB_BS_intersect_gn[[i]] <- res
-    }
-    en_TMS_BSDB_BS_intersect_gn <- bind_rows(en_TMS_BSDB_BS_intersect_gn)
-})
-```
-
-Enrichment at the species level:
-
-```{r}
-system.time({
-    en_TMS_BSDB_BS_intersect_sp <- vector("list", length(body_sites))
-    for (i in seq_along(body_sites)) {
-        bk <- bk_TMS_BSDB_BS_intersect_sp[[body_sites[i]]]
-        rx <- paste0(body_sites[i], "-%-%-")
-        sig_list <- bsdb_sigs_sp[grep(rx, names(bsdb_sigs_sp))]
-        res <- map(sig_list, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |> 
-            formatEnSigs()
-        en_TMS_BSDB_BS_intersect_sp[[i]] <- res
-    }
-    en_TMS_BSDB_BS_intersect_sp <- bind_rows(en_TMS_BSDB_BS_intersect_sp)
-})
-```
-
-```{r}
-en_TMS_BSDB_BS_intersect <- bind_rows(
-    en_TMS_BSDB_BS_intersect_gn, en_TMS_BSDB_BS_intersect_sp
-)
+en_BSDB_BS <- bind_rows(en_BSDB_BS_gn, en_BSDB_BS_sp)
 ```
 
 ## Background: TMS_1BSDB_BS
@@ -780,19 +624,168 @@ system.time({
 en_TMS_1BSDB_BS <- bind_rows(en_TMS_1BSDB_BS_gn, en_TMS_1BSDB_BS_sp)
 ```
 
+
+## Background: TMS_BSDB_intersect
+
+Intersection at the genus level:
+
+```{r}
+tms_gn_x = unique(unlist(tms_sigs_BS_gn))
+bsdb_gn_y = unique(unlist(bsdb_sigs_BS_gn))
+bk_TMS_BSDB_intersect_gn <- intersect(tms_gn_x, bsdb_gn_y)
+data.frame(
+    tms_genus_only = length(setdiff(tms_gn_x, bk_TMS_BSDB_intersect_gn)),
+    bsdb_genus_only = length(setdiff(bsdb_gn_y, bk_TMS_BSDB_intersect_gn)),
+    tms_bsdb_genus_intersect = length(bk_TMS_BSDB_intersect_gn)
+) |> 
+    knitr::kable()
+```
+
+Intersection at the species level:
+
+```{r}
+tms_sp_x = unique(unlist(tms_sigs_BS_sp))
+bsdb_sp_y = unique(unlist(bsdb_sigs_BS_sp))
+bk_TMS_BSDB_intersect_sp <- intersect(tms_sp_x, bsdb_sp_y)
+data.frame(
+    tms_species_only = length(setdiff(tms_sp_x, bk_TMS_BSDB_intersect_sp)),
+    bsdb_species_only = length(setdiff(bsdb_sp_y, bk_TMS_BSDB_intersect_sp)),
+    tms_bsdb_species_intersect = length(bk_TMS_BSDB_intersect_sp)
+) |> 
+    knitr::kable()
+```
+
+Enrichment at the genus level:
+
+```{r}
+system.time({
+    en_TMS_BSDB_intersect_gn <- map(
+        bsdb_sigs_gn,
+        ~ microbeSetEnrichment(.x, bk_TMS_BSDB_intersect_gn, bp_sigs_gn)
+        ) |> 
+        formatEnSigs()
+})
+```
+
+Enrichment at the species level:
+
+```{r}
+system.time({
+    en_TMS_BSDB_intersect_sp <- map(
+        bsdb_sigs_sp,
+        ~ microbeSetEnrichment(.x, bk_TMS_BSDB_intersect_sp, bp_sigs_sp)
+        ) |> 
+        formatEnSigs()
+})
+```
+
+Combine results
+
+```{r}
+en_TMS_BSDB_intersect <- bind_rows(
+    en_TMS_BSDB_intersect_gn, en_TMS_BSDB_intersect_sp
+)
+```
+
+## Background: TMS_BSDB_BS_intersect
+
+Intersection by body site at the genus level:
+
+```{r}
+l1 <- map(body_sites, ~ {
+    x <- unique(unlist(bsdb_sigs_BS_gn[[.x]]))
+    y <- tms_sigs_BS_gn[[.x]]
+    xy <- intersect(x, y)
+    x_ <- setdiff(x, xy)
+    y_ <- setdiff(y, xy)
+    list(
+        bsdb_only = x_,
+        tms_only = y_,
+        both = xy
+    )
+}) 
+bk_TMS_BSDB_BS_intersect_gn <- map(l1, ~ .x$both)
+l1 |> 
+    map(~ as.data.frame(matrix(map_int(.x, length), nrow = 1))) |> 
+    bind_rows(.id = "body_site") |> 
+    set_names(c("body_site", "bsdb_genus_only", "tms_genus_only", "genus_both"))
+```
+
+Intersection by body site at the species level:
+
+```{r}
+l2 <- map(body_sites, ~ {
+    x <- unique(unlist(bsdb_sigs_BS_sp[[.x]]))
+    y <- tms_sigs_BS_sp[[.x]]
+    xy <- intersect(x, y)
+    x_ <- setdiff(x, xy)
+    y_ <- setdiff(y, xy)
+    list(
+        bsdb_only = x_,
+        tms_only = y_,
+        both = xy
+    )
+})
+bk_TMS_BSDB_BS_intersect_sp <- map(l2, ~ .x$both)
+l2 |> 
+    map(~ as.data.frame(matrix(map_int(.x, length), nrow = 1))) |> 
+    bind_rows(.id = "body_site") |> 
+    set_names(
+        c("body_site", "bsdb_species_only", "tms_species_only", "species_both")
+    )
+```
+
+Enrichment at the genus level:
+
+```{r}
+system.time({
+    en_TMS_BSDB_BS_intersect_gn <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_TMS_BSDB_BS_intersect_gn[[body_sites[i]]]
+        sigList <- bsdb_sigs_BS_gn[[body_sites[i]]]
+        res <- map(sigList, ~ microbeSetEnrichment(.x, bk, bp_sigs_gn)) |> 
+            formatEnSigs()
+        en_TMS_BSDB_BS_intersect_gn[[i]] <- res
+    }
+    en_TMS_BSDB_BS_intersect_gn <- bind_rows(en_TMS_BSDB_BS_intersect_gn)
+})
+```
+
+Enrichment at the species level:
+
+```{r}
+system.time({
+    en_TMS_BSDB_BS_intersect_sp <- vector("list", length(body_sites))
+    for (i in seq_along(body_sites)) {
+        bk <- bk_TMS_BSDB_BS_intersect_sp[[body_sites[i]]]
+        sigList <- bsdb_sigs_BS_sp[[body_sites[i]]]
+        res <- map(sigList, ~ microbeSetEnrichment(.x, bk, bp_sigs_sp)) |> 
+            formatEnSigs()
+        en_TMS_BSDB_BS_intersect_sp[[i]] <- res
+    }
+    en_TMS_BSDB_BS_intersect_sp <- bind_rows(en_TMS_BSDB_BS_intersect_sp)
+})
+```
+
+```{r}
+en_TMS_BSDB_BS_intersect <- bind_rows(
+    en_TMS_BSDB_BS_intersect_gn, en_TMS_BSDB_BS_intersect_sp
+)
+```
+
 ## Combine ORA results
 
 Store all results in a single list:
 
 ```{r}
 results <- list(
-    BSDB = en_BSDB,
-    BSDB_BS = en_BSDB_BS,
     TMS_BSDB = en_TMS_BSDB,
     TMS_BSDB_BS = en_TMS_BSDB_BS,
+    BSDB = en_BSDB,
+    BSDB_BS = en_BSDB_BS,
+    TMS_1BSDB_BS = en_TMS_1BSDB_BS,
     TMS_BSDB_intersect = en_TMS_BSDB_intersect,
-    TMS_BSDB_BS_intersect = en_TMS_BSDB_BS_intersect,
-    TMS_1BSDB_BS = en_TMS_1BSDB_BS 
+    TMS_BSDB_BS_intersect = en_TMS_BSDB_BS_intersect
 ) |> 
     map(~ mutate(.x, fdr = p.adjust(p_value))) |> 
     map(~ mutate(.x, combination = paste0(
@@ -1089,6 +1082,19 @@ en_meta_BSDB_BS <- bind_rows(en_meta_BSDB_BS_gn, en_meta_BSDB_BS_sp)
 ## Background: TMS_BSDB
 
 ```{r}
+bk_TMS_BSDB_gn <- unique(c(
+    unlist(tms_sigs_BS_gn, use.names = FALSE),
+    unlist(bsdb_sigs_BS_gn, use.names = FALSE)
+))
+bk_TMS_BSDB_sp <- unique(c(
+    unlist(tms_sigs_BS_sp, use.names = FALSE),
+    unlist(bsdb_sigs_BS_sp, use.names = FALSE)
+))
+
+```
+
+
+```{r}
 system.time({
     en_meta_TMS_BSDB_gn <- map(
         .x = metasigs_gn,
@@ -1229,7 +1235,7 @@ Backgrounds
 ```{r}
 bk_meta_TMS_BSDB_BS_intersect_gn <- map(body_sites, ~ {
     x <- unique(unlist(metasigs_BS_gn[[.x]]))
-    y <- tms_sigs_gn[[.x]]
+    y <- tms_sigs_BS_gn[[.x]]
     xy <- intersect(x, y)
     x_ <- setdiff(x, xy)
     y_ <- setdiff(y, xy)
@@ -1244,7 +1250,7 @@ bk_meta_TMS_BSDB_BS_intersect_gn <- map(body_sites, ~ {
 
 bk_meta_TMS_BSDB_BS_intersect_sp <- map(body_sites, ~ {
     x <- unique(unlist(metasigs_BS_sp[[.x]]))
-    y <- tms_sigs_sp[[.x]]
+    y <- tms_sigs_BS_sp[[.x]]
     xy <- intersect(x, y)
     x_ <- setdiff(x, xy)
     y_ <- setdiff(y, xy)
@@ -1601,7 +1607,7 @@ Backgrounds
 ```{r}
 bk_umeta_TMS_BSDB_BS_intersect_gn <- map(body_sites, ~ {
     x <- unique(unlist(umetasigs_BS_gn[[.x]]))
-    y <- tms_sigs_gn[[.x]]
+    y <- tms_sigs_BS_gn[[.x]]
     xy <- intersect(x, y)
     x_ <- setdiff(x, xy)
     y_ <- setdiff(y, xy)
@@ -1616,7 +1622,7 @@ bk_umeta_TMS_BSDB_BS_intersect_gn <- map(body_sites, ~ {
 
 bk_umeta_TMS_BSDB_BS_intersect_sp <- map(body_sites, ~ {
     x <- unique(unlist(umetasigs_BS_sp[[.x]]))
-    y <- tms_sigs_sp[[.x]]
+    y <- tms_sigs_BS_sp[[.x]]
     xy <- intersect(x, y)
     x_ <- setdiff(x, xy)
     y_ <- setdiff(y, xy)
