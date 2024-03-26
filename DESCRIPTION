@@ -53,7 +53,7 @@ Suggests:
     scales,
     data.tree
 Remotes:
-    sdgamboa/taxPPro,
+    waldronlab/taxPPro,
     waldronlab/bugphyzz@sdgamboa/release18,
     waldronlab/MicrobiomeBenchmarkData,
     waldronlab/BugSigDBStats,
