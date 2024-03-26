@@ -54,7 +54,7 @@ Suggests:
     data.tree
 Remotes:
     sdgamboa/taxPPro,
-    waldronlab/bugphyzz,
+    waldronlab/bugphyzz/release18,
     waldronlab/MicrobiomeBenchmarkData,
     waldronlab/BugSigDBStats,
     ropensci/taxize@1.0-rc,
