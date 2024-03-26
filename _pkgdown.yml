@@ -9,21 +9,17 @@ navbar:
       href: articles/validation.html
     - text: "Known ground truth - Subgingival vs supragingival plaque"
       href: articles/subgingival_plaque.html
-    - text: "High-throughput ORA with BSDB meta-signatures"
-      href: articles/bsdb_metasignatures.html
-    - text: "High-throughput ORA with BSDB meta-signatures (no intersect)"
-      href: articles/bsdb_metasignatures_nointersect.html
+    - text: "Reproducibility of previous study - NYCHANES study - bugphyzz"
+      href: articles/nychanes.html
+    - text: "Reproducibility of previous study - NYCHANES study - original annotations"
+      href: articles/nychanes2.html
     - text: "High-throughput ORA with BSDB signatures"
       href: articles/bsdb_signatures.html
     - text: "Odds Ratio - Up vs Down - signatures"
       href: articles/up_vs_down_signatures.html
     - text: "Odds Ratio - Up vs Down - metasignatures"
       href: articles/up_vs_down_metasignatures_nointersect.html
-    - text: "Reproducibility of previous study - NYCHANES study - bugphyzz"
-      href: articles/nychanes.html
-    - text: "Reproducibility of previous study - NYCHANES study - original annotations"
-      href: articles/nychanes2.html
-    - text: "Enrichment in IBD samples"
-      href: articles/ibd_enrichment.html
     - text: "Threhold for TypicalMicrobiomeSignatures"
       href: articles/TypicalMicrobiomeSignatures.html
+    - text: "Enrichment in IBD samples"
+      href: articles/ibd_enrichment.html
