@@ -251,7 +251,16 @@ count_types <- bp |>
 }) |> 
     bind_rows()
 
+
+keep_attrs <- split(count_types, count_types$Attribute) |> 
+    keep( ~ {
+        types <- unique(.x$Type)
+        "IBD" %in% types | "ASR" %in% types
+    }) |> 
+    names()
+
 p_count_types <- count_types |> 
+    filter(Attribute %in% keep_attrs) |> 
     mutate(Attribute = factor(Attribute, levels = attr_order)) |> 
     ggplot(aes(Attribute, n)) +
     geom_col(aes(fill = Type), position = "stack") +
@@ -382,6 +391,7 @@ counts_type_sp <- bp |>
     bind_rows()
 
 p_counts_sp <- counts_type_sp |>
+    filter(Attribute %in% keep_attrs) |> 
     mutate(Evidence = factor(Evidence, levels = c("ASR", "IBD", "Source"))) |> 
     ggplot(aes(reorder(Attribute, total), n)) +
     geom_col(aes(fill = Evidence), position = "stack") +
@@ -433,6 +443,7 @@ counts_type_2 <- bp |>
     bind_rows()
 
 p_counts_2 <- counts_type_2 |>
+    filter(Attribute %in% keep_attrs) |> 
     mutate(Evidence = factor(Evidence, levels = c("ASR", "IBD", "Source"))) |> 
     ggplot(aes(reorder(Attribute, total), n)) +
     geom_col(aes(fill = Evidence), position = "stack") +
