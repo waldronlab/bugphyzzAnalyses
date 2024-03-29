@@ -1,0 +1,265 @@
+---
+title: "Enrichemnt with dbBact method"
+output:
+    html_document:
+        toc: true
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message=FALSE}
+library(bugphyzzAnalyses)
+library(bugsigdbr)
+library(bugphyzz)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(ggplot2)
+```
+
+# Define a few funcions
+
+```{r}
+## Function to get signatures with two directions (UP and DOWN)
+getPairedSignatures <- function(sigL) {
+    sig_names <- sigL |> 
+        names() |> 
+        tibble::tibble(x = _) |> 
+        mutate(y = sub("_(DOWN|UP)$", "", x)) |> 
+        mutate(id = sub("^(bsdb:\\d+/\\d+/\\d+)_(.*)$", "\\1", y)) |> 
+        mutate(name = sub("^(bsdb:\\d+/\\d+/\\d+)_(.*)$", "\\2", y)) |> 
+        group_by(name) |>
+        mutate(count = n()) |> 
+        ungroup() |> 
+        filter(count == 2) |> 
+        pull(x) |> 
+        unique()
+    output <- sigL[sig_names]
+    output 
+}
+
+## Convert the list of signatures to a data.frame
+## Also adds a size column
+sigs2Tbl <- function(sigL) {
+    sigL |> 
+        imap( ~{
+            df <- as.data.frame(.x)
+            colnames(df) <- sub("^.*(UP|DOWN)$", "\\1", .y)
+            df
+        }) |> 
+        bind_rows(.id = "sig_name") |> 
+        pivot_longer(
+            names_to = "direction", values_to = "taxid", cols = c(UP, DOWN)
+        ) |>  
+        drop_na() |> 
+        mutate(taxid = as.integer(taxid)) |> 
+        mutate(bsdb_id = sub(
+            "^(bsdb:\\d+/\\d+/\\d+)_(.*)$",
+            "\\1",
+            sig_name
+        )) |> 
+        mutate(
+            base_name = sub(
+                "^(bsdb:\\d+/\\d+/\\d+)_(.*)_(UP|DOWN)$",
+                "\\2",
+                sig_name
+            )
+        ) |> 
+        group_by(base_name, direction) |> 
+        mutate(size = n()) |> 
+        ungroup()
+}
+
+metaSigs2Tbl <- function(sigL) {
+    sigL |> 
+        imap( ~{
+            df <- as.data.frame(.x)
+            colnames(df) <- sub("^.*(UP|DOWN)$", "\\1", .y)
+            df
+        }) |> 
+        bind_rows(.id = "sig_name") |> 
+        pivot_longer(
+            names_to = "direction", values_to = "taxid", cols = c(UP, DOWN)
+        ) |>  
+        drop_na() |> 
+        mutate(taxid = as.integer(taxid)) |> 
+        mutate(
+            base_name = sub(
+                "^(.*)_(UP|DOWN)$",
+                "\\1",
+                sig_name
+            )
+        ) |> 
+        group_by(base_name, direction) |> 
+        mutate(size = n()) |> 
+        ungroup()
+}
+
+## Function for annotating signatures
+annotateSigs <- function(x, y) {
+    ann <- select(y, NCBI_ID, Taxon_name, Attribute_value, Score)
+    annotated <- left_join(
+        x, ann, by = c("taxid" = "NCBI_ID"), relationship = "many-to-many"
+    ) |>
+        filter(!is.na(Attribute_value))
+    annotated
+}
+
+## Calculate enrichment
+calcEn <- function(x) {
+    l <- split(x, x$direction)
+    if ("UP" %in% names(l) & "DOWN" %in% names(l) ) {
+        sizes <- map_int(l, ~ unique(.x$size))
+        sum_scores <- map_dbl(l, ~ sum(.x$Score, na.rm = TRUE))
+        up <- sum_scores[["UP"]] / sizes[["UP"]]
+        down <- sum_scores[["DOWN"]] / sizes[["DOWN"]]
+        res <- up - down
+        x$enrich <- round(res, 3)
+        return(x)
+    } else {
+        return(NULL)
+    }
+}
+```
+
+# Import data
+
+```{r, message=FALSE}
+bp <- importBugphyzz()
+## Only data from human host and with DA
+bsdb <- importBugSigDB() |> 
+    filter(`Host species` == "Homo sapiens") |> 
+    filter(`Abundance in Group 1` %in% c("increased", "decreased"))
+```
+
+# Analysis with signatures
+
+Data frame with taxids and signatures:
+
+```{r}
+sig_data <- getSignatures(
+    df = bsdb, tax.id.type = "ncbi", min.size = 5, tax.level = "genus"
+) |> 
+    getPairedSignatures() |> 
+    sigs2Tbl()
+```
+
+
+Annotate taxids and separate by 
+
+```{r}
+sig_data_aer <- annotateSigs(sig_data, bp$aerophilicity) |> 
+    {\(y) split(x = y, f = y$base_name)}() |> 
+    map(~ split(.x, .x$Attribute_value)) |> 
+    list_flatten()
+```
+
+```{r}
+enrichment <- map(sig_data_aer, ~ calcEn(.x)) |> 
+    discard(is.null) |> 
+    bind_rows() |> 
+    select(-taxid, -Taxon_name, -Score, - size) |> 
+    distinct() |> 
+    left_join(
+        x = _,
+        y = bsdb[, c("BSDB ID", "Condition")], 
+        by = c("bsdb_id" = "BSDB ID")
+    ) |> 
+    select(-sig_name, -direction) |> 
+    mutate(bsdb_id = sub("/[0-9]+$", "", bsdb_id)) |> 
+    distinct()
+```
+
+
+
+```{r}
+smk <- enrichment |> 
+    filter(grepl("727", bsdb_id))
+smk |> 
+    mutate(
+        direction = case_when(
+            enrich == 0 ~ NA,
+            enrich > 0 ~ "enriched",
+            enrich < 0 ~ "depleted"
+        )
+    ) |>
+    filter(!is.na(direction)) |> 
+    mutate(direction = factor(direction, levels = c(
+        "enriched","depleted"
+    ))) |> 
+    ggplot(aes(Attribute_value, enrich)) +
+    geom_col(aes(fill = direction)) +
+    scale_fill_manual(
+        values = c("red", "blue")
+    ) +
+    theme_bw() +
+    coord_flip()
+```
+
+# Analysis with meta-signatures
+
+```{r}
+sigs_up <- getMetaSignatures(
+    bsdb, column = "Condition", direction = "UP",
+    min.studies = 1, min.taxa = 5, tax.id.type = "ncbi", tax.level = "species"
+)
+sigs_down <- getMetaSignatures(
+    bsdb, column = "Condition", direction = "DOWN",
+    min.studies = 1, min.taxa = 5, tax.id.type = "ncbi", tax.level = "species"
+)
+names_in_common <- intersect(names(sigs_up), names(sigs_down))
+
+
+sigs_up <- sigs_up[names_in_common]
+sigs_down <- sigs_down[names_in_common]
+
+names(sigs_up) <- paste0(names(sigs_up), "_UP")
+names(sigs_down) <- paste0(names(sigs_down), "_DOWN")
+
+sigs_up <- lapply(sigs_up, names)
+sigs_down <- lapply(sigs_down, names)
+
+metasigs <- c(sigs_up, sigs_down)
+```
+
+
+
+
+```{r}
+metasig_data <- metasigs |> 
+    getPairedSignatures() |> 
+    metaSigs2Tbl()
+```
+
+
+
+```{r}
+metasig_data_aer <- annotateSigs(metasig_data, bp$aerophilicity) |> 
+    {\(y) split(x = y, f = y$base_name)}() |> 
+    map(~ split(.x, .x$Attribute_value)) |> 
+    list_flatten()
+```
+
+
+```{r}
+meta_enrichment <- map(metasig_data_aer, ~ calcEn(.x)) |> 
+    discard(is.null) |> 
+    bind_rows() |> 
+    select(-taxid, -Taxon_name, -Score, - size) |> 
+    distinct() |> 
+    select(-sig_name, -direction) |> 
+    distinct()
+```
+
+
+
+# Session information
+
+```{r}
+sessioninfo::session_info()
+```

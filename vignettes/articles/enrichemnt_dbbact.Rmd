@@ -1,5 +1,5 @@
 ---
-title: "enrichemnt_dbbact"
+title: "Enrichemnt with dbBact method"
 output:
     html_document:
         toc: true
@@ -20,168 +20,177 @@ library(dplyr)
 library(purrr)
 library(tidyr)
 library(ggplot2)
+library(tidyr)
 ```
 
-# Define a few funcions
+# Define enrichment function
 
 ```{r}
-## Function to get signatures with two directions (UP and DOWN)
-getPairedSignatures <- function(sigL) {
-    sig_names <- sigL |> 
-        names() |> 
-        tibble::tibble(x = _) |> 
-        mutate(y = sub("_(DOWN|UP)$", "", x)) |> 
-        mutate(id = sub("^(bsdb:\\d+/\\d+/\\d+)_(.*)$", "\\1", y)) |> 
-        mutate(name = sub("^(bsdb:\\d+/\\d+/\\d+)_(.*)$", "\\2", y)) |> 
-        group_by(name) |>
-        mutate(count = n()) |> 
-        ungroup() |> 
-        filter(count == 2) |> 
-        pull(x) |> 
-        unique()
-    output <- sigL[sig_names]
-    output 
-}
-
-## Convert the list of signatures to a data.frame
-## Also adds a size column
-sigs2Tbl <- function(sigL) {
-    sigL |> 
-        imap( ~{
-            df <- as.data.frame(.x)
-            colnames(df) <- sub("^.*(UP|DOWN)$", "\\1", .y)
-            df
-        }) |> 
-        bind_rows(.id = "sig_name") |> 
-        pivot_longer(
-            names_to = "direction", values_to = "taxid", cols = c(UP, DOWN)
-        ) |>  
-        drop_na() |> 
-        mutate(taxid = as.integer(taxid)) |> 
-        mutate(bsdb_id = sub(
-            "^(bsdb:\\d+/\\d+/\\d+)_(.*)$",
-            "\\1",
-            sig_name
-        )) |> 
-        mutate(
-            base_name = sub(
-                "^(bsdb:\\d+/\\d+/\\d+)_(.*)_(UP|DOWN)$",
-                "\\2",
-                sig_name
-            )
-        ) |> 
-        group_by(base_name, direction) |> 
-        mutate(size = n()) |> 
-        ungroup()
-}
-
-## Function for annotating signatures
-annotateSigs <- function(x, y) {
-    ann <- select(y, NCBI_ID, Taxon_name, Attribute_value, Score)
-    annotated <- left_join(
-        x, ann, by = c("taxid" = "NCBI_ID"), relationship = "many-to-many"
-    ) |>
-        filter(!is.na(Attribute_value))
-    annotated
-}
-
-## Calculate enrichment
-calcEn <- function(x) {
-    l <- split(x, x$direction)
-    if ("UP" %in% names(l) & "DOWN" %in% names(l) ) {
-        sizes <- map_int(l, ~ unique(.x$size))
-        sum_scores <- map_dbl(l, ~ sum(.x$Score, na.rm = TRUE))
-        up <- sum_scores[["UP"]] / sizes[["UP"]]
-        down <- sum_scores[["DOWN"]] / sizes[["DOWN"]]
-        res <- up - down
-        x$enrich <- round(res, 3)
-        return(x)
-    } else {
-        return(NULL)
-    }
+dbEn <- function(s1, s2, t) {
+    size1 <- length(s1)
+    size2 <- length(s2)
+    scores1 <- bpScores(t)[s1] |> 
+        {\(y) y[!is.na(y)]}()
+    scores2 <- bpScores(t)[s2] |> 
+        {\(y) y[!is.na(y)]}()
+    (sum(scores1) / size1) - (sum(scores2) / size2)
 }
 ```
+
 
 # Import data
 
+Import BugSigDB:
+
 ```{r}
-bp <- importBugphyzz()
 bsdb <- importBugSigDB() |> 
     filter(`Host species` == "Homo sapiens") |> 
-    filter(`Abundance in Group 1` %in% c("increased", "decreased"))
+    filter(`Abundance in Group 1` %in% c("increased", "decreased")) |> 
+    filter(`Study design` == "case-control")
 ```
 
-# Analysis with signatures
+Import bugphyzz:
 
 ```{r}
-sig_data <- getSignatures(
-    df = bsdb, tax.id.type = "ncbi", min.size = 5, tax.level = "genus"
-) |> 
-    getPairedSignatures() |> 
-    sigs2Tbl()
+bp <- importBugphyzz()
 ```
 
+# Get/Make signatures
+
+## Get BugSigDB signatures
+
+First, I need to get the signatures that will have more than 10 bugs:
+
 ```{r}
-sig_data_aer <- annotateSigs(sig_data, bp$aerophilicity) |> 
-    {\(y) split(x = y, f = y$base_name)}() |> 
-    map(~ split(.x, .x$Attribute_value)) |> 
-    list_flatten()
+bsdb_ids <- getSignatures(
+    df = bsdb, tax.id.type = "ncbi", tax.level = "genus", min.size = 10
+) |> names() |> 
+    sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", x = _)
 ```
 
-```{r}
-enrichment <- map(sig_data_aer, ~ calcEn(.x)) |> 
-    discard(is.null) |> 
-    bind_rows() |> 
-    select(-taxid, -Taxon_name, -Score, - size) |> 
-    distinct() |> 
-    left_join(
-        x = _,
-        y = bsdb[, c("BSDB ID", "Condition")], 
-        by = c("bsdb_id" = "BSDB ID")
-    ) |> 
-    select(-sig_name, -direction) |> 
-    mutate(bsdb_id = sub("/[0-9]+$", "", bsdb_id)) |> 
-    distinct()
+Then, I need two data.frames with experiments that only have two signatures
+and these signatures are decreased and increased.
+
+```{r, warning=FALSE}
+dats <- bsdb |> 
+    filter(`BSDB ID` %in% bsdb_ids) |>  
+    group_by(Study, Experiment) |> 
+    mutate(count = n()) |> 
+    ungroup() |> 
+    filter(count == 2) |> 
+    group_by(Study, Experiment) |> 
+    arrange(`Abundance in Group 1`) |> 
+    mutate(comb = paste0(sort(`Abundance in Group 1`), collapse = "-")) |> 
+    ungroup() |> 
+    filter(comb == "decreased-increased") |> 
+    arrange(`BSDB ID`) |> 
+    {\(y) split(y, y$`Abundance in Group 1`)}()
 ```
 
-
+Make sure all signatures share the same study, experiment, and condition
 
 ```{r}
-smk <- enrichment |> 
-    filter(grepl("727", bsdb_id))
-smk |> 
-    mutate(
-        direction = case_when(
-            enrich == 0 ~ "unchanged",
-            enrich > 0 ~ "enriched",
-            enrich < 0 ~ "depleted"
+cond1 <- all(dats$decreased$Condition == dats$increased$Condition)
+cond2 <- all(dats$decreased$Study == dats$increased$Study)
+cond3 <- all(dats$decreased$Experiment == dats$increased$Experiment)
+all(c(cond1, cond2, cond3))
+```
+
+Finally, I get the list of signatures for both increased and decreased:
+
+```{r}
+sigs <- dats |> 
+    map(~ {
+        getSignatures(
+            df = .x, tax.id.type = "ncbi", tax.level = "genus", min.size = 10
         )
-    ) |>
-    mutate(direction = factor(direction, levels = c(
-        "enriched", "unchanged", "depleted"
-    ))) |> 
-    ggplot(aes(Attribute_value, enrich)) +
-    geom_col(aes(fill = direction)) +
-    scale_fill_manual(
-        values = c("red", "gray", "blue")
-    ) +
-    theme_bw() +
-    coord_flip()
+    })
+# We already made sure that Study and experiment are the same in the code
+## lines above
+names(sigs$decreased) <- sub(
+    "^(bsdb:\\d+/\\d+)/\\d+_.*$", "\\1", names(sigs$decreased)
+)
+names(sigs$increased) <- sub(
+    "^(bsdb:\\d+/\\d+)/\\d+_.*$", "\\1", names(sigs$increased)
+)
 ```
 
-
-
-
-
-
-# Analysis with meta-signatures
+# dats short
 
 ```{r}
-
+select_cols <- c(
+    "BSDB ID", 
+    # "Study", "Experiment",
+    "Condition", "Group 1 name", "Group 0 name",
+    "Abundance in Group 1"
+)
+new_dat <- dats[[1]] |> 
+    select(all_of(select_cols)) |> 
+    mutate(`BSDB ID` = sub("/\\d+$", "", `BSDB ID`))
 ```
 
-# Session information
+
+## Make bugphyzz signatures
+
+```{r, warning=FALSE}
+bpSigs <- map(bp, ~ {
+    makeSignatures(
+        dat = .x,  tax_id_type = "NCBI_ID", tax_level = "genus",
+        min_size = 10
+    )
+}) |> 
+    list_flatten(name_spec = "{inner}") |> 
+    discard(is.null)
+```
+
+
+## Enrichment analysis
+
+```{r}
+res <- vector("list", length(bpSigs))
+names(res) <- names(bpSigs)
+for (i in seq_along(res)) {
+    res[[i]] <- map2(sigs$increased, sigs$decreased, ~ {
+        dbEn(s1 = .x, s2 = .y, t = bpSigs[[i]])
+    })
+}
+x <- list_flatten(res, name_spec = "{outer}-----{inner}")
+x <- unlist(x)
+
+## Up are positives
+## Down are negatives
+enDF <- data.frame(
+    x = names(x),
+    score = unname(x)
+) |>  
+    separate(col = x, into = c("bugphyzz", "bsdb"), sep = "-----") |> 
+    mutate(bugphyzz = sub("bugphyzz:", "", bugphyzz)) |> 
+    # mutate(bsdb = sub("^(bsdb:\\d+/\\d+/\\d+).*$", "\\1", bsdb)) |> 
+    left_join(new_dat, by = c("bsdb" = "BSDB ID"))
+    # relocate(Condition, .after = score)
+```
+
+Print table
+
+```{r}
+myDataTable(enDF)
+```
+
+
+Distribution of scores
+
+```{r}
+enDF |> 
+    ggplot(aes(score)) +
+    geom_histogram(binwidth = 0.1) +
+    labs(y = "Frequency", x = "Enrichment scores") +
+    theme_bw()
+```
+
+
+# Session info
 
 ```{r}
 sessioninfo::session_info()
 ```
+
