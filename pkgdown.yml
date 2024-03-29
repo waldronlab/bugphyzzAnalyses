@@ -5,7 +5,7 @@ articles:
   TypicalMicrobiomeSignatures: TypicalMicrobiomeSignatures.html
   bsdb_signatures: bsdb_signatures.html
   data_integration_and_stats: data_integration_and_stats.html
-  enrichemnt_dbbact: enrichemnt_dbbact.html
+  enrichment_dbbact: enrichment_dbbact.html
   ibd_enrichment: ibd_enrichment.html
   nychanes: nychanes.html
   nychanes2: nychanes2.html
@@ -13,5 +13,5 @@ articles:
   up_vs_down_metasignatures_nointersect: up_vs_down_metasignatures_nointersect.html
   up_vs_down_signatures: up_vs_down_signatures.html
   validation: validation.html
-last_built: 2024-03-29T13:27Z
+last_built: 2024-03-29T13:48Z
 
