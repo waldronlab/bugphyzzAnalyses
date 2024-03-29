@@ -173,7 +173,9 @@ enDF <- data.frame(
 Print table
 
 ```{r}
-myDataTable(enDF)
+enDF |> 
+    filter(score > 0) |> 
+    myDataTable()
 ```
 
 
@@ -187,6 +189,37 @@ enDF |>
     theme_bw()
 ```
 
+
+```{r, fig.height=9, fig.width=11}
+min <- enDF |> 
+    group_by(`Abundance in Group 1`) |> 
+    slice_min(order_by = score, n = 20) |>
+    arrange(score)
+max <- enDF |> 
+    group_by(`Abundance in Group 1`) |> 
+    slice_max(order_by = score, n = 20) |> 
+    arrange(score)
+dat_for_plot <- bind_rows(min, max)
+dat_for_plot |> 
+    mutate(label = paste0(bugphyzz, "|", Condition)) |> 
+    mutate(label = forcats::fct_inorder(label)) |>
+    mutate(Direction = case_when(
+        score > 0 ~ "Increased",
+        score < 0 ~ "Decreased"
+    )) |> 
+    mutate(
+        Direction = factor(Direction, levels = c("Increased", "Decreased"))
+    ) |> 
+    ggplot(aes(label, score)) +
+    geom_col(aes(fill = Direction)) +
+    labs(
+        x = "Bugphyzz signature | Condition",
+        y = "dbBact enrichment score",
+        title = "Top 20 enriched terms in either direction"
+    ) +
+    theme_bw() +
+    coord_flip()
+```
 
 # Session info
 
