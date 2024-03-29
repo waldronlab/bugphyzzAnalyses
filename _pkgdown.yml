@@ -23,5 +23,5 @@ navbar:
       href: articles/TypicalMicrobiomeSignatures.html
     - text: "Enrichment in IBD samples"
       href: articles/ibd_enrichment.html
-    - text: "Enrichmdnt with dbBact method"
+    - text: "Enrichment with dbBact method"
       href: articles/enrichment_dbbact.html
