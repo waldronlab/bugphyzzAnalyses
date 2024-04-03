@@ -25,3 +25,5 @@ navbar:
       href: articles/ibd_enrichment.html
     - text: "Enrichment with dbBact method"
       href: articles/enrichment_dbbact.html
+    - text: "Tests with NSTI values"
+      href: articles/nsti.html
