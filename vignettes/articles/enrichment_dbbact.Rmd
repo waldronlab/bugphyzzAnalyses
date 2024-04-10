@@ -13,6 +13,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
+library(bugphyzzAnalyses)
 library(bugsigdbr)
 library(bugphyzz)
 library(purrr)
@@ -269,6 +270,15 @@ gtop |>
     coord_flip()
 ```
 
+Full table:
+
+```{r}
+genDF |> 
+    filter(direction %in% c("Increased", "Decreased")) |> 
+    mutate(score = round(score, 2)) |> 
+    myDataTable()
+
+```
 # Species
 
 ```{r}
@@ -421,6 +431,17 @@ stop |>
     theme_bw() + 
     coord_flip()
 ```
+
+Full table:
+
+```{r}
+senDF |> 
+    filter(direction %in% c("Increased", "Decreased")) |> 
+    mutate(score = round(score, 2)) |> 
+    myDataTable()
+```
+
+
 
 # Session information
 
