@@ -1,7 +1,7 @@
 Package: bugphyzzAnalyses
 Type: Package
 Title: Analyses performed with the bugphyzz package
-Version: 0.1.0
+Version: 0.1.1
 Authors@R:
     c(
         person(
@@ -54,7 +54,7 @@ Suggests:
     data.tree
 Remotes:
     waldronlab/taxPPro,
-    waldronlab/bugphyzz@import-other-resources,
+    waldronlab/bugphyzz@import-other-resourcesrv43,
     waldronlab/MicrobiomeBenchmarkData,
     waldronlab/BugSigDBStats,
     ropensci/taxize@1.0-rc,
