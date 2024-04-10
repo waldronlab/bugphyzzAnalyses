@@ -1,0 +1,429 @@
+---
+title: "Enrichment with dbBact scores (concatenated BugSigDB signatures)"
+output:
+    html_document:
+        toc: true
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(bugsigdbr)
+library(bugphyzz)
+library(purrr)
+library(dplyr)
+library(stringr)
+library(tidyr)
+library(ggplot2)
+
+body_sites <- c(
+    skin = "skin", vagina = "vagina", mouth = "mouth", feces = "feces"
+)
+ranks <- c(genus = "genus", species = "species")
+directions <- c(increased = "increased", decreased = "decreased")
+```
+
+# Data
+
+Import bugphyzz:
+
+```{r, warning=FALSE, message=FALSE}
+bp <- importBugphyzz()
+bpSigs_g <- map(bp, ~ {
+    makeSignatures(
+        dat = .x,  tax_id_type = "NCBI_ID", tax_level = "genus",
+        min_size = 10
+    )
+}) |> 
+    list_flatten(name_spec = "{inner}") |> 
+    discard(is.null)
+
+## Add score of 1
+bpSigs_g <- map(bpSigs_g, ~ {
+    scores <- rep(1, length(.x))
+    names(scores) <- .x
+    attr(.x, "Scores") <- scores
+    .x
+})
+
+bpSigs_s <- map(bp, ~ {
+    makeSignatures(
+        dat = .x,  tax_id_type = "NCBI_ID", tax_level = "species",
+        min_size = 10
+    )
+}) |> 
+    list_flatten(name_spec = "{inner}") |> 
+    discard(is.null)
+
+## Add score of 1
+bpSigs_s <- map(bpSigs_s, ~ {
+    scores <- rep(1, length(.x))
+    names(scores) <- .x
+    attr(.x, "Scores") <- scores
+    .x
+})
+```
+
+A function for calculating dbScores based on the dbBact paper:
+
+```{r}
+dbEn <- function(s1, s2, t) {
+    size1 <- length(s1)
+    size2 <- length(s2)
+    scores1 <- attr(t, "Scores")[s1] |>
+        {\(y) y[!is.na(y)]}()
+    scores2 <- attr(t, "Scores")[s2] |>
+        {\(y) y[!is.na(y)]}()
+    (sum(scores1) / size1) - (sum(scores2) / size2)
+}
+```
+
+Import BugSigDB
+
+```{r}
+bsdb_doi <- "10.5281/zenodo.10627578" # v1.2.1
+# bsdb_doi <-  "10.5281/zenodo.10407666" #v1.2.0
+# bsdb_doi <-  "10.5281/zenodo.6468009" #v1.1.0
+bsdb <- importBugSigDB(version = bsdb_doi)
+bsdb <- bsdb |> 
+    filter(`Host species` == "Homo sapiens") |> 
+    filter(!is.na(`Abundance in Group 1`)) |> 
+    filter(`Abundance in Group 1` %in% c("increased", "decreased")) |>
+    filter(!is.na(`Body site`)) |> 
+    filter(`Study design` == "case-control" )
+```
+
+Subset by body site
+
+```{r}
+uberon <- getOntology(onto = "uberon")
+bsdb_subsets_by_bodysite <- vector("list", length(body_sites))
+names(bsdb_subsets_by_bodysite) <- body_sites
+for (i in seq_along(bsdb_subsets_by_bodysite)) {
+    if (body_sites[i] == "skin") {
+        bsdb_subsets_by_bodysite[[i]] <- bsdb |> 
+            filter(grepl(body_sites[i], `Body site`, ignore.case = TRUE))
+    } else {
+        bsdb_subsets_by_bodysite[[i]] <- subsetByOntology(
+            bsdb, column = "Body site", term = body_sites[i], ontology = uberon 
+        )
+    }
+}
+```
+
+# Genus
+
+```{r}
+sigs_by_subset_g <- map(bsdb_subsets_by_bodysite, ~ {
+    bsdb_ids <- getSignatures(
+        df = .x, tax.id.type = "ncbi", tax.level = "genus", min.size = 10
+    )
+    if (!length(bsdb_ids)) {
+        return(NULL)
+    }
+    bsdb_ids <- bsdb_ids |> 
+        names() |>
+        sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", x = _)
+    dats <- bsdb |>
+        filter(`BSDB ID` %in% bsdb_ids) |>
+        group_by(Study, Experiment) |>
+        mutate(count = n()) |>
+        ungroup() |>
+        filter(count == 2) |>
+        group_by(Study, Experiment) |>
+        arrange(`Abundance in Group 1`) |>
+        mutate(comb = paste0(sort(`Abundance in Group 1`), collapse = "-")) |>
+        ungroup() |>
+        filter(comb == "decreased-increased") |>
+        arrange(`BSDB ID`) |>
+        {\(y) split(y, y$`Abundance in Group 1`)}()
+    if (!length(dats)) {
+        return(NULL)
+    }
+    sigs <- dats |>
+        map(~ {
+            getSignatures(
+                df = .x, tax.id.type = "ncbi", tax.level = "genus", min.size = 10
+            )
+        })
+    names(sigs$decreased) <- sub(
+        # "^(bsdb:\\d+/\\d+)/\\d+_.*$", "\\1", names(sigs$decreased)
+        "^(bsdb:\\d+/\\d+)/\\d+_(.+):.*$", "\\1_\\2", names(sigs$decreased)
+    )
+    names(sigs$increased) <- sub(
+        # "^(bsdb:\\d+/\\d+)/\\d+_.*$", "\\1", names(sigs$increased)
+        "^(bsdb:\\d+/\\d+)/\\d+_(.+):.*$", "\\1_\\2", names(sigs$increased)
+    )
+    sigs
+}) |> 
+    discard(is.null)
+
+## Check that all names match
+map_lgl(sigs_by_subset_g, ~ {
+    all(names(.x$decreased) == names(.x$increased))
+})
+
+```
+
+Concatenate BugSigDB signatures by condition
+
+```{r}
+sigs_by_subset_cat_g <- map(sigs_by_subset_g, ~ {
+    cond_names <- unique(sub("^bsdb:\\d+/\\d_", "", names(.x$decreased)))
+    decreased <- vector("list", length(cond_names))
+    increased <- vector("list", length(cond_names))
+    for (i in seq_along(cond_names)) {
+        rgx <- paste0("/\\d+_", cond_names[i], "$")
+        select_var <- grep(rgx, names(.x$decreased), value = TRUE)
+
+        names(decreased)[i] <- cond_names[i]
+        decreased[[i]] <- unlist(.x$decreased[select_var], use.names = FALSE)
+
+        names(increased)[i] <- cond_names[i]
+        increased[[i]] <- unlist(.x$increased[select_var], use.names = FALSE)
+    }
+    list(decreased = decreased, increased = increased)
+})
+```
+
+Quick comparison of number of signatures before and after concatenation:
+
+```{r}
+gsig <- sigs_by_subset_g |> list_flatten() |> map_int(length)
+gcatsig <- sigs_by_subset_cat_g |> list_flatten() |> map_int(length)
+data.frame(sig = gsig, catsig = gcatsig)
+```
+
+Run enrichment
+
+```{r}
+gres <- vector("list", length(bpSigs_g))
+names(gres) <- names(bpSigs_g)
+for (i in seq_along(gres)) {
+    gres[[i]] <- map(sigs_by_subset_cat_g, function(bsite) {
+        map2(bsite$increased, bsite$decreased, ~ {
+                dbEn(s1 = .x, s2 = .y, t = bpSigs_g[[i]])
+        })
+    })
+}
+g <- list_flatten(gres, name_spec = "{outer}|---|{inner}") |> 
+    list_flatten(name_spec = "{outer}|---|{inner}") |> 
+    unlist(use.names = TRUE)
+genDF <- data.frame(
+    x = names(g),
+    score = unname(g)
+) |>  
+    separate(
+        col = x, into = c("bugphyzz", "body_site", "bsdb"), sep = "\\|---\\|"
+    ) |> 
+    mutate(bugphyzz = sub("bugphyzz:", "", bugphyzz)) |> 
+    mutate(direction = case_when(
+        score == 0 ~ "Unchanged",
+        score > 0 ~ "Increased", 
+        score < 0 ~ "Decreased"
+    ))
+```
+
+```{r}
+genDF |> 
+    ggplot(aes(score)) +
+    geom_histogram(binwidth = 0.1) +
+    labs(y = "Frequency", x = "Enrichment scores") +
+    theme_bw()
+```
+
+```{r, fig.width=9, fig.height=12}
+gmin <- genDF |> 
+    filter(direction == "Decreased") |> 
+    group_by(body_site) |> 
+    slice_max(order_by = score, n = 20) |> 
+    ungroup() |> 
+    arrange(body_site, score)
+gmax <- genDF |> 
+    filter(direction == "Increased") |> 
+    group_by(body_site) |> 
+    slice_min(order_by = score, n = 20) |>
+    ungroup() |> 
+    arrange(body_site, -score)
+gtop <- bind_rows(gmin, gmax)
+gtop |> 
+    arrange(body_site, score) |> 
+    mutate(label = paste0(bugphyzz, "|||", bsdb)) |> 
+    mutate(
+        direction = factor(direction, levels = c("Increased", "Decreased"))
+    ) |> 
+    mutate(label = forcats::fct_inorder(label)) |> 
+    ggplot(aes(label, score)) +
+    geom_col(aes(fill = direction)) +
+    labs(
+        x = "bugphyzz||bugsigdb", y = "dbBact Score",
+        title = "Top 20 dbBact enrichment scores - genus"
+    ) +
+    facet_wrap(~ body_site, nrow = 2, scales = "free") +
+    theme_bw() + 
+    coord_flip()
+```
+
+# Species
+
+```{r}
+sigs_by_subset_s <- map(bsdb_subsets_by_bodysite, ~ {
+    bsdb_ids <- getSignatures(
+        df = .x, tax.id.type = "ncbi", tax.level = "species", min.size = 10
+    )
+    if (!length(bsdb_ids)) {
+        return(NULL)
+    }
+    bsdb_ids <- bsdb_ids |> 
+        names() |>
+        sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", x = _)
+    dats <- bsdb |>
+        filter(`BSDB ID` %in% bsdb_ids) |>
+        group_by(Study, Experiment) |>
+        mutate(count = n()) |>
+        ungroup() |>
+        filter(count == 2) |>
+        group_by(Study, Experiment) |>
+        arrange(`Abundance in Group 1`) |>
+        mutate(comb = paste0(sort(`Abundance in Group 1`), collapse = "-")) |>
+        ungroup() |>
+        filter(comb == "decreased-increased") |>
+        arrange(`BSDB ID`) |>
+        {\(y) split(y, y$`Abundance in Group 1`)}()
+    if (!length(dats)) {
+        return(NULL)
+    }
+    sigs <- dats |>
+        map(~ {
+            getSignatures(
+                df = .x, tax.id.type = "ncbi",
+                tax.level = "species", min.size = 10
+            )
+        })
+    names(sigs$decreased) <- sub(
+        # "^(bsdb:\\d+/\\d+)/\\d+_.*$", "\\1", names(sigs$decreased)
+        "^(bsdb:\\d+/\\d+)/\\d+_(.+):.*$", "\\1_\\2", names(sigs$decreased)
+    )
+    names(sigs$increased) <- sub(
+        # "^(bsdb:\\d+/\\d+)/\\d+_.*$", "\\1", names(sigs$increased)
+        "^(bsdb:\\d+/\\d+)/\\d+_(.+):.*$", "\\1_\\2", names(sigs$increased)
+    )
+    sigs
+}) |> 
+    discard(is.null)
+
+## Check that all names match
+map_lgl(sigs_by_subset_s, ~ {
+    all(names(.x$decreased) == names(.x$increased))
+})
+
+```
+
+Concatenate BugSigDB signatures by condition
+
+```{r}
+sigs_by_subset_cat_s <- map(sigs_by_subset_s, ~ {
+    cond_names <- unique(sub("^bsdb:\\d+/\\d_", "", names(.x$decreased)))
+    decreased <- vector("list", length(cond_names))
+    increased <- vector("list", length(cond_names))
+    for (i in seq_along(cond_names)) {
+        rgx <- paste0("/\\d+_", cond_names[i], "$")
+        select_var <- grep(rgx, names(.x$decreased), value = TRUE)
+
+        names(decreased)[i] <- cond_names[i]
+        decreased[[i]] <- unlist(.x$decreased[select_var], use.names = FALSE)
+
+        names(increased)[i] <- cond_names[i]
+        increased[[i]] <- unlist(.x$increased[select_var], use.names = FALSE)
+    }
+    list(decreased = decreased, increased = increased)
+})
+```
+
+Quick comparison of number of signatures before and after concatenation:
+
+```{r}
+ssig <- sigs_by_subset_s |> list_flatten() |> map_int(length)
+scatsig <- sigs_by_subset_cat_s |> list_flatten() |> map_int(length)
+data.frame(sig = ssig, catsig = scatsig)
+```
+Run enrichment
+
+```{r}
+sres <- vector("list", length(bpSigs_s))
+names(sres) <- names(bpSigs_s)
+for (i in seq_along(sres)) {
+    sres[[i]] <- map(sigs_by_subset_cat_s, function(bsite) {
+        map2(bsite$increased, bsite$decreased, ~ {
+                dbEn(s1 = .x, s2 = .y, t = bpSigs_s[[i]])
+        })
+    })
+}
+s <- list_flatten(sres, name_spec = "{outer}|---|{inner}") |> 
+    list_flatten(name_spec = "{outer}|---|{inner}") |> 
+    unlist(use.names = TRUE)
+senDF <- data.frame(
+    x = names(s),
+    score = unname(s)
+) |> 
+    separate(
+        col = x, into = c("bugphyzz", "body_site", "bsdb"), sep = "\\|---\\|"
+    ) |> 
+    mutate(bugphyzz = sub("bugphyzz:", "", bugphyzz)) |> 
+    mutate(direction = case_when(
+        score == 0 ~ "Unchanged",
+        score > 0 ~ "Increased", 
+        score < 0 ~ "Decreased"
+    ))
+```
+
+```{r}
+senDF |> 
+    ggplot(aes(score)) +
+    geom_histogram(binwidth = 0.1) +
+    labs(y = "Frequency", x = "Enrichment scores") +
+    theme_bw()
+```
+
+```{r, fig.width=9, fig.height=12}
+smin <- senDF |> 
+    filter(direction == "Decreased") |> 
+    group_by(body_site) |> 
+    slice_max(order_by = score, n = 20) |> 
+    ungroup() |> 
+    arrange(body_site, score)
+smax <- senDF |> 
+    filter(direction == "Increased") |> 
+    group_by(body_site) |> 
+    slice_min(order_by = score, n = 20) |>
+    ungroup() |> 
+    arrange(body_site, -score)
+stop <- bind_rows(smin, smax)
+stop |> 
+    arrange(body_site, score) |> 
+    mutate(label = paste0(bugphyzz, "|||", bsdb)) |> 
+    mutate(
+        direction = factor(direction, levels = c("Increased", "Decreased"))
+    ) |> 
+    mutate(label = forcats::fct_inorder(label)) |> 
+    ggplot(aes(label, score)) +
+    geom_col(aes(fill = direction)) +
+    labs(
+        x = "bugphyzz||bugsigdb", y = "dbBact Score",
+        title = "Top 20 dbBact enrichment scores - species"
+    ) +
+    facet_wrap(~ body_site, nrow = 2, scales = "free") +
+    theme_bw() + 
+    coord_flip()
+```
+
+# Session information
+
+```{r}
+sessioninfo::session_info()
+```
