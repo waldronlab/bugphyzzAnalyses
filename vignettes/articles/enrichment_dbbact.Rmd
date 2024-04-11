@@ -283,19 +283,21 @@ genDF |>
 Let's add some bootsrapping
 
 ```{r}
-dbEnBoot <- function(s1, s2, t, R = 1000) {
-    ## Observed score
-    observed_scores <- dbEn(s1, s2, t)
-    bootstrap_scores <- vector("numeric", R)
-    for (i in seq_along(bootstrap_scores)) {
-        resampled_s1 <- sample(s1, replace = TRUE)
-        resampled_s2 <- sample(s2, replace = TRUE)
-        bootstrap_scores[i] <- dbEn(resampled_s1, resampled_s2, t)
+dbEnBoot <- function(s1, s2, t, R = 10000) {
+    observed_score <- dbEn(s1, s2, t)
+    perm_scores <- vector("numeric", R)
+    for (i in seq_along(perm_scores)) {
+        cat_sets <- c(s1, s2)
+        permuted_sets <- sample(cat_sets)
+        perm_s1 <- permuted_sets[1:length(s1)]
+        perm_s2 <- permuted_sets[(length(s1) + 1):length(permuted_sets)]
+        perm_scores[i] <- dbEn(perm_s1, perm_s2, t)
     }
-    p_value <- mean(abs(bootstrap_scores) >= abs(observed_scores))
-    list(score = observed_scores, p_value = p_value)
+    p_value <- mean(abs(perm_scores) >= abs(observed_score))
+    list(score = observed_score, p_value = p_value)
 }
 
+## FDR thr to 0.2
 gresB <- vector("list", length(bpSigs_g))
 names(gresB) <- names(bpSigs_g)
 for (i in seq_along(gresB)) {
@@ -315,9 +317,77 @@ gB <- list_flatten(gresB, name_spec = "{outer}|---|{inner}") |>
         as.data.frame(mat)
     }) |> 
     bind_rows(.id = "x")
+gB$fdr <- p.adjust(gB$p_value, method = "fdr")
     
 hist(gB$p_value)    
 ```
+
+
+```{r}
+genDFB <- gB |>  
+    separate(
+        col = x, into = c("bugphyzz", "body_site", "bsdb"), sep = "\\|---\\|"
+    ) |> 
+    mutate(bugphyzz = sub("bugphyzz:", "", bugphyzz)) |> 
+    mutate(direction = case_when(
+        score == 0 ~ "Unchanged",
+        score > 0 ~ "Increased", 
+        score < 0 ~ "Decreased"
+    ))
+```
+
+
+
+
+```{r}
+gminB <- genDFB |> 
+    filter(p_value < 0.05) |> 
+    filter(direction == "Decreased") |> 
+    group_by(body_site) |> 
+    slice_max(order_by = score, n = 20) |> 
+    ungroup() |> 
+    arrange(body_site, score)
+gmaxB <- genDFB |> 
+    filter(p_value < 0.05) |> 
+    filter(direction == "Increased") |> 
+    group_by(body_site) |> 
+    slice_min(order_by = score, n = 20) |>
+    ungroup() |> 
+    arrange(body_site, -score)
+gtopB <- bind_rows(gminB, gmaxB)
+gtopB |> 
+    arrange(body_site, score) |> 
+    mutate(label = paste0(bugphyzz, "|||", bsdb)) |> 
+    mutate(
+        direction = factor(direction, levels = c("Increased", "Decreased"))
+    ) |> 
+    mutate(label = forcats::fct_inorder(label)) |> 
+    ggplot(aes(label, score)) +
+    geom_col(aes(fill = direction)) +
+    labs(
+        x = "bugphyzz||bugsigdb", y = "dbBact Score",
+        title = "Top 20 dbBact enrichment scores - genus"
+    ) +
+    facet_wrap(~ body_site, nrow = 2, scales = "free") +
+    theme_bw() + 
+    coord_flip()
+```
+
+
+```{r}
+genDFB |> 
+    filter(p_value < 0.05) |> 
+    filter(direction %in% c("Increased", "Decreased")) |> 
+    mutate(
+        score = round(score, 2),
+        p_value = round(p_value, 3),
+        fdr = round(fdr, 3)
+    ) |> 
+    
+    myDataTable()
+```
+
+
 
 # Species
 
@@ -500,8 +570,73 @@ sB <- list_flatten(sresB, name_spec = "{outer}|---|{inner}") |>
         as.data.frame(mat)
     }) |> 
     bind_rows(.id = "x")
+sB$fdr <- p.adjust(sB$p_value, method = "fdr")
 hist(sB$p_value)  
 ```
+
+
+
+```{r}
+senDFB <- sB |>  
+    separate(
+        col = x, into = c("bugphyzz", "body_site", "bsdb"), sep = "\\|---\\|"
+    ) |> 
+    mutate(bugphyzz = sub("bugphyzz:", "", bugphyzz)) |> 
+    mutate(direction = case_when(
+        score == 0 ~ "Unchanged",
+        score > 0 ~ "Increased", 
+        score < 0 ~ "Decreased"
+    ))
+```
+
+```{r}
+sminB <- senDFB |> 
+    filter(p_value < 0.05) |> 
+    filter(direction == "Decreased") |> 
+    group_by(body_site) |> 
+    slice_max(order_by = score, n = 20) |> 
+    ungroup() |> 
+    arrange(body_site, score)
+smaxB <- senDFB |> 
+   filter(p_value < 0.05) |> 
+    filter(direction == "Increased") |> 
+    group_by(body_site) |> 
+    slice_min(order_by = score, n = 20) |>
+    ungroup() |> 
+    arrange(body_site, -score)
+stopB <- bind_rows(sminB, smaxB)
+stopB |> 
+    arrange(body_site, score) |> 
+    mutate(label = paste0(bugphyzz, "|||", bsdb)) |> 
+    mutate(
+        direction = factor(direction, levels = c("Increased", "Decreased"))
+    ) |> 
+    mutate(label = forcats::fct_inorder(label)) |> 
+    ggplot(aes(label, score)) +
+    geom_col(aes(fill = direction)) +
+    labs(
+        x = "bugphyzz||bugsigdb", y = "dbBact Score",
+        title = "Top 20 dbBact enrichment scores - genus"
+    ) +
+    facet_wrap(~ body_site, nrow = 2, scales = "free") +
+    theme_bw() + 
+    coord_flip()
+```
+
+
+```{r}
+senDFB |> 
+    filter(p_value < 0.05) |> 
+    filter(direction %in% c("Increased", "Decreased")) |> 
+    mutate(
+        score = round(score, 2),
+        p_value = round(p_value, 3),
+        fdr = round(fdr, 3)
+    ) |> 
+    
+    myDataTable()
+```
+
 
 
 # Session information
