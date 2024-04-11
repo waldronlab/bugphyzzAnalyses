@@ -72,7 +72,7 @@ tbl
 ```
 
 ```{r}
-nsti_ecoli <- getNsti(tr, "Escherichia_coli-_-X80725--_ATCC_11775T_T")
+nsti_ecoli <- getNsti(tr, "Escherichia_coli-_-X80725--_ATCC_11775T_T", nodes = "2")
 ```
 
 ```{r}

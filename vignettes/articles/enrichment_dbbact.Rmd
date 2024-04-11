@@ -279,6 +279,46 @@ genDF |>
     myDataTable()
 
 ```
+
+Let's add some bootsrapping
+
+```{r}
+dbEnBoot <- function(s1, s2, t, R = 1000) {
+    ## Observed score
+    observed_scores <- dbEn(s1, s2, t)
+    bootstrap_scores <- vector("numeric", R)
+    for (i in seq_along(bootstrap_scores)) {
+        resampled_s1 <- sample(s1, replace = TRUE)
+        resampled_s2 <- sample(s2, replace = TRUE)
+        bootstrap_scores[i] <- dbEn(resampled_s1, resampled_s2, t)
+    }
+    p_value <- mean(abs(bootstrap_scores) >= abs(observed_scores))
+    list(score = observed_scores, p_value = p_value)
+}
+
+gresB <- vector("list", length(bpSigs_g))
+names(gresB) <- names(bpSigs_g)
+for (i in seq_along(gresB)) {
+    gresB[[i]] <- map(sigs_by_subset_cat_g, function(bsite) {
+        map2(bsite$increased, bsite$decreased, ~ {
+            set.seed(2024)
+            dbEnBoot(s1 = .x, s2 = .y, t = bpSigs_g[[i]])
+        })
+    })
+}
+
+gB <- list_flatten(gresB, name_spec = "{outer}|---|{inner}") |> 
+    list_flatten(name_spec = "{outer}|---|{inner}") |> 
+    map(~ {
+        mat <- matrix(unlist(.x), nrow = 1)
+        colnames(mat) <- c("score", "p_value")
+        as.data.frame(mat)
+    }) |> 
+    bind_rows(.id = "x")
+    
+hist(gB$p_value)    
+```
+
 # Species
 
 ```{r}
@@ -441,6 +481,27 @@ senDF |>
     myDataTable()
 ```
 
+```{r}
+sresB <- vector("list", length(bpSigs_s))
+names(sresB) <- names(bpSigs_s)
+for (i in seq_along(sresB)) {
+    sresB[[i]] <- map(sigs_by_subset_cat_s, function(bsite) {
+        map2(bsite$increased, bsite$decreased, ~ {
+            set.seed(2024)
+            dbEnBoot(s1 = .x, s2 = .y, t = bpSigs_s[[i]])
+        })
+    })
+}
+sB <- list_flatten(sresB, name_spec = "{outer}|---|{inner}") |> 
+    list_flatten(name_spec = "{outer}|---|{inner}") |> 
+    map(~ {
+        mat <- matrix(unlist(.x), nrow = 1)
+        colnames(mat) <- c("score", "p_value")
+        as.data.frame(mat)
+    }) |> 
+    bind_rows(.id = "x")
+hist(sB$p_value)  
+```
 
 
 # Session information
