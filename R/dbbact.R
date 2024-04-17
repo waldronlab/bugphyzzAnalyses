@@ -109,11 +109,13 @@ calcEffectSize <- function(se, perm = 10000) {
 calcPvalue <- function(se) {
     mat <- SummarizedExperiment::assay(se, "Scores")
     col_data <- SummarizedExperiment::colData(se)
+    # Control <- col_data$Taxon[col_data$Condition == "Control"]
+    # Case <- col_data$Taxon[col_data$Condition == "Case"]
     Control <- col_data$Taxon[col_data$Condition == "Control"]
     Case <- col_data$Taxon[col_data$Condition == "Case"]
     p_val <- apply(mat, 1, function(x) {
         co <- x[1:length(Control)]
-        ca <- x[(length(Control)+1):nrow(mat)] # increased
+        ca <- x[(length(Control)+1):ncol(mat)] # increased
 
         # ct <- table(co, ca)
         # round(fisher.test(ct)$p.value, 3)
@@ -176,10 +178,10 @@ dbHt <- function(se) {
     top_ha <-  ComplexHeatmap::HeatmapAnnotation(
         foo = ComplexHeatmap::anno_block(
             # gp = gpar(fill = c(3, 2)),
-            gp = gpar(fill = c("dodgerblue", "firebrick")),
+            gp = grid::gpar(fill = c("dodgerblue", "firebrick")),
             height = unit(0.5, "cm"),
             labels = levels(col_data$Condition),
-            labels_gp = gpar(col = "white", fontsize = 10)
+            labels_gp = grid::gpar(col = "white", fontsize = 10)
         )
     )
 
@@ -195,10 +197,10 @@ dbHt <- function(se) {
     }
     left_ha <- ComplexHeatmap::HeatmapAnnotation(
         foo2 = ComplexHeatmap::anno_block(
-            gp = gpar(fill = vct_int),
+            gp = grid::gpar(fill = vct_int),
             width = unit(0.5, "cm"),
             labels = vct_chr,
-            labels_gp = gpar(col = "white", fontsize = 10)
+            labels_gp = grid::gpar(col = "white", fontsize = 10)
         ),
         which = "row"
     )
@@ -212,7 +214,8 @@ dbHt <- function(se) {
     }
     log10_pval <- -log10(row_data$P_value + 1)
     pch_var <- case_when(
-        row_data$P_value < 0.05 ~ 8,
+        # row_data$P_value < 0.05 ~ 8,
+        row_data$P_value < 0.1 ~ 8,
         TRUE ~ NA
     )
     right_ha <- ComplexHeatmap::HeatmapAnnotation(
@@ -225,7 +228,7 @@ dbHt <- function(se) {
         "Mean difference" = ComplexHeatmap::anno_barplot(
             row_data$Effect_size, width = unit(5, "cm"),
             bar_width = 1,
-            gp = gpar(fill = "cyan")
+            gp = grid::gpar(fill = "gold")
         ),
         which = "row"
     )
@@ -263,13 +266,13 @@ dbHt <- function(se) {
 
         ## Row names
         row_names_side = "right",
-        row_names_max_width = max_text_width(
+        row_names_max_width = ComplexHeatmap::max_text_width(
             rownames(mat),
-            gp = gpar(fontsize = 12)
+            gp = grid::gpar(fontsize = 12)
         ),
 
         ## Column names
-        column_names_gp = gpar(fontface = "italic"),
+        column_names_gp = grid::gpar(fontface = "italic"),
 
         ## Annotations
         top_annotation = top_ha,
@@ -278,7 +281,7 @@ dbHt <- function(se) {
 
         ## Borders
         border = TRUE,
-        rect_gp = gpar(col = "gray50", lwd = 0.25)
+        rect_gp = grid::gpar(col = "gray50", lwd = 0.25)
 
     )
     ComplexHeatmap::draw(
