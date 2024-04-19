@@ -14,7 +14,8 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends:
-    R (>= 4.3.0)
+    R (>= 4.3.0),
+    SummarizedExperiment
 Suggests: 
     bugphyzz,
     circlize,
@@ -54,7 +55,7 @@ Suggests:
     data.tree
 Remotes:
     waldronlab/taxPPro,
-    waldronlab/bugphyzz@import-other-resourcesrv43,
+    waldronlab/bugphyzz@sdgamboa-bpscores,
     waldronlab/MicrobiomeBenchmarkData,
     waldronlab/BugSigDBStats,
     ropensci/taxize@1.0-rc,

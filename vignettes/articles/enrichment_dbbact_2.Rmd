@@ -1,9 +1,11 @@
 ---
 title: "Enrichment with dbBact approach"
-subtitle: "Concatenate then filter even signatures"
+subtitle: "Filter even signatures then concatenate"
 output:
-    html_document:
-        toc: true
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
 ---
 
 ```{r, include = FALSE}
@@ -94,20 +96,40 @@ for (i in seq_along(bsdb_subsets_by_bodysite)) {
 }
 ```
 
-Create concatenated signatures:
+Filter even experiments for genus:
 
 ```{r}
-catSigs_g <- map(bsdb_subsets_by_bodysite, ~ {
-    getCatSignatures(.x, "genus", min_size = 10)
-}) |> 
+even_sigs_g <- map(
+    bsdb_subsets_by_bodysite, ~ filterEvenSignatures(.x, "genus", min_size = 5)
+) |> 
     discard(~ !length(.x))
-catSigs_s <- map(bsdb_subsets_by_bodysite, ~ {
-    getCatSignatures(.x, "species", min_size = 10)
-}) |> 
+map_lgl(even_sigs_g, ~ {
+    all(names(.x$decreased) == names(.x$increased))
+})
+```
+
+Filter even experiments for species:
+
+```{r}
+even_sigs_s <- map(
+    bsdb_subsets_by_bodysite, ~ filterEvenSignatures(.x, "species", min_size = 5)
+) |> 
     discard(~ !length(.x))
+map_lgl(even_sigs_s, ~ {
+    all(names(.x$decreased) == names(.x$increased))
+})
 ```
 
 
+Create concatenated signatures:
+
+```{r}
+catSigs_g <- map(even_sigs_g, concatenateEvenSigs)
+catSigs_s <- map(even_sigs_s, concatenateEvenSigs)
+```
+
+
+Run enrichment using dbBact approach:
 
 ```{r, warning=FALSE}
 ## There are warnings for the wilcox test
@@ -134,14 +156,17 @@ mouth_enriched_s <- map2(
 ```
 
 
-```{r, fig.height=11, fig.width=20}
+# Colorectal cancer
+
+```{r, fig.height=11, fig.width=11}
 ht <- dbHt(feces_enriched_s$`Colorectal-cancer`)
 ```
 
-```{r, fig.height=10, fig.width=15}
+# Smoking behaviour
+
+```{r, fig.width=15, fig.height=11}
 ht2 <- dbHt(mouth_enriched_s$`Smoking-behavior`)
 ```
-
 # Session information
 
 ```{r}
