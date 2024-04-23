@@ -175,25 +175,25 @@ catSigs_s <- map(even_sigs_s, concatenateEvenSigs)
 Run enrichment using dbBact approach:
 
 ```{r, warning=FALSE}
-myFisherTest <- function(control, case) {
-    controlInSet <- sum(control[control > 0])
-    controlNotInSet <- sum(control == 0)
-
-    caseInSet <- sum(case[case > 0])
-    caseNotInSet <- sum(case == 0)
-    mat <- matrix(
-        data = c(
-            caseInSet, caseNotInSet,
-            controlInSet, controlNotInSet
-        ),
-        byrow = TRUE, nrow = 2
-    )
-    colnames(mat) <- c("annotated", "noAnnotated")
-    rownames(mat) <- c("Case", "Control")
-
-    fisher.test(mat, alternative = "two.sided")
-}
-stat_test <- "myFisherTest"
+# myFisherTest <- function(control, case) {
+#     controlInSet <- sum(control[control > 0])
+#     controlNotInSet <- sum(control == 0)
+# 
+#     caseInSet <- sum(case[case > 0])
+#     caseNotInSet <- sum(case == 0)
+#     mat <- matrix(
+#         data = c(
+#             caseInSet, caseNotInSet,
+#             controlInSet, controlNotInSet
+#         ),
+#         byrow = TRUE, nrow = 2
+#     )
+#     colnames(mat) <- c("annotated", "noAnnotated")
+#     rownames(mat) <- c("Case", "Control")
+# 
+#     fisher.test(mat, alternative = "two.sided")
+# }
+# stat_test <- "myFisherTest"
 
 ## There are warnings for the wilcox test
 feces_enriched_g <- map2(
