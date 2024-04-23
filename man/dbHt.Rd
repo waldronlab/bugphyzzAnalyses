@@ -4,7 +4,7 @@
 \alias{dbHt}
 \title{Plot heatmap of output of dbEn2}
 \usage{
-dbHt(se)
+dbHt(se, row_pad = 2)
 }
 \arguments{
 \item{se}{A SummarizedExperiment}

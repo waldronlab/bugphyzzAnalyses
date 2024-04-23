@@ -12,7 +12,8 @@
 #' @return A matrix
 #' @export
 #'
-dbMat <- function(control, case, term_list, opt = "counts"){
+dbMat <- function(control, case, term_list, opt = "counts") {
+
     mat_list <- vector("list", length(term_list))
     for (i in seq_along(mat_list)) {
         term <- term_list[[i]]
@@ -26,6 +27,7 @@ dbMat <- function(control, case, term_list, opt = "counts"){
             names(ca) <- case
             ca <- tapply(ca, names(ca), sum)
             ca <- ca[sort(names(ca))]
+
         } else if (opt == "scores") {
             ## TODO
             bp_scores <- bpScores(term)
@@ -45,6 +47,7 @@ dbMat <- function(control, case, term_list, opt = "counts"){
             ca <- ca[sort(names(ca))]
         }
 
+
         mat <- matrix(data = c(co, ca), nrow = 1)
         colnames(mat) <- c(paste0("co_", names(co)), paste0("ca_", names(ca)))
         rownames(mat) <- names(term_list)[i]
@@ -54,23 +57,50 @@ dbMat <- function(control, case, term_list, opt = "counts"){
     mat <-  mat[rowSums(mat) > 0, , drop = FALSE]
     rownames(mat) <- sub("^bugphyzz:", "", rownames(mat))
 
+    if (opt == "counts") {
+        if (!attr(control, "nexp") == attr(case, "nexp")) {
+            stop(
+                "Number of experiments don't match in control and case.",
+                call. = FALSE
+            )
+        }
+        n_exp <- attr(control, "nexp")
+        mat <- mat / n_exp
+
+        control_prev <- table(control) / n_exp
+        case_prev <- table(case) / n_exp
+
+        # co <- co / n_exp
+        # ca <- ca / n_exp
+    }
+
+
     cond <- c(rep("Control", length(co)), rep("Case", length(ca)))
     cond <- factor(cond, levels = c("Control", "Case"))
 
     Taxon <- c(names(co), names(ca))
     Taxon2 <- taxizedb::taxid2name(Taxon, db = "ncbi", verbose = FALSE)
+    Prevalence = c(control_prev[names(co)], case_prev[names(ca)])
 
     dat <- data.frame(
         Condition = cond,
         Taxon = Taxon,
-        Taxon2 = Taxon2
+        Taxon2 = Taxon2,
+        Prevalence = Prevalence
     )
 
     rownames(dat) <- c(paste0("co_", names(co)), paste0("ca_", names(ca)))
+
     se <- SummarizedExperiment::SummarizedExperiment(
         assays = S4Vectors::SimpleList(Scores = mat),
         colData = S4Vectors::DataFrame(dat),
+        metadata = list(
+            nexp = n_exp,
+            control = control,
+            case = case
+        )
     )
+    se <- se[, which(Prevalence > 0.25)]
     return(se)
 }
 
@@ -165,10 +195,13 @@ dbEn2 <- function(control, case, term_list, opt = "counts", f = "wilcox.test") {
 #' @return A Heatmap
 #' @export
 #'
-dbHt <- function(se) {
+dbHt <- function(se, row_pad = 2) {
+    se <- se[which(rowData(se)$Effect_size != 0),]
 
     mat <- SummarizedExperiment::assay(se, "Scores")
-    score_name <- "Score"
+    n_exp <- S4Vectors::metadata(se)$nexp
+
+    score_name <- paste0("Score (nexp:", n_exp, ")")
     # if (any(mat != 0 & mat != 1)) {
     #     score_name <- "Score"
     # } else {
@@ -185,19 +218,26 @@ dbHt <- function(se) {
     ## Color scale
     htColor <- function(mat) {
         circlize::colorRamp2(
-            breaks = c(0, max(mat, na.rm = TRUE)),
+            # breaks = c(0, max(mat, na.rm = TRUE)),
+            breaks = c(0, 1),
             colors = c("white", "gray10")
         )
     }
 
     ## Top annotation
     top_ha <-  ComplexHeatmap::HeatmapAnnotation(
+        "Prevalence" = ComplexHeatmap::anno_barplot(
+            col_data$Prevalence,
+            height = unit(5, "cm"),
+            bar_width = 1,
+            gp = grid::gpar(fill = "gold")
+        ),
         foo = ComplexHeatmap::anno_block(
             # gp = gpar(fill = c(3, 2)),
             gp = grid::gpar(fill = c("dodgerblue", "firebrick")),
-            height = unit(0.5, "cm"),
+            height = unit(1, "cm"),
             labels = levels(col_data$Condition),
-            labels_gp = grid::gpar(col = "white", fontsize = 10)
+            labels_gp = grid::gpar(col = "white", fontsize = 20, fontface = "bold")
         )
     )
 
@@ -214,9 +254,10 @@ dbHt <- function(se) {
     left_ha <- ComplexHeatmap::HeatmapAnnotation(
         foo2 = ComplexHeatmap::anno_block(
             gp = grid::gpar(fill = vct_int),
-            width = unit(0.5, "cm"),
+            width = unit(1, "cm"),
             labels = vct_chr,
-            labels_gp = grid::gpar(col = "white", fontsize = 10)
+            # labels_gp = grid::gpar(col = "white", fontsize = 10)
+            labels_gp = grid::gpar(col = "white", fontsize = 20, fontface = "bold")
         ),
         which = "row"
     )
@@ -243,7 +284,9 @@ dbHt <- function(se) {
     right_ha <- ComplexHeatmap::HeatmapAnnotation(
         "-log10(pval+1)" = ComplexHeatmap::anno_simple(
             x = -log10(row_data$P_value + 1),
-            col = pValCol(-log10(row_data$P_value + 1))
+            # col = pValCol(-log10(row_data$P_value + 1)),
+            col = pValCol(c(-0.30103, 0)),
+            border = TRUE
             # pch = pch_var
         ),
         "pval < 0.1" = ComplexHeatmap::anno_simple(
@@ -260,6 +303,7 @@ dbHt <- function(se) {
         ),
         which = "row"
     )
+
 
     ## Legend for draw
     pval_lgd <- ComplexHeatmap::Legend(
@@ -317,7 +361,8 @@ dbHt <- function(se) {
         ht, heatmap_legend_side = "bottom",
         annotation_legend_list = list(pval_lgd),
         annotation_legend_side = "bottom",
-        merge_legend = TRUE
+        merge_legends = TRUE,
+        padding = unit(c(row_pad, 2, 2, 2), "mm")
     )
 }
 

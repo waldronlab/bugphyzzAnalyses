@@ -172,21 +172,24 @@ concatenateEvenSigs <- function(l) {
         sub("^bsdb:\\d+/\\d_", "", names(l$decreased)),
         sub("^bsdb:\\d+/\\d_", "", names(l$increased))
     ) |>
+        unique() |>
         sort()
-
     decreased <- vector("list", length(cond_names))
     increased <- vector("list", length(cond_names))
-
     for (i in seq_along(cond_names)) {
         rgx <- paste0("/\\d+_", cond_names[i], "$")
         select_var <- grep(rgx, names(l$decreased), value = TRUE)
 
         names(decreased)[i] <- cond_names[i]
+        n_exp_dec <- length(l$decreased[select_var])
         decreased[[i]] <- unlist(l$decreased[select_var], use.names = FALSE)
+        attr(decreased[[i]], "nexp") <- n_exp_dec
 
         names(increased)[i] <- cond_names[i]
+        n_exp_inc <- length(l$increased[select_var])
         increased[[i]] <- unlist(l$increased[select_var], use.names = FALSE)
+        attr(increased[[i]], "nexp") <- n_exp_inc
     }
-
-    return(list(decreased = decreased, increased = increased))
+    cat_sigs <- list(decreased = decreased, increased = increased)
+    return(cat_sigs)
 }

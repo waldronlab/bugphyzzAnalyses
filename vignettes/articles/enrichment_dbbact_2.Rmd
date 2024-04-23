@@ -197,8 +197,8 @@ Run enrichment using dbBact approach:
 
 ## There are warnings for the wilcox test
 feces_enriched_g <- map2(
-    .x = catSigs_g$feces$decreased[5],
-    .y = catSigs_g$feces$increased[5],
+    .x = catSigs_g$feces$decreased,
+    .y = catSigs_g$feces$increased,
     ~ dbEn2(
         control = .x, case = .y, term_list = bpSigs_g, opt = score_opt, 
         f = stat_test
@@ -232,7 +232,7 @@ mouth_enriched_s <- map2(
 
 # Colorectal cancer
 
-```{r, fig.height=15, fig.width=35}
+```{r, fig.height=15, fig.width=15}
 ht <- dbHt(feces_enriched_s$`Colorectal-cancer`)
 ```
 # Smoking behaviour
@@ -254,9 +254,26 @@ ht3 <- dbHt(feces_enriched_s$`COVID-19`)
 
 ```
 
+# CRC - A single study
 
+```{r}
+s544_co <- even_bsdb_s$feces$decreased |> 
+    filter(Study == "Study 544") |> 
+    getSignatures(tax.id.type = "ncbi") |> 
+    unlist()
+attr(s544_co, "nexp") <- 1
+    
+s544_ca <- even_bsdb_s$feces$increased |> 
+    filter(Study == "Study 544") |> 
+    getSignatures(tax.id.type = "ncbi") |> 
+    unlist()
+attr(s544_ca, "nexp") <- 1
+```
 
-
+```{r, warning=FALSE}
+se <- dbEn2(s544_co, s544_ca, term_list = bpSigs_s, f = stat_test)
+dbHt(se)
+```
 
 # Session information
 
