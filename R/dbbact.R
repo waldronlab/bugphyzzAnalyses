@@ -7,20 +7,16 @@
 #' @param decreased Character vector. Down-regulated set (or control).
 #' @param increased Character vector. Up-regulated set (or case).
 #' @param term_list A list of signatures from bugphyzz.
-#' @param opt Character string. Keywords accepted: "integer" or "double".
-#' If "integer" (default), only presence and absence is considered. If
-#' "double", the bugphyzz scores will be used (weighted mode). The latter
-#' only works if the scores are included in the bugphyzz signatures in the
-#' "Score" attribute.
+#' @param opt Character string. "counts" (default) or "scores".
 #'
 #' @return A matrix
 #' @export
 #'
-dbMat <- function(control, case, term_list, opt = "integer"){
+dbMat <- function(control, case, term_list, opt = "counts"){
     mat_list <- vector("list", length(term_list))
     for (i in seq_along(mat_list)) {
         term <- term_list[[i]]
-        if (opt == "integer") {
+        if (opt == "counts") {
             co <- as.integer(c(control %in% term))
             names(co) <- control
             co <- tapply(co, names(co), sum)
@@ -30,7 +26,25 @@ dbMat <- function(control, case, term_list, opt = "integer"){
             names(ca) <- case
             ca <- tapply(ca, names(ca), sum)
             ca <- ca[sort(names(ca))]
+        } else if (opt == "scores") {
+            ## TODO
+            bp_scores <- bpScores(term)
+
+            co_scores <- bp_scores[control]
+            names(co_scores) <- control
+            co_scores[is.na(co_scores)] <- 0
+            co <- co_scores
+            co <- tapply(co, names(co), sum)
+            co <- co[sort(names(co))]
+
+            ca_scores <- bp_scores[case]
+            names(ca_scores) <- case
+            ca_scores[is.na(ca_scores)] <- 0
+            ca <- ca_scores
+            ca <- tapply(ca, names(ca), sum)
+            ca <- ca[sort(names(ca))]
         }
+
         mat <- matrix(data = c(co, ca), nrow = 1)
         colnames(mat) <- c(paste0("co_", names(co)), paste0("ca_", names(ca)))
         rownames(mat) <- names(term_list)[i]
@@ -58,10 +72,9 @@ dbMat <- function(control, case, term_list, opt = "integer"){
         colData = S4Vectors::DataFrame(dat),
     )
     return(se)
-    # return(list(matrix = mat, dec = names(dec), inc = names(inc)))
 }
 
-calcEffectSize <- function(se, perm = 10000) {
+calcEffectSize <- function(se) {
     mat <- SummarizedExperiment::assay(se, "Scores")
     col_data <- SummarizedExperiment::colData(se)
     Control <- col_data$Taxon[col_data$Condition == "Control"]
@@ -106,23 +119,18 @@ calcEffectSize <- function(se, perm = 10000) {
     return(se)
 }
 
-calcPvalue <- function(se) {
+calcPvalue <- function(se, f = "wilcox.test") {
     mat <- SummarizedExperiment::assay(se, "Scores")
     col_data <- SummarizedExperiment::colData(se)
-    # Control <- col_data$Taxon[col_data$Condition == "Control"]
-    # Case <- col_data$Taxon[col_data$Condition == "Case"]
     Control <- col_data$Taxon[col_data$Condition == "Control"]
     Case <- col_data$Taxon[col_data$Condition == "Case"]
     p_val <- apply(mat, 1, function(x) {
         co <- x[1:length(Control)]
         ca <- x[(length(Control)+1):ncol(mat)] # increased
-
-        # ct <- table(co, ca)
-        # round(fisher.test(ct)$p.value, 3)
-
-        round(wilcox.test(ca, co)$p.value, 3)
+        # round(wilcox.test(ca, co)$p.value, 3)
+        res <- do.call(what = f, args = list(ca, co))
+        round(res$p.value, 3)
     })
-
     if (all(rownames(se) == names(p_val))) {
         SummarizedExperiment::rowData(se)$P_value <- p_val
     }
@@ -134,14 +142,15 @@ calcPvalue <- function(se) {
 #' @param control Set of controls (decreased)
 #' @param case  Set of cases (increased)
 #' @param term_list List of sigs
+#' @param opt "counts" or "scores"
 #'
 #' @return A SummarizedExperiment
 #' @export
 #'
-dbEn2 <- function(control, case, term_list) {
-    se <- dbMat(control = control, case = case, term_list = term_list)
+dbEn2 <- function(control, case, term_list, opt = "counts", f = "wilcox.test") {
+    se <- dbMat(control = control, case = case, term_list = term_list, opt = opt)
     se <- calcEffectSize(se)
-    se <- calcPvalue(se)
+    se <- calcPvalue(se, f = f)
     ef <- SummarizedExperiment::rowData(se)$Effect_size
     names(ef) <- rownames(se)
     se <- se[names(sort(ef, decreasing = TRUE)),]
@@ -159,6 +168,13 @@ dbEn2 <- function(control, case, term_list) {
 dbHt <- function(se) {
 
     mat <- SummarizedExperiment::assay(se, "Scores")
+    score_name <- "Score"
+    # if (any(mat != 0 & mat != 1)) {
+    #     score_name <- "Score"
+    # } else {
+    #     score_name <- "Count"
+    # }
+
     col_data <- SummarizedExperiment::colData(se)
     row_data <- SummarizedExperiment::rowData(se)
 
@@ -209,7 +225,13 @@ dbHt <- function(se) {
     pValCol <- function(values) {
         circlize::colorRamp2(
             breaks = c(min(values, na.rm = TRUE), max(values, na.rm = TRUE)),
-            colors = c("white", "green")
+            colors = c("white", "darkcyan")
+        )
+    }
+    pValColWhite <- function(values) {
+        circlize::colorRamp2(
+            breaks = c(min(values, na.rm = TRUE), max(values, na.rm = TRUE)),
+            colors = c("white", "white")
         )
     }
     log10_pval <- -log10(row_data$P_value + 1)
@@ -221,9 +243,15 @@ dbHt <- function(se) {
     right_ha <- ComplexHeatmap::HeatmapAnnotation(
         "-log10(pval+1)" = ComplexHeatmap::anno_simple(
             x = -log10(row_data$P_value + 1),
-            col = pValCol(-log10(row_data$P_value + 1)),
+            col = pValCol(-log10(row_data$P_value + 1))
+            # pch = pch_var
+        ),
+        "pval < 0.1" = ComplexHeatmap::anno_simple(
+            x = -log10(row_data$P_value + 1),
+            col = pValColWhite(-log10(row_data$P_value + 1)),
             pch = pch_var
         ),
+
         # "Effect size" = ComplexHeatmap::anno_barplot(
         "Mean difference" = ComplexHeatmap::anno_barplot(
             row_data$Effect_size, width = unit(5, "cm"),
@@ -245,7 +273,8 @@ dbHt <- function(se) {
         matrix = mat,
 
         ## Heatmap color and legend
-        name = "Count",
+        # name = "Count",
+        name = score_name,
         col = htColor(mat),
         heatmap_legend_param = list(
             direction = "horizontal", title_position = "topcenter"

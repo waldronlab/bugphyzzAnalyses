@@ -4,16 +4,12 @@
 \alias{dbMat}
 \title{Create matrix for dbBact approach}
 \usage{
-dbMat(control, case, term_list, opt = "integer")
+dbMat(control, case, term_list, opt = "counts")
 }
 \arguments{
 \item{term_list}{A list of signatures from bugphyzz.}
 
-\item{opt}{Character string. Keywords accepted: "integer" or "double".
-If "integer" (default), only presence and absence is considered. If
-"double", the bugphyzz scores will be used (weighted mode). The latter
-only works if the scores are included in the bugphyzz signatures in the
-"Score" attribute.}
+\item{opt}{Character string. "counts" (default) or "scores".}
 
 \item{decreased}{Character vector. Down-regulated set (or control).}
 

@@ -59,20 +59,16 @@ getCatSignatures <- function(bsdb, tax_level, min_size = 5) {
 
 }
 
-#' Filter even signatures from experiments
+#' Filter even dataset from BugSigDB
 #'
-#' \code{filterEvenSignatures} selects only signatures from experiments
-#' in BSDB that have exactly two signatures: increased and decreased.
-#' From case-control studies only.
+#' @param bsdb  A BSDB data.frame.
+#' @param rank Character string "genus" or "species".
+#' @param min_size Number of signatures.
 #'
-#' @param bsdb A BugSigDB dataset from importBugSigDB.
-#' @param rank Character string. "genus" or "species"
-#' @param min_size Minimum number of the signatures to be included.
-#'
-#' @return A list of signatures nested by direction and condition.
+#' @return A data.frame.
 #' @export
 #'
-filterEvenSignatures <- function(bsdb, rank, min_size = 10) {
+filterEvenDat <- function(bsdb, rank, min_size = 10) {
     bsdb_ids <- getSignatures(
         df = bsdb, tax.id.type = "ncbi", tax.level = rank, min.size = min_size
     )
@@ -98,6 +94,51 @@ filterEvenSignatures <- function(bsdb, rank, min_size = 10) {
     if (!length(dats)) {
         return(NULL)
     }
+    return(dats)
+}
+
+
+#' Filter even signatures from experiments
+#'
+#' \code{filterEvenSignatures} selects only signatures from experiments
+#' in BSDB that have exactly two signatures: increased and decreased.
+#' From case-control studies only.
+#'
+#' @param bsdb A BugSigDB dataset from importBugSigDB.
+#' @param rank Character string. "genus" or "species"
+#' @param min_size Minimum number of the signatures to be included.
+#'
+#' @return A list of signatures nested by direction and condition.
+#' @export
+#'
+filterEvenSignatures <- function(bsdb, rank, min_size = 10) {
+
+    dats <- filterEvenDat(bsdb, rank, min_size)
+    # bsdb_ids <- getSignatures(
+    #     df = bsdb, tax.id.type = "ncbi", tax.level = rank, min.size = min_size
+    # )
+    # if (!length(bsdb_ids)) {
+    #     return(NULL)
+    # }
+    # bsdb_ids <- bsdb_ids |>
+    #     names() |>
+    #     sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", x = _)
+    # dats <- bsdb |>
+    #     filter(`BSDB ID` %in% bsdb_ids) |>
+    #     group_by(Study, Experiment) |>
+    #     mutate(count = n()) |>
+    #     ungroup() |>
+    #     filter(count == 2) |>
+    #     group_by(Study, Experiment) |>
+    #     arrange(`Abundance in Group 1`) |>
+    #     mutate(comb = paste0(sort(`Abundance in Group 1`), collapse = "-")) |>
+    #     ungroup() |>
+    #     filter(comb == "decreased-increased") |>
+    #     arrange(`BSDB ID`) |>
+    #     {\(y) split(y, y$`Abundance in Group 1`)}()
+    # if (!length(dats)) {
+    #     return(NULL)
+    # }
     sigs <- dats |>
         map(~ {
             getSignatures(

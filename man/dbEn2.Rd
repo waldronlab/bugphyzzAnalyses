@@ -4,7 +4,7 @@
 \alias{dbEn2}
 \title{Create SE with dbBact approach}
 \usage{
-dbEn2(control, case, term_list)
+dbEn2(control, case, term_list, opt = "counts", f = "wilcox.test")
 }
 \arguments{
 \item{control}{Set of controls (decreased)}
@@ -12,6 +12,8 @@ dbEn2(control, case, term_list)
 \item{case}{Set of cases (increased)}
 
 \item{term_list}{List of sigs}
+
+\item{opt}{"counts" or "scores"}
 }
 \value{
 A SummarizedExperiment

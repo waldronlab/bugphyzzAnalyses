@@ -33,6 +33,8 @@ body_sites <- c(
 ranks <- c(genus = "genus", species = "species")
 directions <- c(increased = "increased", decreased = "decreased")
 
+score_opt <- "counts"
+
 ```
 
 # Data
@@ -98,43 +100,41 @@ Create concatenated signatures:
 
 ```{r}
 catSigs_g <- map(bsdb_subsets_by_bodysite, ~ {
-    getCatSignatures(.x, "genus", min_size = 10)
+    getCatSignatures(.x, "genus", min_size = 5)
 }) |> 
     discard(~ !length(.x))
 catSigs_s <- map(bsdb_subsets_by_bodysite, ~ {
-    getCatSignatures(.x, "species", min_size = 10)
+    getCatSignatures(.x, "species", min_size = 5)
 }) |> 
     discard(~ !length(.x))
 ```
-
-
 
 ```{r, warning=FALSE}
 ## There are warnings for the wilcox test
 feces_enriched_g <- map2(
     .x = catSigs_g$feces$decreased,
     .y = catSigs_g$feces$increased,
-    ~ dbEn2(control = .x, case = .y, term_list = bpSigs_g)
+    ~ dbEn2(control = .x, case = .y, term_list = bpSigs_g, opt = score_opt)
 )
 feces_enriched_s <- map2(
     .x = catSigs_s$feces$decreased,
     .y = catSigs_s$feces$increased,
-    ~ dbEn2(control = .x, case = .y, term_list = bpSigs_s)
+    ~ dbEn2(control = .x, case = .y, term_list = bpSigs_s, opt = score_opt)
 )
 mouth_enriched_g <- map2(
     .x = catSigs_g$mouth$decreased,
     .y = catSigs_g$mouth$increased,
-    ~ dbEn2(control = .x, case = .y, term_list = bpSigs_g)
+    ~ dbEn2(control = .x, case = .y, term_list = bpSigs_g, opt = score_opt)
 )
 mouth_enriched_s <- map2(
     .x = catSigs_s$mouth$decreased,
     .y = catSigs_s$mouth$increased,
-    ~ dbEn2(control = .x, case = .y, term_list = bpSigs_s)
+    ~ dbEn2(control = .x, case = .y, term_list = bpSigs_s, opt = score_opt)
 )
 ```
 
 
-```{r, fig.height=11, fig.width=20}
+```{r, fig.height=13, fig.width=22}
 ht <- dbHt(feces_enriched_s$`Colorectal-cancer`)
 ```
 

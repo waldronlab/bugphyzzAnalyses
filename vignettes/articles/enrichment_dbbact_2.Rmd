@@ -2,8 +2,6 @@
 title: "Enrichment with dbBact approach"
 subtitle: "Filter even signatures then concatenate"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     toc: yes
 ---
@@ -35,6 +33,8 @@ body_sites <- c(
 ranks <- c(genus = "genus", species = "species")
 directions <- c(increased = "increased", decreased = "decreased")
 
+score_opt <- "counts"
+stat_test <- "wilcox.test"
 ```
 
 # Data
@@ -73,9 +73,13 @@ bsdb <- importBugSigDB(version = bsdb_doi)
 bsdb <- bsdb |> 
     filter(`Host species` == "Homo sapiens") |> 
     filter(`Abundance in Group 1` %in% c("increased", "decreased")) |>
-    filter(!is.na(`Body site`)) |> 
-    filter(`Study design` == "case-control" )
+    filter(!is.na(`Body site`))
+    # filter(`Study design` == "case-control" )
 dim(bsdb)
+```
+
+```{r}
+sort(table(bsdb$`Study design`), decreasing = TRUE)
 ```
 
 Subset by body site (using ontologies):
@@ -95,6 +99,47 @@ for (i in seq_along(bsdb_subsets_by_bodysite)) {
     }
 }
 ```
+
+Filter even experiments for genus:
+
+```{r}
+even_bsdb_g <- map(
+    bsdb_subsets_by_bodysite, ~ filterEvenDat(.x, "genus", min_size = 5)
+) |> 
+    discard(~ !length(.x))
+## Number of experiments
+map_int(even_bsdb_g, ~ nrow(.x[[1]]))
+```
+
+Types of studies:
+
+```{r}
+even_bsdb_g |> 
+    list_flatten() |> 
+    bind_rows() |> 
+    count(`Study design`) |> 
+    arrange(-n)
+```
+
+Filter even experiments for species:
+
+```{r}
+even_bsdb_s <- map(
+    bsdb_subsets_by_bodysite, ~ filterEvenDat(.x, "species", min_size = 5)
+) |> 
+    discard(~ !length(.x))
+## Number of experiments
+map_int(even_bsdb_s, ~ nrow(.x[[1]]))
+```
+
+```{r}
+even_bsdb_s |> 
+    list_flatten() |> 
+    bind_rows() |> 
+    count(`Study design`) |> 
+    arrange(-n)
+```
+
 
 Filter even experiments for genus:
 
@@ -120,7 +165,6 @@ map_lgl(even_sigs_s, ~ {
 })
 ```
 
-
 Create concatenated signatures:
 
 ```{r}
@@ -128,45 +172,92 @@ catSigs_g <- map(even_sigs_g, concatenateEvenSigs)
 catSigs_s <- map(even_sigs_s, concatenateEvenSigs)
 ```
 
-
 Run enrichment using dbBact approach:
 
 ```{r, warning=FALSE}
+myFisherTest <- function(control, case) {
+    controlInSet <- sum(control[control > 0])
+    controlNotInSet <- sum(control == 0)
+
+    caseInSet <- sum(case[case > 0])
+    caseNotInSet <- sum(case == 0)
+    mat <- matrix(
+        data = c(
+            caseInSet, caseNotInSet,
+            controlInSet, controlNotInSet
+        ),
+        byrow = TRUE, nrow = 2
+    )
+    colnames(mat) <- c("annotated", "noAnnotated")
+    rownames(mat) <- c("Case", "Control")
+
+    fisher.test(mat, alternative = "two.sided")
+}
+stat_test <- "myFisherTest"
+
 ## There are warnings for the wilcox test
 feces_enriched_g <- map2(
-    .x = catSigs_g$feces$decreased,
-    .y = catSigs_g$feces$increased,
-    ~ dbEn2(control = .x, case = .y, term_list = bpSigs_g)
+    .x = catSigs_g$feces$decreased[5],
+    .y = catSigs_g$feces$increased[5],
+    ~ dbEn2(
+        control = .x, case = .y, term_list = bpSigs_g, opt = score_opt, 
+        f = stat_test
+    )
 )
 feces_enriched_s <- map2(
     .x = catSigs_s$feces$decreased,
     .y = catSigs_s$feces$increased,
-    ~ dbEn2(control = .x, case = .y, term_list = bpSigs_s)
+    ~ dbEn2(
+        control = .x, case = .y, term_list = bpSigs_s, opt = score_opt,
+        f = stat_test
+    )
 )
 mouth_enriched_g <- map2(
     .x = catSigs_g$mouth$decreased,
     .y = catSigs_g$mouth$increased,
-    ~ dbEn2(control = .x, case = .y, term_list = bpSigs_g)
+    ~ dbEn2(
+        control = .x, case = .y, term_list = bpSigs_g, opt = score_opt, 
+        f = stat_test
+    )
 )
 mouth_enriched_s <- map2(
     .x = catSigs_s$mouth$decreased,
     .y = catSigs_s$mouth$increased,
-    ~ dbEn2(control = .x, case = .y, term_list = bpSigs_s)
+    ~ dbEn2(
+        control = .x, case = .y, term_list = bpSigs_s, opt = score_opt,
+        f = stat_test
+    )
 )
 ```
 
-
 # Colorectal cancer
 
-```{r, fig.height=11, fig.width=11}
+```{r, fig.height=15, fig.width=35}
 ht <- dbHt(feces_enriched_s$`Colorectal-cancer`)
 ```
-
 # Smoking behaviour
 
-```{r, fig.width=15, fig.height=11}
+```{r, fig.width=25, fig.height=15}
 ht2 <- dbHt(mouth_enriched_s$`Smoking-behavior`)
 ```
+
+# COVID-19
+
+```{r, fig.width=30, fig.height=15}
+ht3 <- dbHt(feces_enriched_s$`COVID-19`)
+```
+
+
+# A single study: NYCHANEs in BugSigDB
+
+```{r}
+
+```
+
+
+
+
+
 # Session information
 
 ```{r}
