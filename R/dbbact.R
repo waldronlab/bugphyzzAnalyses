@@ -100,7 +100,7 @@ dbMat <- function(control, case, term_list, opt = "counts") {
             case = case
         )
     )
-    se <- se[, which(Prevalence > 0.25)]
+    se <- se[, which(Prevalence > 0)]
     return(se)
 }
 

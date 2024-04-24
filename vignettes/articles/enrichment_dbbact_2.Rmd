@@ -23,7 +23,6 @@ library(purrr)
 library(dplyr)
 library(stringr)
 library(tidyr)
-library(ggplot2)
 library(ComplexHeatmap)
 
 ## Variables
@@ -39,12 +38,14 @@ stat_test <- "wilcox.test"
 
 # Data
 
-Import bugphyzz:
+Import bugphyzz and create signatures at the genus and species levels:
 
 ```{r, warning=FALSE, message=FALSE}
-bp <- importBugphyzz()
+bp <- importBugphyzz(
+    version = "10.5281/zenodo.10980813", # v1.0.2
+    force_download = TRUE
+)
 
-## Genus signatures
 bpSigs_g <- map(bp, ~ {
     makeSignatures(
         dat = .x,  tax_id_type = "NCBI_ID", tax_level = "genus",
@@ -54,7 +55,6 @@ bpSigs_g <- map(bp, ~ {
     list_flatten(name_spec = "{inner}") |> 
     discard(is.null)
 
-## Species signatures
 bpSigs_s <- map(bp, ~ {
     makeSignatures(
         dat = .x,  tax_id_type = "NCBI_ID", tax_level = "species",
@@ -69,20 +69,15 @@ Import BugSigDB:
 
 ```{r}
 bsdb_doi <- "10.5281/zenodo.10627578" # v1.2.1
-bsdb <- importBugSigDB(version = bsdb_doi)
+bsdb <- importBugSigDB(version = bsdb_doi, cache = FALSE)
 bsdb <- bsdb |> 
     filter(`Host species` == "Homo sapiens") |> 
     filter(`Abundance in Group 1` %in% c("increased", "decreased")) |>
     filter(!is.na(`Body site`))
-    # filter(`Study design` == "case-control" )
 dim(bsdb)
 ```
 
-```{r}
-sort(table(bsdb$`Study design`), decreasing = TRUE)
-```
-
-Subset by body site (using ontologies):
+Subset by body site:
 
 ```{r}
 uberon <- getOntology(onto = "uberon")
@@ -100,6 +95,9 @@ for (i in seq_along(bsdb_subsets_by_bodysite)) {
 }
 ```
 
+>Here, I'll call "even experiments" to those that have exactly two signatues,
+increased and decreased, and both pass the minimum size threshold.
+
 Filter even experiments for genus:
 
 ```{r}
@@ -107,7 +105,7 @@ even_bsdb_g <- map(
     bsdb_subsets_by_bodysite, ~ filterEvenDat(.x, "genus", min_size = 5)
 ) |> 
     discard(~ !length(.x))
-## Number of experiments
+## Number of experiments with paired signatures:
 map_int(even_bsdb_g, ~ nrow(.x[[1]]))
 ```
 
@@ -115,10 +113,12 @@ Types of studies:
 
 ```{r}
 even_bsdb_g |> 
-    list_flatten() |> 
-    bind_rows() |> 
-    count(`Study design`) |> 
-    arrange(-n)
+    list_flatten(name_spec = "{outer}") |> 
+    bind_rows(.id = "bodysite") |> 
+    count(bodysite, Condition) |> 
+    mutate(Nexp = n / 2) |> 
+    arrange(bodysite, -n) |> 
+    myDataTable()
 ```
 
 Filter even experiments for species:
@@ -128,23 +128,24 @@ even_bsdb_s <- map(
     bsdb_subsets_by_bodysite, ~ filterEvenDat(.x, "species", min_size = 5)
 ) |> 
     discard(~ !length(.x))
-## Number of experiments
+## Number of experiments with paired signatures
 map_int(even_bsdb_s, ~ nrow(.x[[1]]))
 ```
 
 ```{r}
 even_bsdb_s |> 
-    list_flatten() |> 
-    bind_rows() |> 
-    count(`Study design`) |> 
-    arrange(-n)
+    list_flatten(name_spec = "{outer}") |> 
+    bind_rows(.id = "bodysite") |> 
+    count(bodysite, Condition) |> 
+    mutate(n = n / 2) |> 
+    arrange(bodysite, -n) |> 
+    myDataTable()
 ```
 
-
-Filter even experiments for genus:
+Filter even signatures for genus:
 
 ```{r}
-even_sigs_g <- map(
+even_sigs_g <- map( 
     bsdb_subsets_by_bodysite, ~ filterEvenSignatures(.x, "genus", min_size = 5)
 ) |> 
     discard(~ !length(.x))
@@ -153,7 +154,7 @@ map_lgl(even_sigs_g, ~ {
 })
 ```
 
-Filter even experiments for species:
+Filter even signatures for species:
 
 ```{r}
 even_sigs_s <- map(
@@ -230,15 +231,23 @@ mouth_enriched_s <- map2(
 )
 ```
 
-# Colorectal cancer
+# Exploration of particular cases
 
-```{r, fig.height=15, fig.width=15}
-ht <- dbHt(feces_enriched_s$`Colorectal-cancer`)
+## Colorectal cancer - genus
+
+```{r, fig.height=12, fig.width=12}
+crc_g <- dbHt(feces_enriched_g$`Colorectal-cancer`)
+```
+
+## Colorectal cancer - species
+
+```{r, fig.height=15, fig.width=30}
+crc_s <- dbHt(feces_enriched_s$`Colorectal-cancer`)
 ```
 # Smoking behaviour
 
 ```{r, fig.width=25, fig.height=15}
-ht2 <- dbHt(mouth_enriched_s$`Smoking-behavior`)
+smo <- dbHt(mouth_enriched_s$`Smoking-behavior`)
 ```
 
 # COVID-19
@@ -247,12 +256,6 @@ ht2 <- dbHt(mouth_enriched_s$`Smoking-behavior`)
 ht3 <- dbHt(feces_enriched_s$`COVID-19`)
 ```
 
-
-# A single study: NYCHANEs in BugSigDB
-
-```{r}
-
-```
 
 # CRC - A single study
 
