@@ -256,7 +256,6 @@ smo <- dbHt(mouth_enriched_s$`Smoking-behavior`)
 ht3 <- dbHt(feces_enriched_s$`COVID-19`)
 ```
 
-
 # CRC - A single study
 
 ```{r}
