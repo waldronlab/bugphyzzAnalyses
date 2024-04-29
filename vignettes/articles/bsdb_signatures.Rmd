@@ -112,7 +112,7 @@ Typical Microbiome Signatures:
 
 ```{r}
 thrs <- elbows()
-thrs[] <- 0.2
+thrs[] <- 0.2 # Change to 25
 tms_sigs <- vector("list", length(body_sites) * length(ranks))
 counter <- 1
 for (i in seq_along(body_sites)) {

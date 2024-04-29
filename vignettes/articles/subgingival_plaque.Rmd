@@ -133,6 +133,10 @@ Combine into a single table:
 ```{r}
 edger_up <- edger
 gn_sigs_bk <- c(gn_sigs, list(background = rownames(edger)))
+## Ora is performed by comparing the significant group (p.adjust < 0.1)
+## against the background. The background should include all of the
+## taxa in the experiment. That's why I assigned an adjusted p-value of 
+## 1 to all taxa with a negative FC in the code below.
 rowData(edger_up)$ADJ.PVAL <- ifelse(
   rowData(edger_up)$FC < 0, 1, rowData(edger_up)$ADJ.PVAL
 )
@@ -168,6 +172,51 @@ ora <- bind_rows(ora_up_df, ora_down_df) |>
 myDataTable(ora)
 ```
 
+## dbBact approach
+
+```{r, warning=FALSE}
+bpSigs_g <- map(
+    bp, ~ {
+        makeSignatures(.x, tax_id_type = "NCBI_ID", tax_level = "genus")
+}) |> 
+    list_flatten(name_spec = "{inner}") |> 
+    discard(is.null)
+
+# bpSigs_g <- bpSigs_g[grep("aerophilicity", names(bpSigs_g))]
+```
+
+
+```{r}
+con <- rownames(edger)[which(rowData(edger)$FC > 0 & rowData(edger)$ADJ.PVAL < 0.1)]
+con <- taxizedb::name2taxid(con, db = "ncbi", out_type = "summary")
+con <- con$id[con$id != "508215"]
+attr(con, "nexp") <- 1
+```
+
+
+```{r}
+cas <- rownames(edger)[which(rowData(edger)$FC < 0 & rowData(edger)$ADJ.PVAL < 0.1)]
+cas <- cas[which(cas != "TG5")]
+cas <- taxizedb::name2taxid(cas, db = "ncbi")
+attr(cas, "nexp") <- 1
+
+```
+
+
+```{r}
+se <- dbEn2(con, cas, bpSigs_g)
+```
+
+```{r, fig.width = 12, fig.height=12}
+dbHt(se)
+```
+
+
+
+
+
+
+
 
 # ORA - NO ASR
 
@@ -201,6 +250,12 @@ ora_noasr <- bind_rows(ora_up_df_noasr, ora_down_df_noasr) |>
 
 myDataTable(ora_noasr)
 ```
+
+
+
+
+
+
 
 
 # Quick checks
