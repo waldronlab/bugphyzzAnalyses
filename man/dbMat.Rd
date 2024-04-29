@@ -4,7 +4,7 @@
 \alias{dbMat}
 \title{Create matrix for dbBact approach}
 \usage{
-dbMat(control, case, term_list, opt = "counts")
+dbMat(control, case, term_list, opt = "counts", prev = 0.25)
 }
 \arguments{
 \item{term_list}{A list of signatures from bugphyzz.}
