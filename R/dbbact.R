@@ -12,7 +12,7 @@
 #' @return A matrix
 #' @export
 #'
-dbMat <- function(control, case, term_list, opt = "counts") {
+dbMat <- function(control, case, term_list, opt = "counts", prev = 0.25) {
 
     mat_list <- vector("list", length(term_list))
     for (i in seq_along(mat_list)) {
@@ -100,11 +100,11 @@ dbMat <- function(control, case, term_list, opt = "counts") {
             case = case
         )
     )
-    se <- se[, which(Prevalence > 0)]
+    se <- se[, which(Prevalence > prev)]
     return(se)
 }
 
-calcEffectSize <- function(se) {
+calcEffectSize <- function(se, perm = 1000) {
     mat <- SummarizedExperiment::assay(se, "Scores")
     col_data <- SummarizedExperiment::colData(se)
     Control <- col_data$Taxon[col_data$Condition == "Control"]
@@ -116,22 +116,20 @@ calcEffectSize <- function(se) {
         mean(ca) - mean(co)
     })
 
-    # pVals <- apply(mat, 1, function(x) {
-    #     co <- x[1:length(Control)]
-    #     ca <- x[(length(Control)+1):ncol(mat)] # increased
-    #     observed_es <- mean(ca) - mean(co)
-    #     combined <- c(co, ca)
-    #     permuted_es <- vector("numeric", perm)
-    #     for (i in seq_along(permuted_es)) {
-    #         shuffled_data <- sample(combined)
-    #         shuffled_group1 <- shuffled_data[1:length(co)]
-    #         shuffled_group2 <- shuffled_data[(length(co) + 1):length(shuffled_data)]
-    #         permuted_es[i] <- mean(shuffled_group2) - mean(shuffled_group1)
-    #     }
-    #     mean(abs(permuted_es) >= abs(observed_es))
-    # })
-
-
+    pVals <- apply(mat, 1, function(x) {
+        co <- x[1:length(Control)]
+        ca <- x[(length(Control)+1):ncol(mat)] # increased
+        observed_es <- mean(ca) - mean(co)
+        combined <- c(co, ca)
+        permuted_es <- vector("numeric", perm)
+        for (i in seq_along(permuted_es)) {
+            shuffled_data <- sample(combined)
+            shuffled_group1 <- shuffled_data[1:length(co)]
+            shuffled_group2 <- shuffled_data[(length(co) + 1):length(shuffled_data)]
+            permuted_es[i] <- mean(shuffled_group2) - mean(shuffled_group1)
+        }
+        mean(abs(permuted_es) >= abs(observed_es))
+    })
     dir <- dplyr::case_when(
         es < 0 ~ "Control",
         es > 0 ~ "Case",
@@ -141,8 +139,8 @@ calcEffectSize <- function(se) {
     dir <- factor(dir, levels = c("Case", "Unchanged", "Control"))
     dat <- data.frame(
         Effect_size = es,
-        Direction = dir
-        # P_value = pVals
+        Direction = dir,
+        PermP = pVals
     )
     rownames(dat) <- names(es)
     SummarizedExperiment::rowData(se) <- S4Vectors::DataFrame(dat)
@@ -157,7 +155,6 @@ calcPvalue <- function(se, f = "wilcox.test") {
     p_val <- apply(mat, 1, function(x) {
         co <- x[1:length(Control)]
         ca <- x[(length(Control)+1):ncol(mat)] # increased
-        # round(wilcox.test(ca, co)$p.value, 3)
         res <- do.call(what = f, args = list(ca, co))
         round(res$p.value, 3)
     })
@@ -177,16 +174,18 @@ calcPvalue <- function(se, f = "wilcox.test") {
 #' @return A SummarizedExperiment
 #' @export
 #'
-dbEn2 <- function(control, case, term_list, opt = "counts", f = "wilcox.test") {
+dbEn2 <- function(
+        control, case, term_list, opt = "counts", f = "wilcox.test",
+        prev = prev, perm = 1000
+) {
     se <- dbMat(control = control, case = case, term_list = term_list, opt = opt)
-    se <- calcEffectSize(se)
+    se <- calcEffectSize(se, perm = perm)
     se <- calcPvalue(se, f = f)
     ef <- SummarizedExperiment::rowData(se)$Effect_size
     names(ef) <- rownames(se)
     se <- se[names(sort(ef, decreasing = TRUE)),]
     return(se)
 }
-
 
 #' Plot heatmap of output of dbEn2
 #'
@@ -195,7 +194,7 @@ dbEn2 <- function(control, case, term_list, opt = "counts", f = "wilcox.test") {
 #' @return A Heatmap
 #' @export
 #'
-dbHt <- function(se, row_pad = 2) {
+dbHt <- function(se, row_pad = 2, pCol = "P_value") {
     se <- se[which(rowData(se)$Effect_size != 0),]
 
     mat <- SummarizedExperiment::assay(se, "Scores")
@@ -275,23 +274,23 @@ dbHt <- function(se, row_pad = 2) {
             colors = c("white", "white")
         )
     }
-    log10_pval <- -log10(row_data$P_value + 1)
+    log10_pval <- -log10(row_data[[pCol]] + 1)
     pch_var <- case_when(
         # row_data$P_value < 0.05 ~ 8,
-        row_data$P_value < 0.1 ~ 8,
+        row_data[[pCol]] < 0.1 ~ 8,
         TRUE ~ NA
     )
     right_ha <- ComplexHeatmap::HeatmapAnnotation(
         "-log10(pval+1)" = ComplexHeatmap::anno_simple(
-            x = -log10(row_data$P_value + 1),
+            x = -log10(row_data[[pCol]] + 1),
             # col = pValCol(-log10(row_data$P_value + 1)),
             col = pValCol(c(-0.30103, 0)),
             border = TRUE
             # pch = pch_var
         ),
         "pval < 0.1" = ComplexHeatmap::anno_simple(
-            x = -log10(row_data$P_value + 1),
-            col = pValColWhite(-log10(row_data$P_value + 1)),
+            x = -log10(row_data[[pCol]] + 1),
+            col = pValColWhite(-log10(row_data[[pCol]] + 1)),
             pch = pch_var
         ),
 

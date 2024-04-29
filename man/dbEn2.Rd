@@ -4,7 +4,15 @@
 \alias{dbEn2}
 \title{Create SE with dbBact approach}
 \usage{
-dbEn2(control, case, term_list, opt = "counts", f = "wilcox.test")
+dbEn2(
+  control,
+  case,
+  term_list,
+  opt = "counts",
+  f = "wilcox.test",
+  prev = prev,
+  perm = 1000
+)
 }
 \arguments{
 \item{control}{Set of controls (decreased)}

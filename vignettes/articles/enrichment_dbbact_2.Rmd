@@ -34,6 +34,8 @@ directions <- c(increased = "increased", decreased = "decreased")
 
 score_opt <- "counts"
 stat_test <- "wilcox.test"
+
+permV <- 10000
 ```
 
 # Data
@@ -202,7 +204,7 @@ feces_enriched_g <- map2(
     .y = catSigs_g$feces$increased,
     ~ dbEn2(
         control = .x, case = .y, term_list = bpSigs_g, opt = score_opt, 
-        f = stat_test
+        f = stat_test, perm = permV
     )
 )
 feces_enriched_s <- map2(
@@ -210,7 +212,7 @@ feces_enriched_s <- map2(
     .y = catSigs_s$feces$increased,
     ~ dbEn2(
         control = .x, case = .y, term_list = bpSigs_s, opt = score_opt,
-        f = stat_test
+        f = stat_test, perm = permV
     )
 )
 mouth_enriched_g <- map2(
@@ -218,7 +220,7 @@ mouth_enriched_g <- map2(
     .y = catSigs_g$mouth$increased,
     ~ dbEn2(
         control = .x, case = .y, term_list = bpSigs_g, opt = score_opt, 
-        f = stat_test
+        f = stat_test, perm = permV
     )
 )
 mouth_enriched_s <- map2(
@@ -226,7 +228,7 @@ mouth_enriched_s <- map2(
     .y = catSigs_s$mouth$increased,
     ~ dbEn2(
         control = .x, case = .y, term_list = bpSigs_s, opt = score_opt,
-        f = stat_test
+        f = stat_test, perm = permV
     )
 )
 ```
@@ -236,27 +238,29 @@ mouth_enriched_s <- map2(
 ## Colorectal cancer - genus
 
 ```{r, fig.height=12, fig.width=12}
-crc_g <- dbHt(feces_enriched_g$`Colorectal-cancer`)
+crc_g <- dbHt(feces_enriched_g$`Colorectal-cancer`, pCol = "PermP")
 ```
 
 ## Colorectal cancer - species
 
-```{r, fig.height=15, fig.width=30}
-crc_s <- dbHt(feces_enriched_s$`Colorectal-cancer`)
+```{r, fig.height=15, fig.width=15}
+crc_s <- dbHt(feces_enriched_s$`Colorectal-cancer`, pCol = "PermP")
 ```
 # Smoking behaviour
 
 ```{r, fig.width=25, fig.height=15}
-smo <- dbHt(mouth_enriched_s$`Smoking-behavior`)
+smo <- dbHt(mouth_enriched_s$`Smoking-behavior`, pCol = "PermP")
 ```
 
 # COVID-19
 
-```{r, fig.width=30, fig.height=15}
-ht3 <- dbHt(feces_enriched_s$`COVID-19`)
+```{r, fig.width=15, fig.height=15}
+ht3 <- dbHt(feces_enriched_s$`COVID-19`, pCol = "PermP")
 ```
 
 # CRC - A single study
+
+Study [544](https://bugsigdb.org/Study_544):
 
 ```{r}
 s544_co <- even_bsdb_s$feces$decreased |> 
@@ -272,9 +276,10 @@ s544_ca <- even_bsdb_s$feces$increased |>
 attr(s544_ca, "nexp") <- 1
 ```
 
-```{r, warning=FALSE}
-se <- dbEn2(s544_co, s544_ca, term_list = bpSigs_s, f = stat_test)
-dbHt(se)
+```{r, warning=FALSE, fig.width=12, fig.height=15}
+se <- dbEn2(s544_co, s544_ca, term_list = bpSigs_s, f = stat_test,
+            perm = 10000)
+dbHt(se, pCol = "P_value")
 ```
 
 # Session information
