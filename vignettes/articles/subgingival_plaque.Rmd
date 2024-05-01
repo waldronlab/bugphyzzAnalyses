@@ -210,14 +210,6 @@ se <- dbEn2(con, cas, bpSigs_g)
 ```{r, fig.width = 12, fig.height=12}
 dbHt(se)
 ```
-
-
-
-
-
-
-
-
 # ORA - NO ASR
 
 ```{r}
@@ -250,13 +242,6 @@ ora_noasr <- bind_rows(ora_up_df_noasr, ora_down_df_noasr) |>
 
 myDataTable(ora_noasr)
 ```
-
-
-
-
-
-
-
 
 # Quick checks
 
