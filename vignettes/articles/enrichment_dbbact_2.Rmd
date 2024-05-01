@@ -282,6 +282,19 @@ se <- dbEn2(s544_co, s544_ca, term_list = bpSigs_s, f = stat_test,
 dbHt(se, pCol = "P_value")
 ```
 
+```{r, fig.height=15}
+dbHt(feces_enriched_s$`Multiple-myeloma`)
+
+```
+
+
+
+```{r, fig.width=15, fig.height=13}
+dbHt(feces_enriched_g$Obesity)
+```
+
+
+
 # Session information
 
 ```{r}
