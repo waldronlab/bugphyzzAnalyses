@@ -12,7 +12,7 @@
 #' @return A matrix
 #' @export
 #'
-dbMat <- function(control, case, term_list, opt = "counts", prev = 0.25) {
+dbMat <- function(control, case, term_list, opt = "counts", prev = 0) {
 
     mat_list <- vector("list", length(term_list))
     for (i in seq_along(mat_list)) {
@@ -47,7 +47,6 @@ dbMat <- function(control, case, term_list, opt = "counts", prev = 0.25) {
             ca <- ca[sort(names(ca))]
         }
 
-
         mat <- matrix(data = c(co, ca), nrow = 1)
         colnames(mat) <- c(paste0("co_", names(co)), paste0("ca_", names(ca)))
         rownames(mat) <- names(term_list)[i]
@@ -59,21 +58,28 @@ dbMat <- function(control, case, term_list, opt = "counts", prev = 0.25) {
 
     if (opt == "counts") {
         if (!attr(control, "nexp") == attr(case, "nexp")) {
-            stop(
+            warning(
                 "Number of experiments don't match in control and case.",
                 call. = FALSE
             )
         }
-        n_exp <- attr(control, "nexp")
-        mat <- mat / n_exp
+        n_exp_ctrl <- attr(control, "nexp")
+        n_exp_case <- attr(case, "nexp")
 
-        control_prev <- table(control) / n_exp
-        case_prev <- table(case) / n_exp
+        # mat[,1:length(co)] <-
+        #     mat[,1:length(co)] / n_exp_ctrl
+        # mat[,(length(co) + 1):ncol(mat)] <-
+        #     mat[,(length(co) + 1):ncol(mat)] / n_exp_case
+
+        # control_prev <- table(control) / n_exp_ctrl
+        # case_prev <- table(case) / n_exp_case
+
+        control_prev <- table(control)
+        case_prev <- table(case)
 
         # co <- co / n_exp
         # ca <- ca / n_exp
     }
-
 
     cond <- c(rep("Control", length(co)), rep("Case", length(ca)))
     cond <- factor(cond, levels = c("Control", "Case"))
@@ -95,7 +101,8 @@ dbMat <- function(control, case, term_list, opt = "counts", prev = 0.25) {
         assays = S4Vectors::SimpleList(Scores = mat),
         colData = S4Vectors::DataFrame(dat),
         metadata = list(
-            nexp = n_exp,
+            nexp_ctrl = n_exp_ctrl,
+            nexp_case = n_exp_case,
             control = control,
             case = case
         )
@@ -179,6 +186,12 @@ dbEn2 <- function(
         prev = prev, perm = 1000
 ) {
     se <- dbMat(control = control, case = case, term_list = term_list, opt = opt)
+    if (!ncol(se)) {
+        warning(
+            "Not enough prevalence", call. = FALSE
+        )
+        return(NULL)
+    }
     se <- calcEffectSize(se, perm = perm)
     se <- calcPvalue(se, f = f)
     ef <- SummarizedExperiment::rowData(se)$Effect_size
@@ -198,9 +211,10 @@ dbHt <- function(se, row_pad = 2, pCol = "P_value") {
     se <- se[which(rowData(se)$Effect_size != 0),]
 
     mat <- SummarizedExperiment::assay(se, "Scores")
-    n_exp <- S4Vectors::metadata(se)$nexp
+    n_exp_ctrl <- S4Vectors::metadata(se)$nexp_ctrl
+    n_exp_case <- S4Vectors::metadata(se)$nexp_case
 
-    score_name <- paste0("Score (nexp:", n_exp, ")")
+    score_name <- paste0("Score (nexp:", n_exp_ctrl, "|", n_exp_case, ")")
     # if (any(mat != 0 & mat != 1)) {
     #     score_name <- "Score"
     # } else {
@@ -217,15 +231,15 @@ dbHt <- function(se, row_pad = 2, pCol = "P_value") {
     ## Color scale
     htColor <- function(mat) {
         circlize::colorRamp2(
-            # breaks = c(0, max(mat, na.rm = TRUE)),
-            breaks = c(0, 1),
+            breaks = c(0, max(mat, na.rm = TRUE)),
+            # breaks = c(0, 1),
             colors = c("white", "gray10")
         )
     }
 
     ## Top annotation
     top_ha <-  ComplexHeatmap::HeatmapAnnotation(
-        "Prevalence" = ComplexHeatmap::anno_barplot(
+        "Frequency" = ComplexHeatmap::anno_barplot(
             col_data$Prevalence,
             height = unit(5, "cm"),
             bar_width = 1,

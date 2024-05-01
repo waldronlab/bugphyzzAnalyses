@@ -35,6 +35,7 @@ getCatSignatures <- function(bsdb, tax_level, min_size = 5) {
         dec <- sigs$decreased[pos]
         dec <- unlist(dec, use.names = FALSE)
         decreased[[i]] <- dec
+        attr(decreased[[i]], "nexp") <- length(pos)
 
         names(increased)[i] <- cond_names[i]
         pos <- grep(rgx, names(sigs$increased))
@@ -43,6 +44,7 @@ getCatSignatures <- function(bsdb, tax_level, min_size = 5) {
         inc <- sigs$increased[pos]
         inc <- unlist(inc, use.names = FALSE)
         increased[[i]] <- inc
+        attr(increased[[i]], "nexp") <- length(pos)
     }
 
     decreased <- discard(decreased, ~ length(.x) < min_size)
