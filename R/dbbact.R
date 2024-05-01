@@ -8,11 +8,13 @@
 #' @param increased Character vector. Up-regulated set (or case).
 #' @param term_list A list of signatures from bugphyzz.
 #' @param opt Character string. "counts" (default) or "scores".
+#' @param prev Minimum prevalence. Default is 25% of the maximumn number of
+#' experiments (combining case and control).
 #'
 #' @return A matrix
 #' @export
 #'
-dbMat <- function(control, case, term_list, opt = "counts", prev = 0) {
+dbMat <- function(control, case, term_list, opt = "counts", prev = 1) {
 
     mat_list <- vector("list", length(term_list))
     for (i in seq_along(mat_list)) {
@@ -107,7 +109,20 @@ dbMat <- function(control, case, term_list, opt = "counts", prev = 0) {
             case = case
         )
     )
-    se <- se[, which(Prevalence > prev)]
+
+    # if (is.null(prev)) {
+    #     max_prev <- max(c(n_exp_ctrl, n_exp_case))
+    #     prev <- max_prev * 0.25
+    # }
+
+    pass_control <- sum(control_prev >= prev) >= 5
+    pass_case <- sum(case_prev >= prev) >= 5
+
+    if (isFALSE(pass_control && pass_case)) {
+        return(NULL)
+    }
+
+    se <- se[, which(Prevalence >= prev)]
     return(se)
 }
 
@@ -183,9 +198,15 @@ calcPvalue <- function(se, f = "wilcox.test") {
 #'
 dbEn2 <- function(
         control, case, term_list, opt = "counts", f = "wilcox.test",
-        prev = prev, perm = 1000
+        prev = NULL, perm = 1000
 ) {
-    se <- dbMat(control = control, case = case, term_list = term_list, opt = opt)
+    se <- dbMat(
+        control = control, case = case, term_list = term_list, opt = opt,
+        prev = prev
+    )
+    if (is.null(se)) {
+        return(NULL)
+    }
     if (!ncol(se)) {
         warning(
             "Not enough prevalence", call. = FALSE

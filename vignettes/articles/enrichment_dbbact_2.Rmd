@@ -36,6 +36,8 @@ score_opt <- "counts"
 stat_test <- "wilcox.test"
 
 permV <- 1000
+
+min_prev <- 2
 ```
 
 # Data
@@ -104,7 +106,7 @@ Filter even experiments for genus:
 
 ```{r}
 even_bsdb_g <- map(
-    bsdb_subsets_by_bodysite, ~ filterEvenDat(.x, "genus", min_size = 5)
+    bsdb_subsets_by_bodysite, ~ filterEvenDat(.x, "genus", min_size = 1)
 ) |> 
     discard(~ !length(.x))
 ## Number of experiments with paired signatures:
@@ -148,7 +150,7 @@ Filter even signatures for genus:
 
 ```{r}
 even_sigs_g <- map( 
-    bsdb_subsets_by_bodysite, ~ filterEvenSignatures(.x, "genus", min_size = 5)
+    bsdb_subsets_by_bodysite, ~ filterEvenSignatures(.x, "genus", min_size = 1)
 ) |> 
     discard(~ !length(.x))
 map_lgl(even_sigs_g, ~ {
@@ -160,7 +162,7 @@ Filter even signatures for species:
 
 ```{r}
 even_sigs_s <- map(
-    bsdb_subsets_by_bodysite, ~ filterEvenSignatures(.x, "species", min_size = 5)
+    bsdb_subsets_by_bodysite, ~ filterEvenSignatures(.x, "species", min_size = 1)
 ) |> 
     discard(~ !length(.x))
 map_lgl(even_sigs_s, ~ {
@@ -204,33 +206,37 @@ feces_enriched_g <- map2(
     .y = catSigs_g$feces$increased,
     ~ dbEn2(
         control = .x, case = .y, term_list = bpSigs_g, opt = score_opt, 
-        f = stat_test, perm = permV
+        f = stat_test, perm = permV, prev = min_prev
     )
-)
+) |> 
+    discard(is.null)
 feces_enriched_s <- map2(
     .x = catSigs_s$feces$decreased,
     .y = catSigs_s$feces$increased,
     ~ dbEn2(
         control = .x, case = .y, term_list = bpSigs_s, opt = score_opt,
-        f = stat_test, perm = permV
+        f = stat_test, perm = permV, prev = min_prev
     )
-)
+) |> 
+    discard(is.null)
 mouth_enriched_g <- map2(
     .x = catSigs_g$mouth$decreased,
     .y = catSigs_g$mouth$increased,
     ~ dbEn2(
         control = .x, case = .y, term_list = bpSigs_g, opt = score_opt, 
-        f = stat_test, perm = permV
+        f = stat_test, perm = permV, prev = min_prev
     )
-)
+) |> 
+    discard(is.null)
 mouth_enriched_s <- map2(
     .x = catSigs_s$mouth$decreased,
     .y = catSigs_s$mouth$increased,
     ~ dbEn2(
         control = .x, case = .y, term_list = bpSigs_s, opt = score_opt,
-        f = stat_test, perm = permV
+        f = stat_test, perm = permV, prev = min_prev
     )
-)
+) |> 
+    discard(is.null)
 ```
 
 # Exploration of particular cases
@@ -238,24 +244,24 @@ mouth_enriched_s <- map2(
 ## Colorectal cancer - genus
 
 ```{r, fig.height=12, fig.width=12}
-crc_g <- dbHt(feces_enriched_g$`Colorectal-cancer`, pCol = "PermP")
+crc_g <- dbHt(feces_enriched_g$`Colorectal-cancer`)
 ```
 
 ## Colorectal cancer - species
 
-```{r, fig.height=15, fig.width=15}
-crc_s <- dbHt(feces_enriched_s$`Colorectal-cancer`, pCol = "PermP")
+```{r, fig.height=15, fig.width=20}
+crc_s <- dbHt(feces_enriched_s$`Colorectal-cancer`)
 ```
 # Smoking behaviour
 
 ```{r, fig.width=25, fig.height=15}
-smo <- dbHt(mouth_enriched_s$`Smoking-behavior`, pCol = "PermP")
+smo <- dbHt(mouth_enriched_s$`Smoking-behavior`)
 ```
 
 # COVID-19
 
 ```{r, fig.width=15, fig.height=15}
-ht3 <- dbHt(feces_enriched_s$`COVID-19`, pCol = "PermP")
+ht3 <- dbHt(feces_enriched_s$`COVID-19`)
 ```
 
 # CRC - A single study

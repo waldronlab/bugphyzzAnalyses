@@ -115,22 +115,26 @@ feces_enriched_g <- map2(
     .x = catSigs_g$feces$decreased,
     .y = catSigs_g$feces$increased,
     ~ dbEn2(control = .x, case = .y, term_list = bpSigs_g, opt = score_opt)
-)
+) |> 
+    discard(is.null)
 feces_enriched_s <- map2(
     .x = catSigs_s$feces$decreased,
     .y = catSigs_s$feces$increased,
     ~ dbEn2(control = .x, case = .y, term_list = bpSigs_s, opt = score_opt)
-)
+) |> 
+    discard(is.null)
 mouth_enriched_g <- map2(
     .x = catSigs_g$mouth$decreased,
     .y = catSigs_g$mouth$increased,
     ~ dbEn2(control = .x, case = .y, term_list = bpSigs_g, opt = score_opt)
-)
+) |> 
+    discard(is.null)
 mouth_enriched_s <- map2(
     .x = catSigs_s$mouth$decreased,
     .y = catSigs_s$mouth$increased,
     ~ dbEn2(control = .x, case = .y, term_list = bpSigs_s, opt = score_opt)
-)
+) |> 
+    discard(is.null)
 ```
 
 
@@ -141,6 +145,15 @@ ht <- dbHt(feces_enriched_s$`Colorectal-cancer`)
 ```{r, fig.height=10, fig.width=15}
 ht2 <- dbHt(mouth_enriched_s$`Smoking-behavior`)
 ```
+
+```{r, fig.width=20, fig.height=13}
+dbHt(feces_enriched_g$Obesity)
+```
+
+
+
+
+
 
 # Session information
 

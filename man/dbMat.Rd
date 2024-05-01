@@ -4,12 +4,15 @@
 \alias{dbMat}
 \title{Create matrix for dbBact approach}
 \usage{
-dbMat(control, case, term_list, opt = "counts", prev = 0.25)
+dbMat(control, case, term_list, opt = "counts", prev = 1)
 }
 \arguments{
 \item{term_list}{A list of signatures from bugphyzz.}
 
 \item{opt}{Character string. "counts" (default) or "scores".}
+
+\item{prev}{Minimum prevalence. Default is 25% of the maximumn number of
+experiments (combining case and control).}
 
 \item{decreased}{Character vector. Down-regulated set (or control).}
 

@@ -70,7 +70,7 @@ getCatSignatures <- function(bsdb, tax_level, min_size = 5) {
 #' @return A data.frame.
 #' @export
 #'
-filterEvenDat <- function(bsdb, rank, min_size = 10) {
+filterEvenDat <- function(bsdb, rank, min_size = 5) {
     bsdb_ids <- getSignatures(
         df = bsdb, tax.id.type = "ncbi", tax.level = rank, min.size = min_size
     )
@@ -169,7 +169,7 @@ filterEvenSignatures <- function(bsdb, rank, min_size = 10) {
 #' @return A nested list of signatures by direction and condition (concatenated).
 #' @export
 #'
-concatenateEvenSigs <- function(l) {
+concatenateEvenSigs <- function(l, min_size = 5) {
     cond_names <- unique(
         sub("^bsdb:\\d+/\\d_", "", names(l$decreased)),
         sub("^bsdb:\\d+/\\d_", "", names(l$increased))
@@ -184,14 +184,27 @@ concatenateEvenSigs <- function(l) {
 
         names(decreased)[i] <- cond_names[i]
         n_exp_dec <- length(l$decreased[select_var])
-        decreased[[i]] <- unlist(l$decreased[select_var], use.names = FALSE)
-        attr(decreased[[i]], "nexp") <- n_exp_dec
+        sig_dec <- unlist(l$decreased[select_var], use.names = FALSE)
 
         names(increased)[i] <- cond_names[i]
         n_exp_inc <- length(l$increased[select_var])
-        increased[[i]] <- unlist(l$increased[select_var], use.names = FALSE)
+        sig_inc <- unlist(l$increased[select_var], use.names = FALSE)
+
+        vct_lgl <- length(sig_dec) >= min_size && length(sig_inc) >= min_size
+
+        if (isFALSE(vct_lgl)) {
+            next
+        }
+
+        decreased[[i]] <- sig_dec
+        increased[[i]] <- sig_inc
+        attr(decreased[[i]], "nexp") <- n_exp_dec
         attr(increased[[i]], "nexp") <- n_exp_inc
     }
+
+    decreased <- purrr::discard(decreased, is.null)
+    increased <- purrr::discard(increased, is.null)
+
     cat_sigs <- list(decreased = decreased, increased = increased)
     return(cat_sigs)
 }

@@ -4,7 +4,7 @@
 \alias{concatenateEvenSigs}
 \title{Concatenate even signatures}
 \usage{
-concatenateEvenSigs(l)
+concatenateEvenSigs(l, min_size = 5)
 }
 \arguments{
 \item{l}{A list of signatures.}

@@ -10,7 +10,7 @@ dbEn2(
   term_list,
   opt = "counts",
   f = "wilcox.test",
-  prev = prev,
+  prev = NULL,
   perm = 1000
 )
 }

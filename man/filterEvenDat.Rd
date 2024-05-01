@@ -4,7 +4,7 @@
 \alias{filterEvenDat}
 \title{Filter even dataset from BugSigDB}
 \usage{
-filterEvenDat(bsdb, rank, min_size = 10)
+filterEvenDat(bsdb, rank, min_size = 5)
 }
 \arguments{
 \item{bsdb}{A BSDB data.frame.}
