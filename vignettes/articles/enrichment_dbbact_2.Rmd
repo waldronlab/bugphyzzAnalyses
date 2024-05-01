@@ -35,7 +35,7 @@ directions <- c(increased = "increased", decreased = "decreased")
 score_opt <- "counts"
 stat_test <- "wilcox.test"
 
-permV <- 10000
+permV <- 1000
 ```
 
 # Data
