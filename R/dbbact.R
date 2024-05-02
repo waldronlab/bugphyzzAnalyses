@@ -14,87 +14,70 @@
 #' @return A matrix
 #' @export
 #'
-dbMat <- function(control, case, term_list, opt = "counts", prev = 1) {
+dbMat <- function(control, case, term_list, freq = 1) {
 
     mat_list <- vector("list", length(term_list))
+
     for (i in seq_along(mat_list)) {
         term <- term_list[[i]]
-        if (opt == "counts") {
-            co <- as.integer(c(control %in% term))
-            names(co) <- control
-            co <- tapply(co, names(co), sum)
-            co <- co[sort(names(co))]
 
-            ca <- as.integer(c(case %in% term))
-            names(ca) <- case
-            ca <- tapply(ca, names(ca), sum)
-            ca <- ca[sort(names(ca))]
+        co <- as.integer(c(control %in% term))
+        names(co) <- control
+        co <- tapply(co, names(co), sum)
+        co <- co[sort(names(co))]
 
-        } else if (opt == "scores") {
-            ## TODO
-            bp_scores <- bpScores(term)
-
-            co_scores <- bp_scores[control]
-            names(co_scores) <- control
-            co_scores[is.na(co_scores)] <- 0
-            co <- co_scores
-            co <- tapply(co, names(co), sum)
-            co <- co[sort(names(co))]
-
-            ca_scores <- bp_scores[case]
-            names(ca_scores) <- case
-            ca_scores[is.na(ca_scores)] <- 0
-            ca <- ca_scores
-            ca <- tapply(ca, names(ca), sum)
-            ca <- ca[sort(names(ca))]
-        }
+        ca <- as.integer(c(case %in% term))
+        names(ca) <- case
+        ca <- tapply(ca, names(ca), sum)
+        ca <- ca[sort(names(ca))]
 
         mat <- matrix(data = c(co, ca), nrow = 1)
         colnames(mat) <- c(paste0("co_", names(co)), paste0("ca_", names(ca)))
         rownames(mat) <- names(term_list)[i]
         mat_list[[i]] <- mat
     }
+
     mat <- do.call("rbind", mat_list)
     mat <-  mat[rowSums(mat) > 0, , drop = FALSE]
     rownames(mat) <- sub("^bugphyzz:", "", rownames(mat))
 
-    if (opt == "counts") {
-        if (!attr(control, "nexp") == attr(case, "nexp")) {
-            warning(
-                "Number of experiments don't match in control and case.",
-                call. = FALSE
-            )
-        }
-        n_exp_ctrl <- attr(control, "nexp")
-        n_exp_case <- attr(case, "nexp")
 
-        # mat[,1:length(co)] <-
-        #     mat[,1:length(co)] / n_exp_ctrl
-        # mat[,(length(co) + 1):ncol(mat)] <-
-        #     mat[,(length(co) + 1):ncol(mat)] / n_exp_case
-
-        # control_prev <- table(control) / n_exp_ctrl
-        # case_prev <- table(case) / n_exp_case
-
-        control_prev <- table(control)
-        case_prev <- table(case)
-
-        # co <- co / n_exp
-        # ca <- ca / n_exp
+    ## nexp is assigned by concatenateEvenSigs
+    if (attr(control, "nexp") != attr(case, "nexp")) {
+        warning(
+            "Number of experiments don't match in control and case.",
+            call. = FALSE
+        )
     }
+
+    n_exp_ctrl <- attr(control, "nexp")
+    n_exp_case <- attr(case, "nexp")
+
+    control_freq <- table(control)
+    case_freq <- table(case)
 
     cond <- c(rep("Control", length(co)), rep("Case", length(ca)))
     cond <- factor(cond, levels = c("Control", "Case"))
 
     Taxon <- c(names(co), names(ca))
     Taxon2 <- taxizedb::taxid2name(Taxon, db = "ncbi", verbose = FALSE)
-    Prevalence = c(control_prev[names(co)], case_prev[names(ca)])
+    names(Taxon2) <- Taxon
+
+    for (i in seq_along(Taxon2)) {
+        if (is.na(Taxon2[i])) {
+            # classif <- taxize::classification(names(Taxon2)[i], db = "ncbi")[[1]]
+            # Taxon2[i] <- tail(classif$name, 1)
+            Taxon2[i] <- names(Taxon2)[i]
+        }
+    }
+
+    Frequency = c(control_freq[names(co)], case_freq[names(ca)])
 
     dat <- data.frame(
         Condition = cond,
         Taxon = Taxon,
         Taxon2 = Taxon2,
-        Prevalence = Prevalence
+        Frequency = Frequency
     )
 
     rownames(dat) <- c(paste0("co_", names(co)), paste0("ca_", names(ca)))
@@ -110,19 +93,14 @@ dbMat <- function(control, case, term_list, opt = "counts", prev = 1) {
         )
     )
 
-    # if (is.null(prev)) {
-    #     max_prev <- max(c(n_exp_ctrl, n_exp_case))
-    #     prev <- max_prev * 0.25
-    # }
-
-    pass_control <- sum(control_prev >= prev) >= 5
-    pass_case <- sum(case_prev >= prev) >= 5
+    pass_control <- sum(control_freq >= freq) >= 5
+    pass_case <- sum(case_freq >= freq) >= 5
 
     if (isFALSE(pass_control && pass_case)) {
         return(NULL)
     }
 
-    se <- se[, which(Prevalence >= prev)]
+    se <- se[, which(Frequency >= freq)]
     return(se)
 }
 
@@ -169,7 +147,7 @@ calcEffectSize <- function(se, perm = 1000) {
     return(se)
 }
 
-calcPvalue <- function(se, f = "wilcox.test") {
+calcPvalue <- function(se) {
     mat <- SummarizedExperiment::assay(se, "Scores")
     col_data <- SummarizedExperiment::colData(se)
     Control <- col_data$Taxon[col_data$Condition == "Control"]
@@ -177,7 +155,8 @@ calcPvalue <- function(se, f = "wilcox.test") {
     p_val <- apply(mat, 1, function(x) {
         co <- x[1:length(Control)]
         ca <- x[(length(Control)+1):ncol(mat)] # increased
-        res <- do.call(what = f, args = list(ca, co))
+        res <- wilcox.test(co, ca, exact = FALSE)
+        # res <- do.call(what = f, args = list(ca, co))
         round(res$p.value, 3)
     })
     if (all(rownames(se) == names(p_val))) {
@@ -191,18 +170,13 @@ calcPvalue <- function(se, f = "wilcox.test") {
 #' @param control Set of controls (decreased)
 #' @param case  Set of cases (increased)
 #' @param term_list List of sigs
-#' @param opt "counts" or "scores"
 #'
 #' @return A SummarizedExperiment
 #' @export
 #'
-dbEn2 <- function(
-        control, case, term_list, opt = "counts", f = "wilcox.test",
-        prev = NULL, perm = 1000
-) {
+dbEn2 <- function(control, case, term_list, freq = NULL, perm = 1000) {
     se <- dbMat(
-        control = control, case = case, term_list = term_list, opt = opt,
-        prev = prev
+        control = control, case = case, term_list = term_list, freq = freq
     )
     if (is.null(se)) {
         return(NULL)
@@ -214,7 +188,7 @@ dbEn2 <- function(
         return(NULL)
     }
     se <- calcEffectSize(se, perm = perm)
-    se <- calcPvalue(se, f = f)
+    se <- calcPvalue(se)
     ef <- SummarizedExperiment::rowData(se)$Effect_size
     names(ef) <- rownames(se)
     se <- se[names(sort(ef, decreasing = TRUE)),]
@@ -261,7 +235,7 @@ dbHt <- function(se, row_pad = 2, pCol = "P_value") {
     ## Top annotation
     top_ha <-  ComplexHeatmap::HeatmapAnnotation(
         "Frequency" = ComplexHeatmap::anno_barplot(
-            col_data$Prevalence,
+            col_data$Frequency,
             height = unit(5, "cm"),
             bar_width = 1,
             gp = grid::gpar(fill = "gold")
