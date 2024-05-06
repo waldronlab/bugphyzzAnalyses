@@ -36,7 +36,7 @@ stat_test <- "wilcox.test"
 
 permV <- 1000
 
-min_prev <- 3
+min_freq <- 3
 ```
 
 # Data
@@ -97,52 +97,6 @@ for (i in seq_along(bsdb_subsets_by_bodysite)) {
 }
 ```
 
-Filter even experiments for genus:
-
-```{r}
-even_bsdb_g <- map(
-    bsdb_subsets_by_bodysite, ~ filterEvenDat(.x, "genus", min_size = 1)
-) |> 
-    discard(~ !length(.x))
-## Number of experiments with paired signatures:
-map_int(even_bsdb_g, ~ nrow(.x[[1]]))
-```
-
-Types of studies:
-
-```{r}
-even_bsdb_g |> 
-    list_flatten(name_spec = "{outer}") |> 
-    bind_rows(.id = "bodysite") |> 
-    count(bodysite, Condition) |> 
-    mutate(Nexp = n / 2) |> 
-    arrange(bodysite, -n) |> 
-    myDataTable()
-```
-
-Filter even experiments for species:
-
-```{r}
-even_bsdb_s <- map(
-    bsdb_subsets_by_bodysite, ~ filterEvenDat(.x, "species", min_size = 1)
-) |> 
-    discard(~ !length(.x))
-## Number of experiments with paired signatures
-map_int(even_bsdb_s, ~ nrow(.x[[1]]))
-```
-
-Types of studies:
-
-```{r}
-even_bsdb_s |> 
-    list_flatten(name_spec = "{outer}") |> 
-    bind_rows(.id = "bodysite") |> 
-    count(bodysite, Condition) |> 
-    mutate(n = n / 2) |> 
-    arrange(bodysite, -n) |> 
-    myDataTable()
-```
-
 Filter even signatures for genus:
 
 ```{r}
@@ -172,8 +126,8 @@ map_lgl(even_sigs_s, ~ {
 Create concatenated signatures:
 
 ```{r}
-## This step adds the number of experients for each concatenated
-## signatures as an attributes
+## This step adds the number of experiments for each concatenated
+## signature as the "nexp" attributes
 catSigs_g <- map(even_sigs_g, concatenateEvenSigs)
 catSigs_s <- map(even_sigs_s, concatenateEvenSigs)
 ```
