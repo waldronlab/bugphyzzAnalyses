@@ -124,7 +124,7 @@ Filter even experiments for species:
 
 ```{r}
 even_bsdb_s <- map(
-    bsdb_subsets_by_bodysite, ~ filterEvenDat(.x, "species", min_size = 5)
+    bsdb_subsets_by_bodysite, ~ filterEvenDat(.x, "species", min_size = 1)
 ) |> 
     discard(~ !length(.x))
 ## Number of experiments with paired signatures
@@ -232,20 +232,6 @@ crc_g <- dbHt(feces_enriched_g$`Colorectal-cancer`)
 ```{r, fig.height=15, fig.width=20}
 crc_s <- dbHt(feces_enriched_s$`Colorectal-cancer`)
 ```
-# Smoking behaviour
-
-```{r, fig.width=25, fig.height=15, warning=FALSE}
-mouth_enriched_s2 <- map2(
-    .x = catSigs_s$mouth$decreased,
-    .y = catSigs_s$mouth$increased,
-    ~ dbEn2(
-        control = .x, case = .y, term_list = bpSigs_s, opt = score_opt,
-        f = stat_test, perm = permV, prev = 1
-    )
-) |> 
-    discard(is.null)
-smo <- dbHt(mouth_enriched_s2$`Smoking-behavior`)
-```
 
 # COVID-19
 
@@ -325,8 +311,6 @@ y <- c(feces = feces_enriched_s, mouth = mouth_enriched_s) |>
 ```{r, fig.height=15, fig.width=20}
 dbHt(se)
 ```
-
-
 
 # Session information
 

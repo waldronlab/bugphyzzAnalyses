@@ -2,20 +2,26 @@
 % Please edit documentation in R/dbbact.R
 \name{dbEn2}
 \alias{dbEn2}
-\title{Create SE with dbBact approach}
+\title{Run enrichment using the dbBact approach}
 \usage{
-dbEn2(control, case, term_list, prev = NULL, perm = 1000)
+dbEn2(control, case, term_list, freq = 1, perm = 1000)
 }
 \arguments{
-\item{control}{Set of controls (decreased)}
+\item{control}{Character vector. Down-regulated set (control/decreased).
+Number of experiments must have been added as the "nexp" attribute to the
+signature.}
 
-\item{case}{Set of cases (increased)}
+\item{case}{Character vector. Up-regulated set (case/increased).
+Number of experiments must have been added as the "nexp" attribute to the
+signature.}
 
-\item{term_list}{List of sigs}
-}
-\value{
-A SummarizedExperiment
+\item{term_list}{A list of signature terms (e.g., from bugphyzz).}
+
+\item{freq}{Integer. Minimum frequency. Default is 1.}
+
+\item{perm}{Number of permutations for calculating P-value with mean
+difference.}
 }
 \description{
-Create SE with dbBact approach
+Run enrichment using the dbBact approach
 }

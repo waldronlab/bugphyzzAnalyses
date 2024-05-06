@@ -2,26 +2,27 @@
 % Please edit documentation in R/dbbact.R
 \name{dbMat}
 \alias{dbMat}
-\title{Create matrix for dbBact approach}
+\title{Create matrix for dbBact enrichment approach}
 \usage{
-dbMat(control, case, term_list, opt = "counts", prev = 1)
+dbMat(control, case, term_list, freq = 1)
 }
 \arguments{
-\item{term_list}{A list of signatures from bugphyzz.}
+\item{control}{Character vector. Down-regulated set (control/decreased).
+Number of experiments must have been added as the "nexp" attribute to the
+signature.}
 
-\item{opt}{Character string. "counts" (default) or "scores".}
+\item{case}{Character vector. Up-regulated set (case/increased).
+Number of experiments must have been added as the "nexp" attribute to the
+signature.}
 
-\item{prev}{Minimum prevalence. Default is 25% of the maximumn number of
-experiments (combining case and control).}
+\item{term_list}{A list of signature terms (e.g., from bugphyzz).}
 
-\item{decreased}{Character vector. Down-regulated set (or control).}
-
-\item{increased}{Character vector. Up-regulated set (or case).}
+\item{freq}{Integer. Minimum frequency. Default is 1.}
 }
 \value{
-A matrix
+A SummarizedExperiment.
 }
 \description{
-\code{dbMat} creates a matrix of counts of control (decreased) and
-case (increased) sets from BugSigDB.
+\code{dbMat} creates a count matrix for control (decreased) and
+case (incraesed) sets and signature terms (e.g., from bugphyzz).
 }

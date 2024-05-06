@@ -4,13 +4,18 @@
 \alias{dbHt}
 \title{Plot heatmap of output of dbEn2}
 \usage{
-dbHt(se, row_pad = 2, pCol = "P_value")
+dbHt(se, col_pad = 2, pCol = "P_value")
 }
 \arguments{
 \item{se}{A SummarizedExperiment}
+
+\item{col_pad}{Padding at the bottom of the heatmap. Default is 2.}
+
+\item{pCol}{Column to be used for getting the P-values. "P_value" or
+"PermP". Default is P_value.}
 }
 \value{
-A Heatmap
+A Heatmap.
 }
 \description{
 Plot heatmap of output of dbEn2

@@ -1,17 +1,19 @@
 
-#' Create matrix for dbBact approach
+#' Create matrix for dbBact enrichment approach
 #'
-#' \code{dbMat} creates a matrix of counts of control (decreased) and
-#' case (increased) sets from BugSigDB.
+#' \code{dbMat} creates a count matrix for control (decreased) and
+#' case (incraesed) sets and signature terms (e.g., from bugphyzz).
 #'
-#' @param decreased Character vector. Down-regulated set (or control).
-#' @param increased Character vector. Up-regulated set (or case).
-#' @param term_list A list of signatures from bugphyzz.
-#' @param opt Character string. "counts" (default) or "scores".
-#' @param prev Minimum prevalence. Default is 25% of the maximumn number of
-#' experiments (combining case and control).
+#' @param control Character vector. Down-regulated set (control/decreased).
+#' Number of experiments must have been added as the "nexp" attribute to the
+#' signature.
+#' @param case Character vector. Up-regulated set (case/increased).
+#' Number of experiments must have been added as the "nexp" attribute to the
+#' signature.
+#' @param term_list A list of signature terms (e.g., from bugphyzz).
+#' @param freq Integer. Minimum frequency. Default is 1.
 #'
-#' @return A matrix
+#' @return A SummarizedExperiment.
 #' @export
 #'
 dbMat <- function(control, case, term_list, freq = 1) {
@@ -39,10 +41,12 @@ dbMat <- function(control, case, term_list, freq = 1) {
 
     mat <- do.call("rbind", mat_list)
     mat <-  mat[rowSums(mat) > 0, , drop = FALSE]
+    if (nrow(mat) == 0) {
+        return(NULL)
+    }
     rownames(mat) <- sub("^bugphyzz:", "", rownames(mat))
 
-
-    ## nexp is assigned by concatenateEvenSigs
+    ## nexp is assigned by the concatenateEvenSigs
     if (attr(control, "nexp") != attr(case, "nexp")) {
         warning(
             "Number of experiments don't match in control and case.",
@@ -165,16 +169,22 @@ calcPvalue <- function(se) {
     return(se)
 }
 
-#' Create SE with dbBact approach
+#' Run enrichment using the dbBact approach
 #'
-#' @param control Set of controls (decreased)
-#' @param case  Set of cases (increased)
-#' @param term_list List of sigs
+#' @param control Character vector. Down-regulated set (control/decreased).
+#' Number of experiments must have been added as the "nexp" attribute to the
+#' signature.
+#' @param case Character vector. Up-regulated set (case/increased).
+#' Number of experiments must have been added as the "nexp" attribute to the
+#' signature.
+#' @param term_list A list of signature terms (e.g., from bugphyzz).
+#' @param freq Integer. Minimum frequency. Default is 1.
+#' @param perm Number of permutations for calculating P-value with mean
+#' difference.
 #'
-#' @return A SummarizedExperiment
 #' @export
 #'
-dbEn2 <- function(control, case, term_list, freq = NULL, perm = 1000) {
+dbEn2 <- function(control, case, term_list, freq = 1, perm = 1000) {
     se <- dbMat(
         control = control, case = case, term_list = term_list, freq = freq
     )
@@ -188,7 +198,7 @@ dbEn2 <- function(control, case, term_list, freq = NULL, perm = 1000) {
         return(NULL)
     }
     se <- calcEffectSize(se, perm = perm)
-    se <- calcPvalue(se)
+    se <- calcPvalue(se) # Wilcox.test
     ef <- SummarizedExperiment::rowData(se)$Effect_size
     names(ef) <- rownames(se)
     se <- se[names(sort(ef, decreasing = TRUE)),]
@@ -198,11 +208,20 @@ dbEn2 <- function(control, case, term_list, freq = NULL, perm = 1000) {
 #' Plot heatmap of output of dbEn2
 #'
 #' @param se A SummarizedExperiment
+#' @param col_pad Padding at the bottom of the heatmap. Default is 2.
+#' @param pCol Column to be used for getting the P-values. "P_value" or
+#' "PermP". Default is P_value.
 #'
-#' @return A Heatmap
+#' @return A Heatmap.
 #' @export
 #'
-dbHt <- function(se, row_pad = 2, pCol = "P_value") {
+dbHt <- function(se, col_pad = 2, pCol = "P_value") {
+
+    if (is.null(se)) {
+        warning("Input se was NULL. Returning NULL.", call. = FALSE)
+        return(NULL)
+    }
+
     se <- se[which(rowData(se)$Effect_size != 0),]
 
     mat <- SummarizedExperiment::assay(se, "Scores")
@@ -210,24 +229,16 @@ dbHt <- function(se, row_pad = 2, pCol = "P_value") {
     n_exp_case <- S4Vectors::metadata(se)$nexp_case
 
     score_name <- paste0("Score (nexp:", n_exp_ctrl, "|", n_exp_case, ")")
-    # if (any(mat != 0 & mat != 1)) {
-    #     score_name <- "Score"
-    # } else {
-    #     score_name <- "Count"
-    # }
 
     col_data <- SummarizedExperiment::colData(se)
     row_data <- SummarizedExperiment::rowData(se)
 
     colnames(mat) <- col_data$Taxon2
-    # prefix <- sub("^(\\w+_).*$", "\\1", colnames(mat))
-    # colnames(mat) <- paste0(prefix, col_data$Taxon2)
 
     ## Color scale
     htColor <- function(mat) {
         circlize::colorRamp2(
             breaks = c(0, max(mat, na.rm = TRUE)),
-            # breaks = c(0, 1),
             colors = c("white", "gray10")
         )
     }
@@ -241,7 +252,6 @@ dbHt <- function(se, row_pad = 2, pCol = "P_value") {
             gp = grid::gpar(fill = "gold")
         ),
         foo = ComplexHeatmap::anno_block(
-            # gp = gpar(fill = c(3, 2)),
             gp = grid::gpar(fill = c("dodgerblue", "firebrick")),
             height = unit(1, "cm"),
             labels = levels(col_data$Condition),
@@ -252,10 +262,8 @@ dbHt <- function(se, row_pad = 2, pCol = "P_value") {
     ## Left annotation
     vct_chr <- levels(droplevels(row_data$Direction))
     if (length(vct_chr) == 2) {
-        # vct_int <- c(2, 3)
         vct_int <- c("firebrick", "dodgerblue")
     } else if (length(vct_chr) == 3) {
-        # vct_int <- c(2, 1, 3)
         vct_int <- c("firebrick", "white", "dodgerblue")
         vct_chr <- c("Case", "", "Control")
     }
@@ -264,7 +272,6 @@ dbHt <- function(se, row_pad = 2, pCol = "P_value") {
             gp = grid::gpar(fill = vct_int),
             width = unit(1, "cm"),
             labels = vct_chr,
-            # labels_gp = grid::gpar(col = "white", fontsize = 10)
             labels_gp = grid::gpar(col = "white", fontsize = 20, fontface = "bold")
         ),
         which = "row"
@@ -285,17 +292,14 @@ dbHt <- function(se, row_pad = 2, pCol = "P_value") {
     }
     log10_pval <- -log10(row_data[[pCol]] + 1)
     pch_var <- case_when(
-        # row_data$P_value < 0.05 ~ 8,
         row_data[[pCol]] < 0.1 ~ 8,
         TRUE ~ NA
     )
     right_ha <- ComplexHeatmap::HeatmapAnnotation(
         "-log10(pval+1)" = ComplexHeatmap::anno_simple(
             x = -log10(row_data[[pCol]] + 1),
-            # col = pValCol(-log10(row_data$P_value + 1)),
             col = pValCol(c(-0.30103, 0)),
             border = TRUE
-            # pch = pch_var
         ),
         "pval < 0.1" = ComplexHeatmap::anno_simple(
             x = -log10(row_data[[pCol]] + 1),
@@ -303,7 +307,6 @@ dbHt <- function(se, row_pad = 2, pCol = "P_value") {
             pch = pch_var
         ),
 
-        # "Effect size" = ComplexHeatmap::anno_barplot(
         "Mean difference" = ComplexHeatmap::anno_barplot(
             row_data$Effect_size, width = unit(5, "cm"),
             bar_width = 1,
@@ -311,7 +314,6 @@ dbHt <- function(se, row_pad = 2, pCol = "P_value") {
         ),
         which = "row"
     )
-
 
     ## Legend for draw
     pval_lgd <- ComplexHeatmap::Legend(
@@ -325,7 +327,6 @@ dbHt <- function(se, row_pad = 2, pCol = "P_value") {
         matrix = mat,
 
         ## Heatmap color and legend
-        # name = "Count",
         name = score_name,
         col = htColor(mat),
         heatmap_legend_param = list(
@@ -370,7 +371,7 @@ dbHt <- function(se, row_pad = 2, pCol = "P_value") {
         annotation_legend_list = list(pval_lgd),
         annotation_legend_side = "bottom",
         merge_legends = TRUE,
-        padding = unit(c(row_pad, 2, 2, 2), "mm")
+        padding = unit(c(col_pad, 2, 2, 2), "mm")
     )
 }
 
