@@ -51,7 +51,7 @@ table(tse_subset$body_subsite)
 Signatures at the genus level:
 
 ```{r bp signatures genus, message = FALSE}
-bp <- importBugphyzz()
+bp <- importBugphyzz(v = 0.8)
 aer <- bp$aerophilicity
 gn_sigs <- makeSignatures(
     dat = aer, tax_id_type = 'Taxon_name', tax_level = 'genus'
@@ -112,7 +112,6 @@ myDataTable(gsea_tbl)
 Even without ASR annotations, the  enrichment results are still the same.
 
 ```{r}
-# edger <- limmaVoom(edger)
 gsea <- sbea(
   method = 'gsea', se = edger, gs = gn_sigs_noasr, perm = 1000,
   alpha = 0.1 # This is for DA taxa

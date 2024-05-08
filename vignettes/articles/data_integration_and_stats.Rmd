@@ -1,7 +1,7 @@
 ---
 title: "Data integration and stats"
 output:
-  html_vignette:
+  html_document:
     code_folding: hide
     toc: true
 ---
@@ -38,7 +38,7 @@ library(cowplot)
 ## Bugphyzz data
 
 ```{r import bp, message=FALSE}
-bp <- importBugphyzz() |> 
+bp <- importBugphyzz(v = 0.8) |> 
     map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID)))
 myDataTable(data.frame(attributes = names(bp)), page_len = length(bp))
 ```
@@ -304,7 +304,7 @@ pValDis <- val |>
         width = 0, linewidth = 0.3
         
     ) +
-    geom_hline(yintercept = 0.5, linetype = "dotdash", linewidth = 0.2) +
+    geom_hline(yintercept = 0.8, linetype = "dotdash", linewidth = 0.2) +
     geom_point(
         aes(size = ltp_bp),
         shape = 23, position = position_dodge(0.5), fill = "white"
@@ -349,7 +349,7 @@ pValNum <- val |>
         width = 0, linewidth = 0.3
         
     ) +
-    geom_hline(yintercept = 0.5, linetype = "dotdash", linewidth = 0.2) +
+    geom_hline(yintercept = 0.8, linetype = "dotdash", linewidth = 0.2) +
     geom_point(
         aes(size = ltp_bp),
         shape = 23, position = position_dodge(0.5), fill = "white"

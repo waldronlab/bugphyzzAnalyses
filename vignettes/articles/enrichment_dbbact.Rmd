@@ -31,12 +31,8 @@ body_sites <- c(
 ranks <- c(genus = "genus", species = "species")
 directions <- c(increased = "increased", decreased = "decreased")
 
-score_opt <- "counts"
-stat_test <- "wilcox.test"
-
-permV <- 1000
-
-min_freq <- 3
+perm_var <- 1000
+freq_var <- 1
 ```
 
 # Data
@@ -46,6 +42,7 @@ Import bugphyzz and create signatures at the genus and species levels:
 ```{r, warning=FALSE, message=FALSE}
 bp <- importBugphyzz(
     version = "10.5281/zenodo.10980813", # v1.0.2
+    v = 0.8
 )
 
 bpSigs_g <- map(bp, ~ {
@@ -105,6 +102,7 @@ even_sigs_g <- map(
     bsdb_subsets_by_bodysite, ~ filterEvenSignatures(.x, "genus", min_size = 1)
 ) |> 
     discard(~ !length(.x))
+
 map_lgl(even_sigs_g, ~ {
     all(names(.x$decreased) == names(.x$increased))
 })
@@ -118,6 +116,7 @@ even_sigs_s <- map(
     bsdb_subsets_by_bodysite, ~ filterEvenSignatures(.x, "species", min_size = 1)
 ) |> 
     discard(~ !length(.x))
+
 map_lgl(even_sigs_s, ~ {
     all(names(.x$decreased) == names(.x$increased))
 })
@@ -132,7 +131,7 @@ catSigs_g <- map(even_sigs_g, concatenateEvenSigs)
 catSigs_s <- map(even_sigs_s, concatenateEvenSigs)
 ```
 
-Run enrichment using dbBact approach:
+Run enrichment using dbBact approach (genus level):
 
 ```{r, warning=FALSE}
 feces_enriched_g <- map2(
@@ -140,34 +139,81 @@ feces_enriched_g <- map2(
     .y = catSigs_g$feces$increased,
     ~ dbEn2(
         control = .x, case = .y, term_list = bpSigs_g,
-        perm = permV, freq = min_prev
+        perm = perm_var, freq = freq_var
     )
 ) |> 
     discard(is.null)
-feces_enriched_s <- map2(
-    .x = catSigs_s$feces$decreased,
-    .y = catSigs_s$feces$increased,
-    ~ dbEn2(
-        control = .x, case = .y, term_list = bpSigs_s,
-        perm = permV, freq = min_prev
-    )
-) |> 
-    discard(is.null)
+
 mouth_enriched_g <- map2(
     .x = catSigs_g$mouth$decreased,
     .y = catSigs_g$mouth$increased,
     ~ dbEn2(
         control = .x, case = .y, term_list = bpSigs_g,
-        perm = permV, freq = min_prev
+        perm = perm_var, freq = freq_var 
     )
 ) |> 
     discard(is.null)
+
+skin_enriched_g <- map2(
+    .x = catSigs_g$skin$decreased,
+    .y = catSigs_g$skin$increased,
+    ~ dbEn2(
+        control = .x, case = .y, term_list = bpSigs_g,
+        perm = perm_var, freq = freq_var
+    )
+) |> 
+    discard(is.null)
+
+vagina_enriched_g <- map2(
+    .x = catSigs_g$vagina$decreased,
+    .y = catSigs_g$vagina$increased,
+    ~ dbEn2(
+        control = .x, case = .y, term_list = bpSigs_g,
+        perm = perm_var, freq = freq_var
+    )
+) |> 
+    discard(is.null)
+```
+
+Run enrichment using dbBact approach (species level):
+
+```{r, warning=FALSE}
+feces_enriched_s <- map2(
+    .x = catSigs_s$feces$decreased,
+    .y = catSigs_s$feces$increased,
+    ~ dbEn2(
+        control = .x, case = .y, term_list = bpSigs_s,
+        perm = perm_var, freq = freq_var 
+    )
+) |> 
+    discard(is.null)
+
 mouth_enriched_s <- map2(
     .x = catSigs_s$mouth$decreased,
     .y = catSigs_s$mouth$increased,
     ~ dbEn2(
         control = .x, case = .y, term_list = bpSigs_s,
-        perm = permV, freq = min_prev
+        perm = perm_var, freq = freq_var
+    )
+) |> 
+    discard(is.null)
+
+skin_enriched_s <- map2(
+    .x = catSigs_s$skin$decreased,
+    .y = catSigs_s$skin$increased,
+    ~ dbEn2(
+        control = .x, case = .y, term_list = bpSigs_s,
+        perm = perm_var, freq = freq_var
+    )
+) |> 
+    discard(is.null)
+
+vagina_enriched_s <- map2(
+    .x = catSigs_s$vagina$decreased,
+    .y = catSigs_s$vagina$increased,
+    ~ dbEn2(
+        control = .x, case = .y, term_list = bpSigs_s,
+        perm = perm_var, freq = freq_var 
     )
 ) |> 
     discard(is.null)
@@ -184,7 +230,7 @@ crc_g <- dbHt(feces_enriched_g$`Colorectal-cancer`)
 ## Colorectal cancer - species
 
 ```{r, fig.height=15, fig.width=20}
-crc_s <- dbHt(feces_enriched_s$`Colorectal-cancer`)
+crc_s <- dbHt(feces_enriched_s$`Colorectal-cancer`, pCol = "PermP" )
 ```
 
 # COVID-19
@@ -193,77 +239,64 @@ crc_s <- dbHt(feces_enriched_s$`Colorectal-cancer`)
 ht3 <- dbHt(feces_enriched_s$`COVID-19`)
 ```
 
-# CRC - A single study
+```{r, fig.width=16, fig.height=15}
+dbHt(vagina_enriched_g$`Urinary-tract-infection`)
+```
 
-Study [544](https://bugsigdb.org/Study_544):
+
+```{r, fig.height=15, fig.width=16}
+dbHt(vagina_enriched_s$`Human-papilloma-virus-infection`)
+```
+```{r, fig.height=15, fig.width=16}
+dbHt(vagina_enriched_g$`Human-papilloma-virus-infection`)
+```
+# Summary table
 
 ```{r}
-s544_co <- even_bsdb_s$feces$decreased |> 
-    filter(Study == "Study 544") |> 
-    getSignatures(tax.id.type = "ncbi") |> 
-    unlist()
-attr(s544_co, "nexp") <- 1
-    
-s544_ca <- even_bsdb_s$feces$increased |> 
-    filter(Study == "Study 544") |> 
-    getSignatures(tax.id.type = "ncbi") |> 
-    unlist()
-attr(s544_ca, "nexp") <- 1
+## genus
+x <- c(
+    feces = feces_enriched_g, mouth = mouth_enriched_g,
+    vagina = vagina_enriched_g, skin = skin_enriched_g
+    ) |> 
+    map(~ {
+        rowData(.x) |> 
+            as.data.frame() |> 
+            tibble::rownames_to_column(var = "term") |> 
+            as_tibble()
+    }) |>
+    bind_rows(.id = "var") |> 
+    mutate(body_site = sub("^(feces|mouth)\\..*$", "\\1", var)) |> 
+    mutate(condition = sub("^(feces|mouth)\\.(.*$)", "\\2", var)) |> 
+    select(-var) |> 
+    relocate(body_site, condition) |> 
+    filter(!is.na(P_value)) |> 
+    mutate(FDR = p.adjust(P_value, "fdr")) |> 
+    arrange(FDR)
+
+## species
+y <- c(
+    feces = feces_enriched_s, mouth = mouth_enriched_s,
+    vagina = vagina_enriched_g, skin = skin_enriched_g
+    ) |> 
+    map(~ {
+        rowData(.x) |> 
+            as.data.frame() |> 
+            tibble::rownames_to_column(var = "term") |> 
+            as_tibble()
+    }) |>
+    bind_rows(.id = "var") |> 
+    mutate(body_site = sub("^(feces|mouth)\\..*$", "\\1", var)) |> 
+    mutate(condition = sub("^(feces|mouth)\\.(.*$)", "\\2", var)) |> 
+    select(-var) |> 
+    relocate(body_site, condition) |> 
+    filter(!is.na(P_value)) |> 
+    mutate(FDR = p.adjust(P_value, "fdr")) |> 
+    arrange(FDR)
 ```
 
-```{r, warning=FALSE, fig.width=12, fig.height=15}
-se <- dbEn2(s544_co, s544_ca, term_list = bpSigs_s, f = stat_test,
-            perm = 10000)
-dbHt(se, pCol = "P_value")
-```
-
-```{r, fig.height=15}
+```{r, fig.height=15, fig.width=16}
 dbHt(feces_enriched_s$`Multiple-myeloma`)
 
-```
-
-```{r, fig.width=15, fig.height=13}
-dbHt(feces_enriched_g$Obesity)
-```
-
-
-```{r}
-x <- c(feces = feces_enriched_g, mouth = mouth_enriched_g) |> 
-    map(~ {
-        rowData(.x) |> 
-            as.data.frame() |> 
-            tibble::rownames_to_column(var = "term") |> 
-            as_tibble()
-    }) |>
-    bind_rows(.id = "var") |> 
-    mutate(body_site = sub("^(feces|mouth)\\..*$", "\\1", var)) |> 
-    mutate(condition = sub("^(feces|mouth)\\.(.*$)", "\\2", var)) |> 
-    select(-var) |> 
-    relocate(body_site, condition) |> 
-    filter(!is.na(P_value)) |> 
-    mutate(FDR = p.adjust(P_value, "fdr"))
-
-
-
-y <- c(feces = feces_enriched_s, mouth = mouth_enriched_s) |> 
-    map(~ {
-        rowData(.x) |> 
-            as.data.frame() |> 
-            tibble::rownames_to_column(var = "term") |> 
-            as_tibble()
-    }) |>
-    bind_rows(.id = "var") |> 
-    mutate(body_site = sub("^(feces|mouth)\\..*$", "\\1", var)) |> 
-    mutate(condition = sub("^(feces|mouth)\\.(.*$)", "\\2", var)) |> 
-    select(-var) |> 
-    relocate(body_site, condition) |> 
-    filter(!is.na(P_value)) |> 
-    mutate(FDR = p.adjust(P_value, "fdr"))
-```
-
-
-```{r, fig.height=15, fig.width=20}
-dbHt(se)
 ```
 
 # Session information
