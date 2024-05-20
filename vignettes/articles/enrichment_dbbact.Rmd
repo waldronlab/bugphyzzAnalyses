@@ -44,7 +44,6 @@ bp <- importBugphyzz(
     version = "10.5281/zenodo.10980813", # v1.0.2
     v = 0.8
 )
-
 bpSigs_g <- map(bp, ~ {
     makeSignatures(
         dat = .x,  tax_id_type = "NCBI_ID", tax_level = "genus",
@@ -72,7 +71,9 @@ bsdb <- importBugSigDB(version = bsdb_doi)
 bsdb <- bsdb |> 
     filter(`Host species` == "Homo sapiens") |> 
     filter(`Abundance in Group 1` %in% c("increased", "decreased")) |>
-    filter(!is.na(`Body site`))
+    filter(!is.na(`Body site`)) |> 
+    # filter(`Study design` == "case-control") |> 
+    mutate(exp = sub("^(bsdb:\\d+/\\d+)/\\d+", "\\1", `BSDB ID`))
 dim(bsdb)
 ```
 
@@ -94,165 +95,284 @@ for (i in seq_along(bsdb_subsets_by_bodysite)) {
 }
 ```
 
-Filter even signatures for genus:
+```{r}
+dats <- map(bsdb_subsets_by_bodysite, filterEvenDat)
+map_int(dats, ~ nrow(.x$decreased)) == map_int(dats, ~ nrow(.x$increased))
+```
+
+# Colorectal cancer
+
+Get experiments and BSDB rows
 
 ```{r}
-## filterEvenSignatures implements filterEvenExperiments
-even_sigs_g <- map(
-    bsdb_subsets_by_bodysite, ~ filterEvenSignatures(.x, "genus", min_size = 1)
-) |> 
-    discard(~ !length(.x))
-
-map_lgl(even_sigs_g, ~ {
-    all(names(.x$decreased) == names(.x$increased))
-})
+crc_exps <- crc_dat <- dats$feces$increased |> # It doesn't matter here if it's increased or decreased
+    filter(Condition == "Colorectal cancer") |>
+    filter(
+        grepl("control", `Group 0 name`, ignore.case = TRUE) &
+            grepl("(colorectal cancer|crc)", `Group 1 name`, ignore.case = TRUE)
+    ) |> 
+    pull(exp)
+crc_dat_inc <- dats$feces$increased |> 
+    filter(exp %in% crc_exps)
+crc_dat_dec <- dats$feces$decreased |> 
+    filter(exp %in% crc_exps)
+length(crc_exps)
 ```
 
-Filter even signatures for species:
+Get signatures:
 
 ```{r}
-## filterEvenSignatures implements filterEvenExperiments
-even_sigs_s <- map(
-    bsdb_subsets_by_bodysite, ~ filterEvenSignatures(.x, "species", min_size = 1)
-) |> 
-    discard(~ !length(.x))
-
-map_lgl(even_sigs_s, ~ {
-    all(names(.x$decreased) == names(.x$increased))
-})
+crc_sigs_s <- getPairedSigs(
+    crc_dat_dec, crc_dat_inc, rank = "species", cat = TRUE
+)
+crc_sigs_g <- getPairedSigs(
+    crc_dat_dec, crc_dat_inc, rank = "genus", cat = TRUE
+)
 ```
 
-Create concatenated signatures:
+Enrichment at the species level:
+
+```{r, fig.height=12, fig.width=20}
+crc_feces_enriched_s <- dbEn2(
+    crc_sigs_s$dec, crc_sigs_s$inc, term_list = bpSigs_s,
+    perm = perm_var, freq = 1
+)
+dbHt(crc_feces_enriched_s, scm = FALSE)
+```
+
+Enrichment at the genus level:
+
+```{r, fig.height=8, fig.width=12, warning=FALSE}
+crc_feces_enriched_g <- dbEn2(
+    crc_sigs_g$dec, crc_sigs_g$inc, term_list = bpSigs_g,
+    perm = perm_var, freq = 1
+)
+dbHt(crc_feces_enriched_g, scm = FALSE)
+```
+
+# Obesity
 
 ```{r}
-## This step adds the number of experiments for each concatenated
-## signature as the "nexp" attributes
-catSigs_g <- map(even_sigs_g, concatenateEvenSigs)
-catSigs_s <- map(even_sigs_s, concatenateEvenSigs)
+obs_dat <- dats$feces$increased |> # It doesn't matter here if it's increased or decreased
+    filter(Condition == "Obesity")
+
+## Got these experiments with manual inspection of the data.frame
+obs_exps = c(
+    "bsdb:101/1",
+    "bsdb:149/1",
+    "bsdb:33/1",
+    "bsdb:338/1",
+    "bsdb:338/2",
+    "bsdb:345/1",
+    "bsdb:347/1",
+    "bsdb:348/1",
+    "bsdb:348/3",
+    "bsdb:350/1",
+    "bsdb:350/2",
+    "bsdb:351/1",
+    "bsdb:354/1",
+    "bsdb:355/1",
+    "bsdb:36/5",
+    "bsdb:362/1",
+    "bsdb:367/1",
+    "bsdb:369/1",
+    "bsdb:371/3",
+    "bsdb:373/1",
+    "bsdb:375/1",
+    "bsdb:44/1",
+    "bsdb:48/1",
+    "bsdb:48/2",
+    "bsdb:68/1",
+    "bsdb:68/2",
+    "bsdb:68/3",
+    "bsdb:68/4",
+    "bsdb:68/5",
+    "bsdb:68/6",
+    "bsdb:70/1",
+    "bsdb:70/2",
+    "bsdb:70/3",
+    "bsdb:73/1",
+    "bsdb:73/2",
+    "bsdb:732/1",
+    "bsdb:74/1",
+    "bsdb:74/3",
+    "bsdb:847/1",
+    "bsdb:96/1",
+    "bsdb:99/1"  
+    
+)
+
+obs_dat_inc <- dats$feces$increased |> 
+    filter(exp %in% obs_exps)
+obs_dat_dec <- dats$feces$decreased |> 
+    filter(exp %in% obs_exps)
+
+length(obs_exps)
 ```
 
-Run enrichment using dbBact approach (genus level):
-
-```{r, warning=FALSE}
-feces_enriched_g <- map2(
-    .x = catSigs_g$feces$decreased,
-    .y = catSigs_g$feces$increased,
-    ~ dbEn2(
-        control = .x, case = .y, term_list = bpSigs_g,
-        perm = perm_var, freq = freq_var
-    )
-) |> 
-    discard(is.null)
-
-mouth_enriched_g <- map2(
-    .x = catSigs_g$mouth$decreased,
-    .y = catSigs_g$mouth$increased,
-    ~ dbEn2(
-        control = .x, case = .y, term_list = bpSigs_g,
-        perm = perm_var, freq = freq_var 
-    )
-) |> 
-    discard(is.null)
-
-skin_enriched_g <- map2(
-    .x = catSigs_g$skin$decreased,
-    .y = catSigs_g$skin$increased,
-    ~ dbEn2(
-        control = .x, case = .y, term_list = bpSigs_g,
-        perm = perm_var, freq = freq_var
-    )
-) |> 
-    discard(is.null)
-
-vagina_enriched_g <- map2(
-    .x = catSigs_g$vagina$decreased,
-    .y = catSigs_g$vagina$increased,
-    ~ dbEn2(
-        control = .x, case = .y, term_list = bpSigs_g,
-        perm = perm_var, freq = freq_var
-    )
-) |> 
-    discard(is.null)
+```{r}
+obs_sigs_s <- getPairedSigs(obs_dat_dec, obs_dat_inc, rank = "species", cat = TRUE)
+obs_sigs_g <- getPairedSigs(obs_dat_dec, obs_dat_inc, rank = "genus", cat = TRUE)
 ```
 
-Run enrichment using dbBact approach (species level):
+Enrichment at the species level:
 
-```{r, warning=FALSE}
-feces_enriched_s <- map2(
-    .x = catSigs_s$feces$decreased,
-    .y = catSigs_s$feces$increased,
-    ~ dbEn2(
-        control = .x, case = .y, term_list = bpSigs_s,
-        perm = perm_var, freq = freq_var 
-    )
-) |> 
-    discard(is.null)
-
-mouth_enriched_s <- map2(
-    .x = catSigs_s$mouth$decreased,
-    .y = catSigs_s$mouth$increased,
-    ~ dbEn2(
-        control = .x, case = .y, term_list = bpSigs_s,
-        perm = perm_var, freq = freq_var
-    )
-) |> 
-    discard(is.null)
-
-skin_enriched_s <- map2(
-    .x = catSigs_s$skin$decreased,
-    .y = catSigs_s$skin$increased,
-    ~ dbEn2(
-        control = .x, case = .y, term_list = bpSigs_s,
-        perm = perm_var, freq = freq_var
-    )
-) |> 
-    discard(is.null)
-
-vagina_enriched_s <- map2(
-    .x = catSigs_s$vagina$decreased,
-    .y = catSigs_s$vagina$increased,
-    ~ dbEn2(
-        control = .x, case = .y, term_list = bpSigs_s,
-        perm = perm_var, freq = freq_var 
-    )
-) |> 
-    discard(is.null)
+```{r, fig.height=12, fig.width=20}
+obs_feces_enriched_s <- dbEn2(
+    obs_sigs_s$dec, obs_sigs_s$inc, term_list = bpSigs_s,
+    perm = perm_var, freq = 1
+)
+dbHt(obs_feces_enriched_s, scm = FALSE)
 ```
 
-# Exploration of particular cases
 
-## Colorectal cancer - genus
-
-```{r, fig.height=12, fig.width=16}
-crc_g <- dbHt(feces_enriched_g$`Colorectal-cancer`)
-```
-
-## Colorectal cancer - species
-
-```{r, fig.height=15, fig.width=20}
-crc_s <- dbHt(feces_enriched_s$`Colorectal-cancer`, pCol = "PermP" )
+```{r, fig.width=20, fig.height=10}
+obs_feces_enriched_g <- dbEn2(
+    obs_sigs_g$dec, obs_sigs_g$inc, term_list = bpSigs_g,
+    perm = perm_var, freq = 1
+)
+dbHt(obs_feces_enriched_g, scm = FALSE)
 ```
 
 # COVID-19
 
-```{r, fig.width=15, fig.height=15}
-ht3 <- dbHt(feces_enriched_s$`COVID-19`)
+```{r}
+covid_dat <- dats$feces$increased |> # It doesn't matter here if it's increased or decreased
+    filter(Condition == "COVID-19")
+
+## Manual inspection
+covid_exps <- c(
+    "bsdb:734/1",
+    "bsdb:428/1",
+    "bsdb:441/1",
+    "bsdb:464/3",
+    "bsdb:481/1",
+    "bsdb:486/1",
+    "bsdb:486/2",
+    "bsdb:486/3",
+    "bsdb:487/3",
+    "bsdb:496/1",
+    "bsdb:511/4",
+    "bsdb:511/5",
+    "bsdb:453/4",
+    "bsdb:782/3"
+)
+
+covid_dat_inc <- dats$feces$increased |> 
+    filter(exp %in% covid_exps)
+covid_dat_dec <- dats$feces$decreased |> 
+    filter(exp %in% covid_exps)
+# covid_dat |> 
+#     relocate(exp, `Group 0 name`, `Group 1 name`) |> 
+#     View()
 ```
 
-```{r, fig.width=16, fig.height=15}
-dbHt(vagina_enriched_g$`Urinary-tract-infection`)
-```
-
-
-```{r, fig.height=15, fig.width=16}
-dbHt(vagina_enriched_s$`Human-papilloma-virus-infection`)
-```
-```{r, fig.height=15, fig.width=16}
-dbHt(vagina_enriched_g$`Human-papilloma-virus-infection`)
-```
-# Summary table
+Concatenate signatures:
 
 ```{r}
+covid_sigs_s <- getPairedSigs(covid_dat_dec, covid_dat_inc, rank = "species", cat = TRUE)
+covid_sigs_g <- getPairedSigs(covid_dat_dec, covid_dat_inc, rank = "genus", cat = TRUE)
+```
+
+Enrichment at the species level:
+
+```{r, fig.height=12, fig.width=20}
+covid_feces_enriched_s <- dbEn2(
+    covid_sigs_s$dec, covid_sigs_s$inc, term_list = bpSigs_s,
+    perm = perm_var, freq = 1
+)
+dbHt(covid_feces_enriched_s, scm = FALSE)
+```
+
+```{r, fig.height=12, fig.width=20}
+covid_feces_enriched_g <- dbEn2(
+    covid_sigs_g$dec, covid_sigs_g$inc, term_list = bpSigs_g,
+    perm = perm_var, freq = 1
+)
+dbHt(covid_feces_enriched_g, scm = FALSE)
+```
+
+## Smoking 
+
+```{r}
+smo_dat <- dats$mouth$increased |> # It doesn't matter here if it's increased or decreased
+        filter(Condition == "Smoking behavior")
+smo_exps <- smo_dat |> 
+    filter(exp != "bsdb:368/1") |> 
+    pull(exp)
+smo_dat_inc <- dats$mouth$increased |> 
+    filter(exp %in% smo_exps)
+smo_dat_dec <- dats$mouth$decreased |> 
+    filter(exp %in% smo_exps)
+# smo_dat |>
+#     relocate(exp, `Group 0 name`, `Group 1 name`) |>
+#     View()
+```
+
+Get concatenated signatures:
+
+```{r}
+smo_sigs_s <- getPairedSigs(smo_dat_dec, smo_dat_inc, rank = "species", cat = TRUE)
+smo_sigs_g <- getPairedSigs(smo_dat_dec, smo_dat_inc, rank = "genus", cat = TRUE)
+```
+
+```{r, fig.height=12, fig.width=20}
+smo_mouth_enriched_s <- dbEn2(
+    smo_sigs_s$dec, smo_sigs_s$inc, term_list = bpSigs_s,
+    perm = perm_var, freq = 1
+)
+dbHt(smo_mouth_enriched_s, scm = FALSE)
+```
+
+```{r, fig.height=12, fig.width=20}
+smo_mouth_enriched_g <- dbEn2(
+    smo_sigs_g$dec, smo_sigs_g$inc, term_list = bpSigs_g,
+    perm = perm_var, freq = 1
+)
+dbHt(smo_mouth_enriched_g, scm = FALSE)
+```
+
+## IBD
+
+```{r}
+ibs_dat <- dats$feces$increased |> # It doesn't matter here if it's increased or decreased
+        filter(Condition == "Irritable bowel syndrome")
+ibs_exps <- ibs_dat |> 
+    pull(exp)
+ibs_dat_inc <- dats$feces$increased |> 
+    filter(exp %in% ibs_exps)
+ibs_dat_dec <- dats$feces$decreased |> 
+    filter(exp %in% ibs_exps)
+
+# ibs_dat |> 
+#     relocate(exp, `Group 0 name`, `Group 1 name`) |> 
+#     View()
+```
+
+```{r}
+ibs_sigs_s <- getPairedSigs(ibs_dat_dec, ibs_dat_inc, rank = "species", cat = TRUE)
+ibs_sigs_g <- getPairedSigs(ibs_dat_dec, ibs_dat_inc, rank = "genus", cat = TRUE)
+```
+
+```{r, fig.height=15, fig.width=20}
+ibs_feces_enriched_s <- dbEn2(
+    ibs_sigs_s$dec, ibs_sigs_s$inc, term_list = bpSigs_s,
+    perm = perm_var, freq = 1
+)
+dbHt(ibs_feces_enriched_s, scm = FALSE)
+```
+
+```{r, fig.width=25, fig.height=15}
+ibs_feces_enriched_g <- dbEn2(
+    ibs_sigs_g$dec, ibs_sigs_g$inc, term_list = bpSigs_g,
+    perm = perm_var, freq = 1
+)
+dbHt(ibs_feces_enriched_g, scm = FALSE)
+```
+
+# Summary table
+
+```{r, eval=FALSE}
 ## genus
 x <- c(
     feces = feces_enriched_g, mouth = mouth_enriched_g,
@@ -292,11 +412,6 @@ y <- c(
     filter(!is.na(P_value)) |> 
     mutate(FDR = p.adjust(P_value, "fdr")) |> 
     arrange(FDR)
-```
-
-```{r, fig.height=15, fig.width=16}
-dbHt(feces_enriched_s$`Multiple-myeloma`)
-
 ```
 
 # Session information

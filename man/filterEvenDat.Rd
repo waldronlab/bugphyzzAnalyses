@@ -4,14 +4,14 @@
 \alias{filterEvenDat}
 \title{Filter even dataset from BugSigDB}
 \usage{
-filterEvenDat(bsdb, rank, min_size = 5)
+filterEvenDat(bsdb, min_size = 1)
 }
 \arguments{
 \item{bsdb}{A BSDB data.frame.}
 
-\item{rank}{Character string "genus" or "species".}
-
 \item{min_size}{Number of signatures.}
+
+\item{rank}{Character string "genus" or "species".}
 }
 \value{
 A data.frame.

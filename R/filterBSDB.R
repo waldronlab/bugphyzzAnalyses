@@ -70,18 +70,19 @@ getCatSignatures <- function(bsdb, tax_level, min_size = 5) {
 #' @return A data.frame.
 #' @export
 #'
-filterEvenDat <- function(bsdb, rank, min_size = 5) {
-    bsdb_ids <- getSignatures(
-        df = bsdb, tax.id.type = "ncbi", tax.level = rank, min.size = min_size
-    )
-    if (!length(bsdb_ids)) {
-        return(NULL)
-    }
-    bsdb_ids <- bsdb_ids |>
-        names() |>
-        sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", x = _)
+filterEvenDat <- function(bsdb, min_size = 1) {
+# filterEvenDat <- function(bsdb, rank, min_size = 1) {
+    # bsdb_ids <- getSignatures(
+    #     df = bsdb, tax.id.type = "ncbi", tax.level = rank, min.size = 1
+    # )
+    # if (!length(bsdb_ids)) {
+    #     return(NULL)
+    # }
+    # bsdb_ids <- bsdb_ids |>
+    #     names() |>
+    #     sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", x = _)
     dats <- bsdb |>
-        filter(`BSDB ID` %in% bsdb_ids) |>
+        # filter(`BSDB ID` %in% bsdb_ids) |>
         group_by(Study, Experiment) |>
         mutate(count = n()) |>
         ungroup() |>
@@ -113,34 +114,9 @@ filterEvenDat <- function(bsdb, rank, min_size = 5) {
 #' @return A list of signatures nested by direction and condition.
 #' @export
 #'
-filterEvenSignatures <- function(bsdb, rank, min_size = 10) {
+filterEvenSignatures <- function(dats, rank, min_size = 10) {
 
-    dats <- filterEvenDat(bsdb, rank, min_size)
-    # bsdb_ids <- getSignatures(
-    #     df = bsdb, tax.id.type = "ncbi", tax.level = rank, min.size = min_size
-    # )
-    # if (!length(bsdb_ids)) {
-    #     return(NULL)
-    # }
-    # bsdb_ids <- bsdb_ids |>
-    #     names() |>
-    #     sub("^(bsdb:\\d+/\\d+/\\d+)_.*$", "\\1", x = _)
-    # dats <- bsdb |>
-    #     filter(`BSDB ID` %in% bsdb_ids) |>
-    #     group_by(Study, Experiment) |>
-    #     mutate(count = n()) |>
-    #     ungroup() |>
-    #     filter(count == 2) |>
-    #     group_by(Study, Experiment) |>
-    #     arrange(`Abundance in Group 1`) |>
-    #     mutate(comb = paste0(sort(`Abundance in Group 1`), collapse = "-")) |>
-    #     ungroup() |>
-    #     filter(comb == "decreased-increased") |>
-    #     arrange(`BSDB ID`) |>
-    #     {\(y) split(y, y$`Abundance in Group 1`)}()
-    # if (!length(dats)) {
-    #     return(NULL)
-    # }
+    # dats <- filterEvenDat(bsdb, min_size)
     sigs <- dats |>
         map(~ {
             getSignatures(
@@ -156,6 +132,12 @@ filterEvenSignatures <- function(bsdb, rank, min_size = 10) {
         # "^(bsdb:\\d+/\\d+)/\\d+_.*$", "\\1", names(sigs$increased)
         "^(bsdb:\\d+/\\d+)/\\d+_(.+):.*$", "\\1_\\2", names(sigs$increased)
     )
+
+
+    names_in_both <- intersect(names(sigs$decreased), names(sigs$increased))
+    sigs$decreased <- sigs$decreased[names_in_both]
+    sigs$increased <- sigs$increased[names_in_both]
+
     return(sigs)
 }
 

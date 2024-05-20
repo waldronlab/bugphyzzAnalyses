@@ -4,14 +4,14 @@
 \alias{filterEvenSignatures}
 \title{Filter even signatures from experiments}
 \usage{
-filterEvenSignatures(bsdb, rank, min_size = 10)
+filterEvenSignatures(dats, rank, min_size = 10)
 }
 \arguments{
-\item{bsdb}{A BugSigDB dataset from importBugSigDB.}
-
 \item{rank}{Character string. "genus" or "species"}
 
 \item{min_size}{Minimum number of the signatures to be included.}
+
+\item{bsdb}{A BugSigDB dataset from importBugSigDB.}
 }
 \value{
 A list of signatures nested by direction and condition.

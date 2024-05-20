@@ -4,7 +4,7 @@
 \alias{dbHt}
 \title{Plot heatmap of output of dbEn2}
 \usage{
-dbHt(se, col_pad = 2, pCol = "P_value")
+dbHt(se, col_pad = 2, pCol = "P_value", scm = TRUE)
 }
 \arguments{
 \item{se}{A SummarizedExperiment}
@@ -13,6 +13,8 @@ dbHt(se, col_pad = 2, pCol = "P_value")
 
 \item{pCol}{Column to be used for getting the P-values. "P_value" or
 "PermP". Default is P_value.}
+
+\item{scm}{Show row names for heatmap. Default is TRUE.}
 }
 \value{
 A Heatmap.

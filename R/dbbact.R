@@ -211,11 +211,12 @@ dbEn2 <- function(control, case, term_list, freq = 1, perm = 1000) {
 #' @param col_pad Padding at the bottom of the heatmap. Default is 2.
 #' @param pCol Column to be used for getting the P-values. "P_value" or
 #' "PermP". Default is P_value.
+#' @param scm Show row names for heatmap. Default is TRUE.
 #'
 #' @return A Heatmap.
 #' @export
 #'
-dbHt <- function(se, col_pad = 2, pCol = "P_value") {
+dbHt <- function(se, col_pad = 2, pCol = "P_value", scm = TRUE) {
 
     if (is.null(se)) {
         warning("Input se was NULL. Returning NULL.", call. = FALSE)
@@ -353,8 +354,10 @@ dbHt <- function(se, col_pad = 2, pCol = "P_value") {
             gp = grid::gpar(fontsize = 12)
         ),
 
+
         ## Column names
         column_names_gp = grid::gpar(fontface = "italic"),
+        show_column_names = scm,
 
         ## Annotations
         top_annotation = top_ha,
