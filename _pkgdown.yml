@@ -13,8 +13,6 @@ navbar:
       href: articles/nychanes.html
     - text: "Reproducibility of previous study - NYCHANES study - original annotations"
       href: articles/nychanes2.html
-    - text: "High-throughput ORA with BSDB signatures"
-      href: articles/bsdb_signatures.html
     - text: "Odds Ratio - Up vs Down - signatures"
       href: articles/up_vs_down_signatures.html
     - text: "Odds Ratio - Up vs Down - metasignatures"
