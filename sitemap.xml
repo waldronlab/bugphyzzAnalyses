@@ -10,25 +10,13 @@
     <loc>/LICENSE.html</loc>
   </url>
   <url>
-    <loc>/articles/TypicalMicrobiomeSignatures.html</loc>
-  </url>
-  <url>
-    <loc>/articles/bsdb_signatures.html</loc>
-  </url>
-  <url>
     <loc>/articles/data_integration_and_stats.html</loc>
   </url>
   <url>
     <loc>/articles/enrichment_dbbact.html</loc>
   </url>
   <url>
-    <loc>/articles/ibd_enrichment.html</loc>
-  </url>
-  <url>
     <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/articles/nsti.html</loc>
   </url>
   <url>
     <loc>/articles/nychanes.html</loc>
@@ -38,12 +26,6 @@
   </url>
   <url>
     <loc>/articles/subgingival_plaque.html</loc>
-  </url>
-  <url>
-    <loc>/articles/up_vs_down_metasignatures_nointersect.html</loc>
-  </url>
-  <url>
-    <loc>/articles/up_vs_down_signatures.html</loc>
   </url>
   <url>
     <loc>/articles/validation.html</loc>
@@ -61,7 +43,19 @@
     <loc>/reference/classif2Table.html</loc>
   </url>
   <url>
+    <loc>/reference/concatenateEvenSigs.html</loc>
+  </url>
+  <url>
     <loc>/reference/createDT.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dbEn2.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dbHt.html</loc>
+  </url>
+  <url>
+    <loc>/reference/dbMat.html</loc>
   </url>
   <url>
     <loc>/reference/dot-getTaxonClassification.html</loc>
@@ -70,7 +64,19 @@
     <loc>/reference/elbows.html</loc>
   </url>
   <url>
+    <loc>/reference/filterEvenDat.html</loc>
+  </url>
+  <url>
+    <loc>/reference/filterEvenSignatures.html</loc>
+  </url>
+  <url>
     <loc>/reference/filterTaxa.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getCatSignatures.html</loc>
+  </url>
+  <url>
+    <loc>/reference/getPairedSigs.html</loc>
   </url>
   <url>
     <loc>/reference/getSets.html</loc>
