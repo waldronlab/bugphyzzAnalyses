@@ -40,24 +40,10 @@ library(cowplot)
 ```{r import bp, message=FALSE}
 bp <- importBugphyzz(v = 0.8) |> 
     map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID)))
-myDataTable(data.frame(attributes = names(bp)), page_len = length(bp))
+length(bp)
 ```
-
-## Columns with NAs
-
-```{r columns with NAs, message=FALSE}
-nas_in_cols <- lapply(bp, function(x)  {
-    n <- map_int(x, function(y) sum(is.na(y)))
-    per <- map_dbl(x, function(y) round(mean(is.na(y)) * 100))
-    data.frame(column_name = colnames(x), n = unname(n), per = unname(per))
-}) |> 
-    bind_rows(.id = "names") |> 
-    group_by(column_name) |> 
-    summarise(
-        n_rows = sum(n),
-        per_rows = round(mean(per))
-    )
-myDataTable(nas_in_cols)
+```{r}
+myDataTable(data.frame(attributes = names(bp)), page_len = length(bp))
 ```
 
 ## Totals
@@ -119,8 +105,6 @@ num_vs_dis_n <- map_chr(bp, ~ {
     mutate(name = ifelse(name == "numeric", "numeric", "discrete")) |> 
     count(name, wt = n)
 
-
-
 attr_asr_default_names <- map(bp, ~ {
     unique(.x$Evidence)
 }) |> 
@@ -153,63 +137,9 @@ count_summary_tbl <- tibble::tribble(
 myDataTable(count_summary_tbl)
 ```
 
-## Histograms of scores
-
-This includes all ASR output
-
-```{r histogram of scores, message=FALSE}
-bp2 <- importBugphyzz(v = 0, exclude_rarely = FALSE)
-bp2_discrete <- map(bp2, ~{
-    .x |> 
-        filter(Evidence == "asr", Attribute_type != "numeric")
-}) |> 
-    discard(~ !nrow(.x))
-
-scores_df <- map(bp2_discrete, ~ pull(.x, Score)) |> 
-    unlist(recursive = TRUE, use.names = FALSE) |> 
-    {\(y) data.frame(x = y)}()
-scores_df |> 
-    ggplot(aes(x)) +
-    geom_histogram(
-        binwidth = 0.1, fill = "gray80", color = "black", linewidth = 0.2
-    ) +
-    labs(
-        x = "Scores", y = "Frequency",
-        title = "Scores of data imputed with ASR (discrete only)"
-    ) +
-    theme_bw()
-```
-
-## Histogram of NSTI
-
-```{r}
-bp2_numeric <- map(bp2, ~{
-    .x |> 
-        filter(
-            Evidence == "asr", Attribute_type == "numeric",
-        )
-}) |> 
-    discard(~ !nrow(.x)) |> 
-    map(~ filter(.x, !is.na(NSTI)))
-
-nsti_df <- map(bp2_numeric, ~ pull(.x, NSTI)) |> 
-    unlist(recursive = TRUE, use.names = FALSE) |> 
-    {\(y) data.frame(x = y)}()
-nsti_df |> 
-    ggplot(aes(x)) +
-    geom_histogram(
-        binwidth = 0.1, fill = "gray80", color = "black", linewidth = 0.2
-) +
-    labs(
-        x = "Scores", y = "Frequency",
-        title = "NSTI of data imputed with ASR (tips; numeric only)"
-    ) +
-    theme_bw()
-```
-
 ## Totals by rank
 
-```{r}
+```{r, fig.width=10, fig.height=6}
 valid_ranks <- c(
     "superkingdom", "phylum", "class", "order", "family",
     "genus", "species", "strain"
@@ -224,6 +154,7 @@ p_counts_rank <- counts_rank |>
     ggplot(aes(Attribute, n)) +
     geom_col(aes(fill = Rank), position = "stack") +
     scale_fill_discrete(name = "Rank") +
+    scale_y_continuous(labels = scales::comma) +
     labs(
         x = "Attribute", y = "No. annotations"
     ) +
@@ -234,7 +165,7 @@ p_counts_rank <- counts_rank |>
 p_counts_rank
 ```
 
-## Totals by type of Evidence
+## Total number of annotations by type of Evidence
 
 ```{r}
 count_types <- bp |> 
@@ -268,24 +199,26 @@ p_count_types <- count_types |>
         x = "Attribute", y = "No. annotations"
     ) +
     scale_fill_discrete(name = "Annotation types") +
-    scale_y_continuous(label = scales::comma) +
+    scale_y_continuous(labels = scales::comma) +
     theme_bw() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
 p_count_types
 ```
 
-## 10-fold cross-validation and counts per evidence type (species)
+# Figure: 10-fold cross-validation and counts per evidence type (species)
+
+Create plot of MMC values for discrete attributes:
 
 ```{r validation discrete}
 val <- bugphyzz:::.validationData() |> 
-    filter(rank == "all")
+    filter(rank == "all") # Validation including taxa of mixed ranks as input (keyword is "all")
 dis_phys_names <- val |> 
     filter(!is.na(mcc_mean)) |> 
     group_by(physiology) |> 
     slice_max(order_by = mcc_mean, n = 1) |> 
     arrange(-mcc_mean) |> 
     pull(physiology)
-pValDis <- val |> 
+pValDis <- val |> # plot Validation Discrete
     filter(!is.na(mcc_mean))  |> 
     mutate(ltp_bp = ifelse(is.na(ltp_bp), ltp_bp_phys, ltp_bp)) |> 
     mutate(physiology = factor(physiology, levels = dis_phys_names)) |>
@@ -331,6 +264,8 @@ pValDis <- val |>
     coord_flip()
 ```
 
+Create plot of R-squared values for continuous attributes:
+
 ```{r validation numeric}
 num <- val |>
     filter(!is.na(r2_mean))
@@ -339,7 +274,7 @@ num_phys_names <- num |>
     slice_max(order_by = r2_mean, n = 1) |> 
     arrange(-r2_mean) |> 
     pull(physiology)
-pValNum <- val |> 
+pValNum <- val |>  # plot Validation Numeric attributes
     filter(!is.na(r2_mean))  |> 
     mutate(ltp_bp = ifelse(is.na(ltp_bp), ltp_bp_phys, ltp_bp)) |> 
     ggplot(aes(reorder(physiology, -r2_mean), r2_mean, group = attribute)) +
@@ -372,6 +307,10 @@ pValNum <- val |>
     coord_flip()
 ```
 
+Crete plot of counts of annotations at the species level. Stack colors/columns
+with colors according to Evidence type of the annotations: ASR, IBD, Source.
+Only include attributes that were expanded with IBD or ASR.
+
 ```{r counts species}
 counts_type_sp <- bp |> 
     map(~ {
@@ -389,8 +328,7 @@ counts_type_sp <- bp |>
             mutate(total = sum(n))
     }) |> 
     bind_rows()
-
-p_counts_sp <- counts_type_sp |>
+p_counts_sp <- counts_type_sp |> 
     filter(Attribute %in% keep_attrs) |> 
     mutate(Evidence = factor(Evidence, levels = c("ASR", "IBD", "Source"))) |> 
     ggplot(aes(reorder(Attribute, total), n)) +
@@ -407,6 +345,8 @@ p_counts_sp <- counts_type_sp |>
     coord_flip()
 ```
 
+Merge the plots from the validation results and the counts of annotations
+
 ```{r validation and counts sp plot, fig.height=8, fig.width=14}
 myPlot2 <- plot_grid(
     pValNum, p_counts_sp, ncol = 1,
@@ -422,7 +362,9 @@ myPlot1 <- plot_grid(
 myPlot1
 ```
 
-## counts (genus, species, strain) and annotations per taxon
+# Supplementary Figure: Counts of annotations for genus, spescies, and strain and number of annotations per taxon
+
+Number of annotations at the genus, species, and strain level:
 
 ```{r}
 counts_type_2 <- bp |> 
@@ -441,7 +383,6 @@ counts_type_2 <- bp |>
             mutate(total = sum(n))
     }) |> 
     bind_rows()
-
 p_counts_2 <- counts_type_2 |>
     filter(Attribute %in% keep_attrs) |> 
     mutate(Evidence = factor(Evidence, levels = c("ASR", "IBD", "Source"))) |> 
@@ -457,9 +398,13 @@ p_counts_2 <- counts_type_2 |>
     scale_y_continuous(labels = scales::comma) +
     theme_bw() +
     facet_wrap(~Rank, nrow = 1, scales = "free_x") +
+    theme(
+        axis.text.x = element_text(angle = 45, hjust = 1)
+    ) +
     coord_flip()
 ```
 
+Frequency of number of annotations per single taxon:
 
 ```{r}
 n_annot_tax <- bp |> 
@@ -473,17 +418,18 @@ n_annot_tax <- bp |>
     count(NCBI_ID, Rank)
 p_n_annot_tax <- n_annot_tax |> 
     ggplot() +
-    geom_histogram(aes(x = n)) +
+    geom_histogram(aes(x = n), binwidth = 1) +
     labs(
-        x = "No. annotations per taxon",
+        x = "Annotations per\ntaxon",
         y = "Frequency"
     ) +
     facet_wrap(~Rank, ncol = 1) +
     theme_bw()
 ```
 
+Merge plots above for supplementary figure:
 
-```{r, fig.width=14, fig.height=7, message=FALSE}
+```{r, fig.width=9, fig.height=4, message=FALSE}
 suppN <- plot_grid(
     p_counts_2, p_n_annot_tax,
     labels = c("a)", "b)"),
@@ -493,7 +439,7 @@ suppN <- plot_grid(
 suppN
 ```
 
-## Sources x Attribute x Rank
+# Figure: Heatmap Sources x Attribute x Rank
 
 ```{r, fig.width=9, fig.height=15}
 source_attribute_rank <- bp |> 
@@ -551,7 +497,7 @@ hp <- Heatmap(
 hp
 ```
 
-## Sources
+# Table/Sup Table: Sources
 
 ```{r}
 sources_fname <- system.file(
