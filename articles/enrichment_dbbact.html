@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">bugphyzzAnalyses</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.3</span>
       </span>
     </div>
 
@@ -87,7 +87,15 @@
 
       
 
-      </header><div class="row">
+      </header><link href="enrichment_dbbact_files/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+<script src="enrichment_dbbact_files/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="enrichment_dbbact_files/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="enrichment_dbbact_files/datatables-binding-0.33/datatables.js"></script><link href="enrichment_dbbact_files/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="enrichment_dbbact_files/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet">
+<script src="enrichment_dbbact_files/dt-core-1.13.6/js/jquery.dataTables.min.js"></script><link href="enrichment_dbbact_files/dt-ext-buttons-1.13.6/css/buttons.dataTables.min.css" rel="stylesheet">
+<script src="enrichment_dbbact_files/dt-ext-buttons-1.13.6/js/dataTables.buttons.min.js"></script><script src="enrichment_dbbact_files/dt-ext-buttons-1.13.6/js/buttons.html5.min.js"></script><script src="enrichment_dbbact_files/dt-ext-buttons-1.13.6/js/buttons.colVis.min.js"></script><script src="enrichment_dbbact_files/dt-ext-buttons-1.13.6/js/buttons.print.min.js"></script><link href="enrichment_dbbact_files/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet">
+<script src="enrichment_dbbact_files/nouislider-7.0.10/jquery.nouislider.min.js"></script><link href="enrichment_dbbact_files/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet">
+<script src="enrichment_dbbact_files/selectize-0.12.0/selectize.min.js"></script><link href="enrichment_dbbact_files/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet">
+<script src="enrichment_dbbact_files/crosstalk-1.2.1/js/crosstalk.min.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Enrichment with dbBact approach</h1>
@@ -158,7 +166,6 @@ levels:</p>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Host species`</span> <span class="op">==</span> <span class="st">"Homo sapiens"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">`Abundance in Group 1`</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"increased"</span>, <span class="st">"decreased"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">`Body site`</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="co"># filter(`Study design` == "case-control") |&gt; </span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>exp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^(bsdb:\\d+/\\d+)/\\d+"</span>, <span class="st">"\\1"</span>, <span class="va">`BSDB ID`</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">bsdb</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 3242   51</span></span></code></pre></div>
@@ -186,66 +193,28 @@ levels:</p>
 <span><span class="co">#&gt;   TRUE   TRUE   TRUE   TRUE</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="colorectal-cancer">Colorectal cancer<a class="anchor" aria-label="anchor" href="#colorectal-cancer"></a>
+<h2 id="table-summary-1">Table summary 1<a class="anchor" aria-label="anchor" href="#table-summary-1"></a>
 </h2>
-<p>Get experiments and BSDB rows</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">crc_exps</span> <span class="op">&lt;-</span> <span class="va">crc_dat</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> <span class="co"># It doesn't matter here if it's increased or decreased</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Condition</span> <span class="op">==</span> <span class="st">"Colorectal cancer"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
-<span>        <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"control"</span>, <span class="va">`Group 0 name`</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&amp;</span></span>
-<span>            <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"(colorectal cancer|crc)"</span>, <span class="va">`Group 1 name`</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
-<span><span class="va">crc_dat_inc</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">crc_exps</span><span class="op">)</span></span>
-<span><span class="va">crc_dat_dec</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">decreased</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">crc_exps</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">crc_exps</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 22</span></span></code></pre></div>
-<p>Get signatures:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">crc_sigs_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span></span>
-<span>    <span class="va">crc_dat_dec</span>, <span class="va">crc_dat_inc</span>, rank <span class="op">=</span> <span class="st">"species"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">crc_sigs_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span></span>
-<span>    <span class="va">crc_dat_dec</span>, <span class="va">crc_dat_inc</span>, rank <span class="op">=</span> <span class="st">"genus"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>Enrichment at the species level:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">crc_feces_enriched_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
-<span>    <span class="va">crc_sigs_s</span><span class="op">$</span><span class="va">dec</span>, <span class="va">crc_sigs_s</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_s</span>,</span>
-<span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Registered S3 method overwritten by 'hoardr':</span></span>
-<span><span class="co">#&gt;   method           from</span></span>
-<span><span class="co">#&gt;   print.cache_info httr</span></span>
-<span><span class="co">#&gt; Registered S3 methods overwritten by 'readr':</span></span>
-<span><span class="co">#&gt;   method                    from </span></span>
-<span><span class="co">#&gt;   as.data.frame.spec_tbl_df vroom</span></span>
-<span><span class="co">#&gt;   as_tibble.spec_tbl_df     vroom</span></span>
-<span><span class="co">#&gt;   format.col_spec           vroom</span></span>
-<span><span class="co">#&gt;   print.col_spec            vroom</span></span>
-<span><span class="co">#&gt;   print.collector           vroom</span></span>
-<span><span class="co">#&gt;   print.date_names          vroom</span></span>
-<span><span class="co">#&gt;   print.locale              vroom</span></span>
-<span><span class="co">#&gt;   str.col_spec              vroom</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">crc_feces_enriched_s</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-8-1.png" width="1920"></p>
-<p>Enrichment at the genus level:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">crc_feces_enriched_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
-<span>    <span class="va">crc_sigs_g</span><span class="op">$</span><span class="va">dec</span>, <span class="va">crc_sigs_g</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_g</span>,</span>
-<span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">crc_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-9-1.png" width="1152"></p>
+<code class="sourceCode R"><span><span class="va">nexp_summary</span> <span class="op">&lt;-</span> <span class="va">dats</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="op">{</span></span>
+<span>        <span class="va">.x</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">Condition</span>, name <span class="op">=</span> <span class="st">"nexp"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>            <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">nexp</span> <span class="op">&gt;</span> <span class="fl">5</span><span class="op">)</span></span>
+<span>    <span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">"bsite"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">bsite</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice_max</a></span><span class="op">(</span>order_by <span class="op">=</span> <span class="va">nexp</span>, n <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/myDataTable.html">myDataTable</a></span><span class="op">(</span><span class="va">nexp_summary</span><span class="op">)</span></span></code></pre></div>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-ac96cb3ee4656e2e9ec3" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-ac96cb3ee4656e2e9ec3">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"integer\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"6\" data-max=\"66\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"data":[["feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","mouth","mouth","mouth","mouth","mouth","skin","vagina","vagina"],["Obesity","Parkinson's disease","Colorectal cancer","Antimicrobial agent","COVID-19","Diet","Irritable bowel syndrome","Ethnic group","HIV infection","Type II diabetes mellitus","Rheumatoid arthritis","Smoking status measurement","Smoking behavior","Oral mucositis","Periodontitis","Atopic eczema","Human papilloma virus infection","Cervical glandular intraepithelial neoplasia"],[66,45,43,37,33,26,23,17,17,17,11,9,8,7,6,6,10,9]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>bsite<\/th>\n      <th>Condition<\/th>\n      <th>nexp<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"lBfrtip","buttons":[{"extend":"copy","title":null},{"extend":"print","title":null},{"extend":"csv","title":null}],"scrollX":true,"columnDefs":[{"className":"dt-right","targets":2},{"name":"bsite","targets":0},{"name":"Condition","targets":1},{"name":"nexp","targets":2}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">row_dat_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="obesity">Obesity<a class="anchor" aria-label="anchor" href="#obesity"></a>
+<h2 id="obesity---feces">Obesity - feces<a class="anchor" aria-label="anchor" href="#obesity---feces"></a>
 </h2>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">obs_dat</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> <span class="co"># It doesn't matter here if it's increased or decreased</span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Condition</span> <span class="op">==</span> <span class="st">"Obesity"</span><span class="op">)</span></span>
 <span></span>
@@ -294,7 +263,6 @@ levels:</p>
 <span>    <span class="st">"bsdb:99/1"</span>  </span>
 <span>    </span>
 <span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">obs_dat_inc</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">obs_exps</span><span class="op">)</span></span>
 <span><span class="va">obs_dat_dec</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">decreased</span> <span class="op">|&gt;</span> </span>
@@ -302,29 +270,261 @@ levels:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">obs_exps</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 41</span></span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">obs_sigs_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span><span class="va">obs_dat_dec</span>, <span class="va">obs_dat_inc</span>, rank <span class="op">=</span> <span class="st">"species"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">obs_sigs_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span><span class="va">obs_dat_dec</span>, <span class="va">obs_dat_inc</span>, rank <span class="op">=</span> <span class="st">"genus"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">obs_feces_enriched_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
 <span>    <span class="va">obs_sigs_s</span><span class="op">$</span><span class="va">dec</span>, <span class="va">obs_sigs_s</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_s</span>,</span>
 <span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; Registered S3 method overwritten by 'hoardr':</span></span>
+<span><span class="co">#&gt;   method           from</span></span>
+<span><span class="co">#&gt;   print.cache_info httr</span></span>
+<span><span class="co">#&gt; Registered S3 methods overwritten by 'readr':</span></span>
+<span><span class="co">#&gt;   method                    from </span></span>
+<span><span class="co">#&gt;   as.data.frame.spec_tbl_df vroom</span></span>
+<span><span class="co">#&gt;   as_tibble.spec_tbl_df     vroom</span></span>
+<span><span class="co">#&gt;   format.col_spec           vroom</span></span>
+<span><span class="co">#&gt;   print.col_spec            vroom</span></span>
+<span><span class="co">#&gt;   print.collector           vroom</span></span>
+<span><span class="co">#&gt;   print.date_names          vroom</span></span>
+<span><span class="co">#&gt;   print.locale              vroom</span></span>
+<span><span class="co">#&gt;   str.col_spec              vroom</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">obs_feces_sp</span> <span class="op">&lt;-</span> <span class="va">obs_feces_enriched_s</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"feces"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"Obesity"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"species"</span></span>
+<span>    <span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">obs_feces_enriched_s</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-12-1.png" width="1920"></p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-10-1.png" width="1920"></p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">obs_feces_enriched_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
 <span>    <span class="va">obs_sigs_g</span><span class="op">$</span><span class="va">dec</span>, <span class="va">obs_sigs_g</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_g</span>,</span>
 <span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">obs_feces_gn</span> <span class="op">&lt;-</span> <span class="va">obs_feces_enriched_g</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"feces"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"Obesity"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"genus"</span></span>
+<span>    <span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">obs_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-13-1.png" width="1920"></p>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-11-1.png" width="1920"></p>
 </div>
 <div class="section level2">
-<h2 id="covid-19">COVID-19<a class="anchor" aria-label="anchor" href="#covid-19"></a>
+<h2 id="parkinsons-disease---feces">Parkinson’s disease - feces<a class="anchor" aria-label="anchor" href="#parkinsons-disease---feces"></a>
 </h2>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pd</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Condition</span> <span class="op">==</span> <span class="st">"Parkinson's disease"</span><span class="op">)</span></span>
+<span><span class="co"># pd |&gt; </span></span>
+<span><span class="co">#     relocate(exp, `Group 0 name`, `Group 1 name`) |&gt; </span></span>
+<span><span class="co">#     View()</span></span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pd_exps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"bsdb:22/1"</span>,</span>
+<span>    <span class="st">"bsdb:508/1"</span>,</span>
+<span>    <span class="st">"bsdb:533/1"</span>,</span>
+<span>    <span class="st">"bsdb:533/2"</span>,</span>
+<span>    <span class="co"># "bsdb:537/1",</span></span>
+<span>    <span class="co"># "bsdb:537/2",</span></span>
+<span>    <span class="co"># "bsdb:537/3",</span></span>
+<span>    <span class="co"># "bsdb:537/4",</span></span>
+<span>    <span class="co"># "bsdb:537/6",</span></span>
+<span>    <span class="st">"bsdb:537/7"</span>,</span>
+<span>    <span class="st">"bsdb:537/8"</span>,</span>
+<span>    <span class="st">"bsdb:554/1"</span>,</span>
+<span>    <span class="st">"bsdb:560/1"</span>,</span>
+<span>    <span class="st">"bsdb:568/1"</span>,</span>
+<span>    <span class="co"># "bsdb:568/3",</span></span>
+<span>    <span class="st">"bsdb:600/1"</span>,</span>
+<span>    <span class="st">"bsdb:604/1"</span>,</span>
+<span>    <span class="st">"bsdb:604/2"</span>,</span>
+<span>    <span class="st">"bsdb:605/1"</span>,</span>
+<span>    <span class="co"># "bsdb:605/2",</span></span>
+<span>    <span class="st">"bsdb:607/1"</span>,</span>
+<span>    <span class="st">"bsdb:607/2"</span>,</span>
+<span>    <span class="st">"bsdb:716/1"</span>,</span>
+<span>    <span class="co"># "bsdb:716/2",</span></span>
+<span>    <span class="co"># "bsdb:716/3",</span></span>
+<span>    <span class="co"># "bsdb:716/4",</span></span>
+<span>    <span class="st">"bsdb:717/1"</span>,</span>
+<span>    <span class="co"># "bsdb:717/2",</span></span>
+<span>    <span class="st">"bsdb:717/3"</span>,</span>
+<span>    <span class="co"># "bsdb:717/4",</span></span>
+<span>    <span class="co"># "bsdb:717/5",</span></span>
+<span>    <span class="co"># "bsdb:717/6",</span></span>
+<span>    <span class="st">"bsdb:719/3"</span>,</span>
+<span>    <span class="st">"bsdb:722/1"</span>,</span>
+<span>    <span class="st">"bsdb:723/1"</span>,</span>
+<span>    <span class="st">"bsdb:723/3"</span>,</span>
+<span>    <span class="st">"bsdb:723/4"</span>,</span>
+<span>    <span class="st">"bsdb:723/5"</span>,</span>
+<span>    <span class="st">"bsdb:731/1"</span>,</span>
+<span>    <span class="st">"bsdb:731/2"</span>,</span>
+<span>    <span class="st">"bsdb:731/4"</span>,</span>
+<span>    <span class="co"># "bsdb:741/4",</span></span>
+<span>    <span class="st">"bsdb:742/1"</span>,</span>
+<span>    <span class="st">"bsdb:743/1"</span>,</span>
+<span>    <span class="st">"bsdb:746/1"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">pd_dat_inc</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">pd_exps</span><span class="op">)</span></span>
+<span><span class="va">pd_dat_dec</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">decreased</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">pd_exps</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">pd_exps</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 30</span></span></code></pre></div>
+<p>Get signatures:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pd_sigs_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span></span>
+<span>    <span class="va">pd_dat_dec</span>, <span class="va">pd_dat_inc</span>, rank <span class="op">=</span> <span class="st">"species"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">pd_sigs_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span></span>
+<span>    <span class="va">pd_dat_dec</span>, <span class="va">pd_dat_inc</span>, rank <span class="op">=</span> <span class="st">"genus"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Enrichment at the species level:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pd_feces_enriched_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
+<span>    <span class="va">pd_sigs_s</span><span class="op">$</span><span class="va">dec</span>, <span class="va">pd_sigs_s</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_s</span>,</span>
+<span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">pd_feces_sp</span> <span class="op">&lt;-</span> <span class="va">pd_feces_enriched_s</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"feces"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"pd"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"species"</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">pd_feces_enriched_s</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-15-1.png" width="1920"></p>
+<p>Enrichment at the genus level:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">pd_feces_enriched_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
+<span>    <span class="va">pd_sigs_g</span><span class="op">$</span><span class="va">dec</span>, <span class="va">pd_sigs_g</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_g</span>,</span>
+<span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">pd_feces_gn</span> <span class="op">&lt;-</span> <span class="va">pd_feces_enriched_g</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"feces"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"pd"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"genus"</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">pd_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-16-1.png" width="1152"></p>
+</div>
+<div class="section level2">
+<h2 id="colorectal-cancer---feces">Colorectal cancer - feces<a class="anchor" aria-label="anchor" href="#colorectal-cancer---feces"></a>
+</h2>
+<p>Get experiments and BSDB rows</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">crc_exps</span> <span class="op">&lt;-</span> <span class="va">crc_dat</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> <span class="co"># It doesn't matter here if it's increased or decreased</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Condition</span> <span class="op">==</span> <span class="st">"Colorectal cancer"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"control"</span>, <span class="va">`Group 0 name`</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&amp;</span></span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"(colorectal cancer|crc)"</span>, <span class="va">`Group 1 name`</span>, ignore.case <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
+<span><span class="va">crc_dat_inc</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">crc_exps</span><span class="op">)</span></span>
+<span><span class="va">crc_dat_dec</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">decreased</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">crc_exps</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">crc_exps</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 22</span></span></code></pre></div>
+<p>Get signatures:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">crc_sigs_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span></span>
+<span>    <span class="va">crc_dat_dec</span>, <span class="va">crc_dat_inc</span>, rank <span class="op">=</span> <span class="st">"species"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">crc_sigs_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span></span>
+<span>    <span class="va">crc_dat_dec</span>, <span class="va">crc_dat_inc</span>, rank <span class="op">=</span> <span class="st">"genus"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Enrichment at the species level:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">crc_feces_enriched_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
+<span>    <span class="va">crc_sigs_s</span><span class="op">$</span><span class="va">dec</span>, <span class="va">crc_sigs_s</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_s</span>,</span>
+<span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">crc_feces_sp</span> <span class="op">&lt;-</span> <span class="va">crc_feces_enriched_s</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"feces"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"crc"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"species"</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">crc_feces_enriched_s</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-19-1.png" width="1920"></p>
+<p>Enrichment at the genus level:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">crc_feces_enriched_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
+<span>    <span class="va">crc_sigs_g</span><span class="op">$</span><span class="va">dec</span>, <span class="va">crc_sigs_g</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_g</span>,</span>
+<span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">crc_feces_gn</span> <span class="op">&lt;-</span> <span class="va">crc_feces_enriched_g</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"feces"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"crc"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"genus"</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">crc_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-20-1.png" width="1152"></p>
+</div>
+<div class="section level2">
+<h2 id="antimicrobial-agent---feces">Antimicrobial agent - feces<a class="anchor" aria-label="anchor" href="#antimicrobial-agent---feces"></a>
+</h2>
+<p>Interesting, but many different antibiotics are provided. It would
+have been more interesting if vancomycin would be among them.</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">aa_dat</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Condition</span> <span class="op">==</span> <span class="st">"Antimicrobial agent"</span><span class="op">)</span></span>
+<span><span class="co"># aa_dat |&gt;</span></span>
+<span><span class="co">#     relocate(exp, `Group 0 name`, `Group 1 name`) |&gt;</span></span>
+<span><span class="co">#     View()</span></span>
+<span><span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_extract.html" class="external-link">str_extract</a></span><span class="op">(</span><span class="va">aa_dat</span><span class="op">$</span><span class="va">`Group 1 definition`</span>, <span class="st">"\\b\\w+in\\b"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] NA               NA               NA               NA              </span></span>
+<span><span class="co">#&gt;  [5] NA               NA               NA               NA              </span></span>
+<span><span class="co">#&gt;  [9] NA               NA               NA               NA              </span></span>
+<span><span class="co">#&gt; [13] NA               NA               NA               NA              </span></span>
+<span><span class="co">#&gt; [17] NA               "penicillin"     "piperacillin"   NA              </span></span>
+<span><span class="co">#&gt; [21] NA               NA               "levofloxacin"   "ciprofloxacin" </span></span>
+<span><span class="co">#&gt; [25] "ampicillin"     "ampicillin"     "Rifaximin"      "Rifaximin"     </span></span>
+<span><span class="co">#&gt; [29] "within"         NA               "ciprofloxacin"  "nitrofurantoin"</span></span>
+<span><span class="co">#&gt; [33] NA               "azithromycin"   "azithromycin"   "azithromycin"  </span></span>
+<span><span class="co">#&gt; [37] NA</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="covid-19---feces">COVID-19 - feces<a class="anchor" aria-label="anchor" href="#covid-19---feces"></a>
+</h2>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">covid_dat</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> <span class="co"># It doesn't matter here if it's increased or decreased</span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Condition</span> <span class="op">==</span> <span class="st">"COVID-19"</span><span class="op">)</span></span>
 <span></span>
@@ -349,74 +549,55 @@ levels:</p>
 <span><span class="va">covid_dat_inc</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">covid_exps</span><span class="op">)</span></span>
 <span><span class="va">covid_dat_dec</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">decreased</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">covid_exps</span><span class="op">)</span></span>
-<span><span class="co"># covid_dat |&gt; </span></span>
-<span><span class="co">#     relocate(exp, `Group 0 name`, `Group 1 name`) |&gt; </span></span>
-<span><span class="co">#     View()</span></span></code></pre></div>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">covid_exps</span><span class="op">)</span></span></code></pre></div>
 <p>Concatenate signatures:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">covid_sigs_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span><span class="va">covid_dat_dec</span>, <span class="va">covid_dat_inc</span>, rank <span class="op">=</span> <span class="st">"species"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">covid_sigs_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span><span class="va">covid_dat_dec</span>, <span class="va">covid_dat_inc</span>, rank <span class="op">=</span> <span class="st">"genus"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Enrichment at the species level:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">covid_feces_enriched_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
 <span>    <span class="va">covid_sigs_s</span><span class="op">$</span><span class="va">dec</span>, <span class="va">covid_sigs_s</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_s</span>,</span>
 <span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">covid_feces_sp</span> <span class="op">&lt;-</span> <span class="va">crc_feces_enriched_s</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"feces"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"covid"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"species"</span></span>
+<span>    <span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">covid_feces_enriched_s</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-16-1.png" width="1920"></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-24-1.png" width="1920"></p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">covid_feces_enriched_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
 <span>    <span class="va">covid_sigs_g</span><span class="op">$</span><span class="va">dec</span>, <span class="va">covid_sigs_g</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_g</span>,</span>
 <span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in taxizedb::taxid2name(Taxon, db = "ncbi", verbose = FALSE): No name</span></span>
 <span><span class="co">#&gt; found for 2 of 137 taxon IDs</span></span></code></pre></div>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">covid_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-17-1.png" width="1920"></p>
-<div class="section level3">
-<h3 id="smoking">Smoking<a class="anchor" aria-label="anchor" href="#smoking"></a>
-</h3>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">smo_dat</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">mouth</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> <span class="co"># It doesn't matter here if it's increased or decreased</span></span>
-<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Condition</span> <span class="op">==</span> <span class="st">"Smoking behavior"</span><span class="op">)</span></span>
-<span><span class="va">smo_exps</span> <span class="op">&lt;-</span> <span class="va">smo_dat</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op">!=</span> <span class="st">"bsdb:368/1"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
-<span><span class="va">smo_dat_inc</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">mouth</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">smo_exps</span><span class="op">)</span></span>
-<span><span class="va">smo_dat_dec</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">mouth</span><span class="op">$</span><span class="va">decreased</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">smo_exps</span><span class="op">)</span></span>
-<span><span class="co"># smo_dat |&gt;</span></span>
-<span><span class="co">#     relocate(exp, `Group 0 name`, `Group 1 name`) |&gt;</span></span>
-<span><span class="co">#     View()</span></span></code></pre></div>
-<p>Get concatenated signatures:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">smo_sigs_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span><span class="va">smo_dat_dec</span>, <span class="va">smo_dat_inc</span>, rank <span class="op">=</span> <span class="st">"species"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">smo_sigs_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span><span class="va">smo_dat_dec</span>, <span class="va">smo_dat_inc</span>, rank <span class="op">=</span> <span class="st">"genus"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">smo_mouth_enriched_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
-<span>    <span class="va">smo_sigs_s</span><span class="op">$</span><span class="va">dec</span>, <span class="va">smo_sigs_s</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_s</span>,</span>
-<span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning in taxizedb::taxid2name(Taxon, db = "ncbi", verbose = FALSE): No name</span></span>
-<span><span class="co">#&gt; found for 1 of 75 taxon IDs</span></span></code></pre></div>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">smo_mouth_enriched_s</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-20-1.png" width="1920"></p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">smo_mouth_enriched_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
-<span>    <span class="va">smo_sigs_g</span><span class="op">$</span><span class="va">dec</span>, <span class="va">smo_sigs_g</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_g</span>,</span>
-<span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">smo_mouth_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-21-1.png" width="1920"></p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">covid_feces_gn</span> <span class="op">&lt;-</span> <span class="va">crc_feces_enriched_g</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"feces"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"covid"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"genus"</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">covid_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-25-1.png" width="1920"></p>
 </div>
-<div class="section level3">
-<h3 id="ibd">IBD<a class="anchor" aria-label="anchor" href="#ibd"></a>
-</h3>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="section level2">
+<h2 id="ibs---feces">IBS - feces<a class="anchor" aria-label="anchor" href="#ibs---feces"></a>
+</h2>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ibs_dat</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">feces</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> <span class="co"># It doesn't matter here if it's increased or decreased</span></span>
 <span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Condition</span> <span class="op">==</span> <span class="st">"Irritable bowel syndrome"</span><span class="op">)</span></span>
 <span><span class="va">ibs_exps</span> <span class="op">&lt;-</span> <span class="va">ibs_dat</span> <span class="op">|&gt;</span> </span>
@@ -429,73 +610,190 @@ levels:</p>
 <span><span class="co"># ibs_dat |&gt; </span></span>
 <span><span class="co">#     relocate(exp, `Group 0 name`, `Group 1 name`) |&gt; </span></span>
 <span><span class="co">#     View()</span></span></code></pre></div>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ibs_sigs_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span><span class="va">ibs_dat_dec</span>, <span class="va">ibs_dat_inc</span>, rank <span class="op">=</span> <span class="st">"species"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">ibs_sigs_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span><span class="va">ibs_dat_dec</span>, <span class="va">ibs_dat_inc</span>, rank <span class="op">=</span> <span class="st">"genus"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ibs_sigs_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span></span>
+<span>    <span class="va">ibs_dat_dec</span>, <span class="va">ibs_dat_inc</span>, rank <span class="op">=</span> <span class="st">"species"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">ibs_sigs_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span></span>
+<span>    <span class="va">ibs_dat_dec</span>, <span class="va">ibs_dat_inc</span>, rank <span class="op">=</span> <span class="st">"genus"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ibs_feces_enriched_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
 <span>    <span class="va">ibs_sigs_s</span><span class="op">$</span><span class="va">dec</span>, <span class="va">ibs_sigs_s</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_s</span>,</span>
 <span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">ibs_feces_enriched_s</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-24-1.png" width="1920"></p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">ibs_feces_sp</span> <span class="op">&lt;-</span> <span class="va">ibs_feces_enriched_s</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"feces"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"ibs"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"species"</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">ibs_feces_enriched_s</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-28-1.png" width="1920"></p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ibs_feces_enriched_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
 <span>    <span class="va">ibs_sigs_g</span><span class="op">$</span><span class="va">dec</span>, <span class="va">ibs_sigs_g</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_g</span>,</span>
 <span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">ibs_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-25-1.png" width="2400"></p>
-</div>
+<span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">ibs_feces_gn</span> <span class="op">&lt;-</span> <span class="va">ibs_feces_enriched_g</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"feces"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"ibs"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"genus"</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">ibs_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-29-1.png" width="2400"></p>
 </div>
 <div class="section level2">
-<h2 id="summary-table">Summary table<a class="anchor" aria-label="anchor" href="#summary-table"></a>
+<h2 id="smoking---mouth">Smoking - mouth<a class="anchor" aria-label="anchor" href="#smoking---mouth"></a>
 </h2>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## genus</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    feces <span class="op">=</span> <span class="va">feces_enriched_g</span>, mouth <span class="op">=</span> <span class="va">mouth_enriched_g</span>,</span>
-<span>    vagina <span class="op">=</span> <span class="va">vagina_enriched_g</span>, skin <span class="op">=</span> <span class="va">skin_enriched_g</span></span>
-<span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="op">{</span></span>
-<span>        <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>            <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>            <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"term"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>            <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>    <span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">"var"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>body_site <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^(feces|mouth)\\..*$"</span>, <span class="st">"\\1"</span>, <span class="va">var</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>condition <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^(feces|mouth)\\.(.*$)"</span>, <span class="st">"\\2"</span>, <span class="va">var</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">var</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/relocate.html" class="external-link">relocate</a></span><span class="op">(</span><span class="va">body_site</span>, <span class="va">condition</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">P_value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>FDR <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">P_value</span>, <span class="st">"fdr"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">FDR</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">smo_dat</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">mouth</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> <span class="co"># It doesn't matter here if it's increased or decreased</span></span>
+<span>        <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Condition</span> <span class="op">==</span> <span class="st">"Smoking behavior"</span><span class="op">)</span></span>
+<span><span class="va">smo_exps</span> <span class="op">&lt;-</span> <span class="va">smo_dat</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op">!=</span> <span class="st">"bsdb:368/1"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
+<span><span class="va">smo_dat_inc</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">mouth</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">smo_exps</span><span class="op">)</span></span>
+<span><span class="va">smo_dat_dec</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">mouth</span><span class="op">$</span><span class="va">decreased</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">smo_exps</span><span class="op">)</span></span></code></pre></div>
+<p>Get concatenated signatures:</p>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">smo_sigs_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span></span>
+<span>    <span class="va">smo_dat_dec</span>, <span class="va">smo_dat_inc</span>, rank <span class="op">=</span> <span class="st">"species"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">smo_sigs_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span></span>
+<span>    <span class="va">smo_dat_dec</span>, <span class="va">smo_dat_inc</span>, rank <span class="op">=</span> <span class="st">"genus"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">smo_mouth_enriched_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
+<span>    <span class="va">smo_sigs_s</span><span class="op">$</span><span class="va">dec</span>, <span class="va">smo_sigs_s</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_s</span>,</span>
+<span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in taxizedb::taxid2name(Taxon, db = "ncbi", verbose = FALSE): No name</span></span>
+<span><span class="co">#&gt; found for 1 of 75 taxon IDs</span></span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">smo_mouth_sp</span> <span class="op">&lt;-</span> <span class="va">smo_mouth_enriched_s</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"mouth"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"smoking"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"species"</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">smo_mouth_enriched_s</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-32-1.png" width="1920"></p>
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">smo_mouth_enriched_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
+<span>    <span class="va">smo_sigs_g</span><span class="op">$</span><span class="va">dec</span>, <span class="va">smo_sigs_g</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_g</span>,</span>
+<span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">smo_mouth_gn</span> <span class="op">&lt;-</span> <span class="va">smo_mouth_enriched_g</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"mouth"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"smoking"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"genus"</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">smo_mouth_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-33-1.png" width="1920"></p>
+</div>
+<div class="section level2">
+<h2 id="human-papilloma-virus-infection">Human papilloma virus infection<a class="anchor" aria-label="anchor" href="#human-papilloma-virus-infection"></a>
+</h2>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hpv_dat</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">vagina</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">Condition</span> <span class="op">==</span> <span class="st">"Human papilloma virus infection"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"HPV\\+"</span>,  <span class="va">`Group 1 name`</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">## species</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    feces <span class="op">=</span> <span class="va">feces_enriched_s</span>, mouth <span class="op">=</span> <span class="va">mouth_enriched_s</span>,</span>
-<span>    vagina <span class="op">=</span> <span class="va">vagina_enriched_g</span>, skin <span class="op">=</span> <span class="va">skin_enriched_g</span></span>
+<span><span class="va">hpv_exps</span> <span class="op">&lt;-</span> <span class="va">hpv_dat</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/pull.html" class="external-link">pull</a></span><span class="op">(</span><span class="va">exp</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">hpv_dat_inc</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">vagina</span><span class="op">$</span><span class="va">increased</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">hpv_exps</span><span class="op">)</span></span>
+<span><span class="va">hpv_dat_dec</span> <span class="op">&lt;-</span> <span class="va">dats</span><span class="op">$</span><span class="va">vagina</span><span class="op">$</span><span class="va">decreased</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">exp</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">hpv_exps</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># hpv_dat |&gt;</span></span>
+<span><span class="co">#     relocate(exp, `Group 0 name`, `Group 1 name`) |&gt;</span></span>
+<span><span class="co">#     View()</span></span></code></pre></div>
+<p>Get concatenated signatures:</p>
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hpv_sigs_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span></span>
+<span>    <span class="va">hpv_dat_dec</span>, <span class="va">hpv_dat_inc</span>, rank <span class="op">=</span> <span class="st">"species"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">hpv_sigs_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPairedSigs.html">getPairedSigs</a></span><span class="op">(</span></span>
+<span>    <span class="va">hpv_dat_dec</span>, <span class="va">hpv_dat_inc</span>, rank <span class="op">=</span> <span class="st">"genus"</span>, cat <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Enrichment at the species level:</p>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hpv_vagina_enriched_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
+<span>    <span class="va">hpv_sigs_s</span><span class="op">$</span><span class="va">dec</span>, <span class="va">hpv_sigs_s</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_s</span>,</span>
+<span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">hpv_vagina_sp</span> <span class="op">&lt;-</span> <span class="va">hpv_vagina_enriched_s</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"vagina"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"hpv"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"species"</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">hpv_vagina_enriched_s</span>, scm <span class="op">=</span> <span class="cn">TRUE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-36-1.png" width="1920"></p>
+<p>Enrichment at the genus level:</p>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">hpv_vagina_enriched_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
+<span>    <span class="va">hpv_sigs_g</span><span class="op">$</span><span class="va">dec</span>, <span class="va">hpv_sigs_g</span><span class="op">$</span><span class="va">inc</span>, term_list <span class="op">=</span> <span class="va">bpSigs_g</span>,</span>
+<span>    perm <span class="op">=</span> <span class="va">perm_var</span>, freq <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">row_dat_list</span><span class="op">$</span><span class="va">hpv_vagina_gn</span> <span class="op">&lt;-</span> <span class="va">hpv_vagina_enriched_g</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"bp_sig"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        Bsite <span class="op">=</span> <span class="st">"vagina"</span>,</span>
+<span>        Condition <span class="op">=</span> <span class="st">"hpv"</span>,</span>
+<span>        Rank <span class="op">=</span> <span class="st">"genus"</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">hpv_vagina_enriched_g</span>, scm <span class="op">=</span> <span class="cn">TRUE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-37-1.png" width="1920"></p>
+<div class="section level3">
+<h3 id="summary-table">Summary table<a class="anchor" aria-label="anchor" href="#summary-table"></a>
+</h3>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sum_tbl</span> <span class="op">&lt;-</span> <span class="va">row_dat_list</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>        FDR <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">P_value</span>, method <span class="op">=</span> <span class="st">"fdr"</span><span class="op">)</span>,</span>
+<span>        PermP_FDR <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">PermP</span>, method <span class="op">=</span> <span class="st">"fdr"</span><span class="op">)</span></span>
 <span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="op">~</span> <span class="op">{</span></span>
-<span>        <span class="fu"><a href="https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html" class="external-link">rowData</a></span><span class="op">(</span><span class="va">.x</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>            <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>            <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/rownames.html" class="external-link">rownames_to_column</a></span><span class="op">(</span>var <span class="op">=</span> <span class="st">"term"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>            <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>    <span class="op">}</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span>.id <span class="op">=</span> <span class="st">"var"</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>body_site <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^(feces|mouth)\\..*$"</span>, <span class="st">"\\1"</span>, <span class="va">var</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>condition <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^(feces|mouth)\\.(.*$)"</span>, <span class="st">"\\2"</span>, <span class="va">var</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">var</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/relocate.html" class="external-link">relocate</a></span><span class="op">(</span><span class="va">body_site</span>, <span class="va">condition</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">P_value</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>FDR <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/p.adjust.html" class="external-link">p.adjust</a></span><span class="op">(</span><span class="va">P_value</span>, <span class="st">"fdr"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">FDR</span><span class="op">)</span></span></code></pre></div>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">P_value</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/myDataTable.html">myDataTable</a></span><span class="op">(</span><span class="va">sum_tbl</span><span class="op">)</span></span></code></pre></div>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-e5c8c404fe174e4c81bd" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-e5c8c404fe174e4c81bd">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-0.833766233766234\" data-max=\"0.742857142857143\" data-scale=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"factor\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"width: 100%; display: none;\">\n      <select multiple=\"multiple\" style=\"width: 100%;\" data-options=\"[&quot;Case&quot;,&quot;Unchanged&quot;,&quot;Control&quot;]\"><\/select>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0\" data-max=\"0.249\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.001\" data-max=\"0.099\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.271\" data-max=\"0.715440000000001\" data-scale=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0\" data-max=\"0.93448275862069\" data-scale=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"data":[["gram stain|gram stain positive","habitat|human gut microbiome","biofilm formation|FALSE","shape|coccus","arrangement|cell chain","habitat|human microbiome","shape|bacillus","habitat|digestive system","gram stain|gram stain negative","aerophilicity|facultatively anaerobic","shape|coccus","arrangement|cell chain","gram stain|gram stain variable","butyrate-producing bacteria|TRUE","health associated|TRUE","biofilm formation|FALSE","cogem pathogenicity rating|cogem pathogenicity rating 1","habitat|waste and sludge water","spore shape|endospore","habitat|human gut microbiome","health associated|FALSE","cogem pathogenicity rating|cogem pathogenicity rating 1","habitat|waste and sludge water","biosafety level|biosafety level 1","habitat|human gut microbiome","biofilm formation|FALSE","plant pathogenicity|FALSE","gram stain|gram stain positive","animal pathogen|FALSE","spore formation|FALSE","aerophilicity|anaerobic","health associated|FALSE","cogem pathogenicity rating|cogem pathogenicity rating 1","habitat|waste and sludge water","biosafety level|biosafety level 1","habitat|human gut microbiome","biofilm formation|FALSE","plant pathogenicity|FALSE","gram stain|gram stain positive","animal pathogen|FALSE","spore formation|FALSE","aerophilicity|anaerobic","gram stain|gram stain positive","spore shape|endospore","health associated|FALSE","biofilm formation|TRUE","habitat|waste and sludge water","biofilm formation|FALSE","gram stain|gram stain negative","gram stain|gram stain negative","coding genes|average| &gt; 600 &amp; &lt;= 6000","genome size|large| &gt; 998123 &amp; &lt;= 6997434","antimicrobial sensitivity|TRUE","motility|FALSE","shape|spirillum","shape|coccus","habitat|human microbiome","arrangement|paired cells","habitat|oral","host-associated|TRUE","gram stain|gram stain positive","hemolysis|beta","arrangement|branched","spore formation|TRUE","aerophilicity|aerobic","extreme environment|TRUE","cogem pathogenicity rating|cogem pathogenicity rating 1","habitat|feces","aerophilicity|facultatively anaerobic","shape|bacillus","plant pathogenicity|FALSE","host-associated|TRUE","aerophilicity|anaerobic","gram stain|gram stain variable","shape|pleiomorphic cell"],[0.2111764705882353,0.1556862745098039,0.1231372549019608,-0.05333333333333334,-0.07862745098039216,-0.3154901960784314,-0.437843137254902,-0.452156862745098,-0.4654901960784313,0.4318181818181818,0.3563636363636363,0.1262458471760797,-0.05357142857142857,-0.07142857142857142,-0.07142857142857142,-0.09011627906976744,-0.1204318936877077,-0.1274916943521595,-0.1478405315614618,-0.2113787375415282,0.1294715447154471,-0.116869918699187,-0.1772357723577236,-0.2134146341463415,-0.2351626016260162,-0.2638211382113821,-0.267479674796748,-0.2721544715447155,-0.3345528455284553,-0.3381458966565349,-0.4000759878419453,0.1294715447154471,-0.116869918699187,-0.1772357723577236,-0.2134146341463415,-0.2351626016260162,-0.2638211382113821,-0.267479674796748,-0.2721544715447155,-0.3345528455284553,-0.3381458966565349,-0.4000759878419453,0.5757575757575757,0.5575757575757576,0.4268398268398268,0.2571428571428571,0.2571428571428571,-0.1835497835497835,-0.8337662337662337,0.2151424287856072,0.1724137931034483,0.1724137931034483,0.1506746626686657,0.06896551724137931,0.06896551724137931,-0.1739130434782609,-0.1829085457271364,-0.2263868065967016,-0.2353823088455772,-0.2473763118440779,-0.2713643178410795,-0.2826086956521739,0.1162790697674419,-0.119047619047619,0.2142857142857143,-0.2,-0.2,-0.2619047619047619,-0.2666666666666667,-0.2666666666666667,-0.3238095238095238,-0.3857142857142857,0.7428571428571428,-0.3,-0.3],["Case","Case","Case","Control","Control","Control","Control","Control","Control","Case","Case","Case","Control","Control","Control","Control","Control","Control","Control","Control","Case","Control","Control","Control","Control","Control","Control","Control","Control","Control","Control","Case","Control","Control","Control","Control","Control","Control","Control","Control","Control","Control","Case","Case","Case","Case","Case","Control","Control","Case","Case","Case","Case","Case","Case","Control","Control","Control","Control","Control","Control","Control","Case","Control","Case","Control","Control","Control","Control","Control","Control","Control","Case","Control","Control"],[0.126,0.249,0.078,0.123,0.097,0.023,0.011,0.013,0.005,0.006,0.181,0.079,0.174,0.075,0.07199999999999999,0.053,0.091,0.137,0.114,0.029,0.102,0.024,0.016,0.045,0.06,0,0.05,0.052,0.001,0.182,0.208,0.102,0.024,0.016,0.045,0.06,0,0.05,0.052,0.001,0.182,0.208,0.041,0.065,0.044,0.112,0.018,0.081,0.004,0.126,0.007,0.006,0.03,0.156,0.149,0.059,0.08400000000000001,0.026,0.058,0.141,0.073,0.011,0.099,0.123,0.115,0.208,0.245,0.168,0.106,0.08699999999999999,0.121,0.095,0.114,0.151,0.162],[0.08500000000000001,0.082,0.029,0.055,0.07199999999999999,0.061,0.056,0.047,0.047,0.008,0.096,0.075,0.08,0.031,0.031,0.041,0.045,0.027,0.054,0.007,0.097,0.059,0.018,0.065,0.081,0.002,0.047,0.008999999999999999,0.001,0.031,0.051,0.097,0.059,0.018,0.065,0.081,0.002,0.047,0.008999999999999999,0.001,0.031,0.051,0.022,0.09,0.03,0.049,0.014,0.074,0.054,0.091,0.004,0.004,0.021,0.076,0.076,0.045,0.07099999999999999,0.03,0.016,0.075,0.049,0.012,0.045,0.078,0.06900000000000001,0.09,0.09,0.093,0.045,0.045,0.068,0.027,0.066,0.099,0.099],["feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","mouth","mouth","mouth","mouth","mouth","mouth","mouth","mouth","mouth","mouth","mouth","mouth","mouth","mouth","mouth","vagina","vagina","vagina","vagina","vagina","vagina","vagina","vagina","vagina","vagina","vagina"],["Obesity","Obesity","Obesity","Obesity","Obesity","Obesity","Obesity","Obesity","Obesity","Obesity","Obesity","pd","pd","pd","pd","pd","pd","pd","pd","pd","crc","crc","crc","crc","crc","crc","crc","crc","crc","crc","crc","covid","covid","covid","covid","covid","covid","covid","covid","covid","covid","covid","ibs","ibs","ibs","ibs","ibs","ibs","ibs","smoking","smoking","smoking","smoking","smoking","smoking","smoking","smoking","smoking","smoking","smoking","smoking","smoking","smoking","smoking","hpv","hpv","hpv","hpv","hpv","hpv","hpv","hpv","hpv","hpv","hpv"],["species","species","species","species","species","species","species","species","species","genus","genus","species","species","species","species","species","species","species","species","species","species","species","species","species","species","species","species","species","species","genus","genus","species","species","species","species","species","species","species","species","species","genus","genus","species","species","species","species","species","species","species","species","species","species","species","species","species","species","species","species","species","species","species","species","genus","genus","species","species","species","species","species","species","species","species","genus","genus","genus"],[0.7087692307692308,0.6944375,0.6462307692307693,0.6898181818181819,0.6944375,0.6944375,0.6898181818181819,0.6898181818181819,0.6898181818181819,0.4878,0.7154400000000001,0.6944375,0.6944375,0.6462307692307693,0.6462307692307693,0.6898181818181819,0.6898181818181819,0.6462307692307693,0.6898181818181819,0.4878,0.7154400000000001,0.6944375,0.6462307692307693,0.6944375,0.6944375,0.271,0.6898181818181819,0.4878,0.271,0.6462307692307693,0.6898181818181819,0.7154400000000001,0.6944375,0.6462307692307693,0.6944375,0.6944375,0.271,0.6898181818181819,0.4878,0.271,0.6462307692307693,0.6898181818181819,0.6462307692307693,0.7148115942028985,0.6462307692307693,0.6898181818181819,0.6323333333333333,0.6944375,0.6898181818181819,0.7148115942028985,0.3613333333333333,0.3613333333333333,0.6462307692307693,0.6944375,0.6944375,0.6898181818181819,0.6944375,0.6462307692307693,0.6462307692307693,0.6944375,0.6898181818181819,0.5912727272727273,0.6898181818181819,0.6944375,0.6944375,0.7148115942028985,0.7148115942028985,0.7154400000000001,0.6898181818181819,0.6898181818181819,0.6944375,0.6462307692307693,0.6944375,0.7154400000000001,0.7154400000000001],[0.8729052631578947,0.9344827586206896,0.8638125,0.8729052631578947,0.8638125,0.6405454545454545,0.5419999999999999,0.5871666666666666,0.4065,0.4065,0.8843157894736843,0.8638125,0.8782407407407407,0.8638125,0.8601304347826086,0.8338461538461538,0.8638125,0.8729052631578947,0.8729052631578947,0.6775,0.8638125,0.6405454545454545,0.6194285714285714,0.8338461538461538,0.8338461538461538,0,0.8338461538461538,0.8338461538461538,0.1355,0.8843157894736843,0.8907286821705427,0.8638125,0.6405454545454545,0.6194285714285714,0.8338461538461538,0.8338461538461538,0,0.8338461538461538,0.8338461538461538,0.1355,0.8843157894736843,0.8907286821705427,0.8338461538461538,0.8601304347826086,0.8338461538461538,0.8729052631578947,0.6405454545454545,0.8638125,0.4065,0.8729052631578947,0.4215555555555556,0.4065,0.6775,0.8738367346938776,0.8729052631578947,0.8338461538461538,0.8638125,0.6405454545454545,0.8338461538461538,0.8729052631578947,0.8601304347826086,0.5419999999999999,0.8638125,0.8729052631578947,0.8729052631578947,0.8907286821705427,0.9344827586206896,0.8775238095238096,0.8729052631578947,0.8638125,0.8729052631578947,0.8638125,0.8729052631578947,0.8729052631578947,0.8775238095238096]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>bp_sig<\/th>\n      <th>Effect_size<\/th>\n      <th>Direction<\/th>\n      <th>PermP<\/th>\n      <th>P_value<\/th>\n      <th>Bsite<\/th>\n      <th>Condition<\/th>\n      <th>Rank<\/th>\n      <th>FDR<\/th>\n      <th>PermP_FDR<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"lBfrtip","buttons":[{"extend":"copy","title":null},{"extend":"print","title":null},{"extend":"csv","title":null}],"scrollX":true,"columnDefs":[{"className":"dt-right","targets":[1,3,4,8,9]},{"name":"bp_sig","targets":0},{"name":"Effect_size","targets":1},{"name":"Direction","targets":2},{"name":"PermP","targets":3},{"name":"P_value","targets":4},{"name":"Bsite","targets":5},{"name":"Condition","targets":6},{"name":"Rank","targets":7},{"name":"FDR","targets":8},{"name":"PermP_FDR","targets":9}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
+</div>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">sessioninfo</span><span class="fu">::</span><span class="fu"><a href="https://r-lib.github.io/sessioninfo/reference/session_info.html" class="external-link">session_info</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Session info ───────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">setting </span> <span style="color: #555555; font-style: italic;">value</span></span></span>
@@ -507,62 +805,64 @@ levels:</p>
 <span><span class="co">#&gt;  collate  en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  ctype    en_US.UTF-8</span></span>
 <span><span class="co">#&gt;  tz       Etc/UTC</span></span>
-<span><span class="co">#&gt;  date     2024-05-21</span></span>
+<span><span class="co">#&gt;  date     2024-05-28</span></span>
 <span><span class="co">#&gt;  pandoc   3.1.13 @ /usr/bin/ (via rmarkdown)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB; font-weight: bold;">─ Packages ───────────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt;  <span style="color: #555555; font-style: italic;">package             </span> <span style="color: #555555; font-style: italic;">*</span> <span style="color: #555555; font-style: italic;">version</span> <span style="color: #555555; font-style: italic;">date (UTC)</span> <span style="color: #555555; font-style: italic;">lib</span> <span style="color: #555555; font-style: italic;">source</span></span></span>
-<span><span class="co">#&gt;  abind                  1.4-5   <span style="color: #555555;">2016-07-21</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  abind                  1.4-5   <span style="color: #555555;">2016-07-21</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  Biobase              * 2.64.0  <span style="color: #555555;">2024-04-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  BiocFileCache          2.12.0  <span style="color: #555555;">2024-04-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  BiocGenerics         * 0.50.0  <span style="color: #555555;">2024-04-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  bit                    4.0.5   <span style="color: #555555;">2022-11-15</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  bit64                  4.0.5   <span style="color: #555555;">2020-08-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  blob                   1.2.4   <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  bit                    4.0.5   <span style="color: #555555;">2022-11-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  bit64                  4.0.5   <span style="color: #555555;">2020-08-30</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  blob                   1.2.4   <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  bslib                  0.7.0   <span style="color: #555555;">2024-03-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  bugphyzz             * 0.99.2  <span style="color: #555555;">2024-05-21</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@604ff53)</span></span></span>
-<span><span class="co">#&gt;  bugphyzzAnalyses     * 0.1.2   <span style="color: #555555;">2024-05-21</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
+<span><span class="co">#&gt;  bugphyzz             * 0.99.2  <span style="color: #555555;">2024-05-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@604ff53)</span></span></span>
+<span><span class="co">#&gt;  bugphyzzAnalyses     * 0.1.3   <span style="color: #555555;">2024-05-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
 <span><span class="co">#&gt;  bugsigdbr            * 1.10.0  <span style="color: #555555;">2024-04-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  cachem                 1.1.0   <span style="color: #555555;">2024-05-16</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  Cairo                  1.6-2   <span style="color: #555555;">2023-11-28</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  Cairo                  1.6-2   <span style="color: #555555;">2023-11-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  circlize               0.4.16  <span style="color: #555555;">2024-02-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  cli                    3.6.2   <span style="color: #555555;">2023-12-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  clue                   0.3-65  <span style="color: #555555;">2023-09-23</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  clue                   0.3-65  <span style="color: #555555;">2023-09-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  cluster                2.1.6   <span style="color: #555555;">2023-12-01</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  codetools              0.2-20  <span style="color: #555555;">2024-03-31</span> <span style="color: #555555;">[2]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  colorspace             2.1-0   <span style="color: #555555;">2023-01-23</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  colorspace             2.1-0   <span style="color: #555555;">2023-01-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  ComplexHeatmap       * 2.20.0  <span style="color: #555555;">2024-04-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  crayon                 1.5.2   <span style="color: #555555;">2022-09-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  crosstalk              1.2.1   <span style="color: #555555;">2023-11-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  curl                   5.2.1   <span style="color: #555555;">2024-03-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  DBI                    1.2.2   <span style="color: #555555;">2024-02-16</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  dbplyr                 2.5.0   <span style="color: #555555;">2024-03-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  DelayedArray           0.30.1  <span style="color: #555555;">2024-05-07</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  desc                   1.4.3   <span style="color: #555555;">2023-12-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  digest                 0.6.35  <span style="color: #555555;">2024-03-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  doParallel             1.0.17  <span style="color: #555555;">2022-02-07</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  dplyr                * 1.1.4   <span style="color: #555555;">2023-11-17</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  doParallel             1.0.17  <span style="color: #555555;">2022-02-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  dplyr                * 1.1.4   <span style="color: #555555;">2023-11-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  DT                     0.33    <span style="color: #555555;">2024-04-04</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  evaluate               0.23    <span style="color: #555555;">2023-11-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  fansi                  1.0.6   <span style="color: #555555;">2023-12-08</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  fastmap                1.2.0   <span style="color: #555555;">2024-05-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  filelock               1.0.3   <span style="color: #555555;">2023-12-11</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  foreach                1.5.2   <span style="color: #555555;">2022-02-02</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  filelock               1.0.3   <span style="color: #555555;">2023-12-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  foreach                1.5.2   <span style="color: #555555;">2022-02-02</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  fs                     1.6.4   <span style="color: #555555;">2024-04-25</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  generics               0.1.3   <span style="color: #555555;">2022-07-05</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  GenomeInfoDb         * 1.40.0  <span style="color: #555555;">2024-04-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  GenomeInfoDbData       1.2.12  <span style="color: #555555;">2024-05-21</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
+<span><span class="co">#&gt;  generics               0.1.3   <span style="color: #555555;">2022-07-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  GenomeInfoDb         * 1.40.1  <span style="color: #555555;">2024-05-24</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  GenomeInfoDbData       1.2.12  <span style="color: #555555;">2024-05-24</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor</span></span></span>
 <span><span class="co">#&gt;  GenomicRanges        * 1.56.0  <span style="color: #555555;">2024-05-01</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  GetoptLong             1.0.5   <span style="color: #555555;">2020-12-15</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  GlobalOptions          0.1.2   <span style="color: #555555;">2020-06-10</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  GetoptLong             1.0.5   <span style="color: #555555;">2020-12-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  GlobalOptions          0.1.2   <span style="color: #555555;">2020-06-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  glue                   1.7.0   <span style="color: #555555;">2024-01-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  highr                  0.10    <span style="color: #555555;">2022-12-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  hms                    1.1.3   <span style="color: #555555;">2023-03-21</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  highr                  0.11    <span style="color: #555555;">2024-05-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  hms                    1.1.3   <span style="color: #555555;">2023-03-21</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  hoardr                 0.5.4   <span style="color: #555555;">2024-01-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  htmltools              0.5.8.1 <span style="color: #555555;">2024-04-04</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  htmlwidgets            1.6.4   <span style="color: #555555;">2023-12-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  httr                   1.4.7   <span style="color: #555555;">2023-08-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  httr2                  1.0.1   <span style="color: #555555;">2024-04-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  IRanges              * 2.38.0  <span style="color: #555555;">2024-04-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  iterators              1.0.14  <span style="color: #555555;">2022-02-05</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  iterators              1.0.14  <span style="color: #555555;">2022-02-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  jquerylib              0.1.4   <span style="color: #555555;">2021-04-26</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  jsonlite               1.8.8   <span style="color: #555555;">2023-12-04</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  knitr                  1.46    <span style="color: #555555;">2024-04-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
@@ -578,15 +878,15 @@ levels:</p>
 <span><span class="co">#&gt;  pillar                 1.9.0   <span style="color: #555555;">2023-03-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  pkgconfig              2.0.3   <span style="color: #555555;">2019-09-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  pkgdown                2.0.9   <span style="color: #555555;">2024-04-18</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  png                    0.1-8   <span style="color: #555555;">2022-11-29</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  png                    0.1-8   <span style="color: #555555;">2022-11-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  purrr                * 1.0.2   <span style="color: #555555;">2023-08-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  R6                     2.5.1   <span style="color: #555555;">2021-08-19</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  ragg                   1.3.2   <span style="color: #555555;">2024-05-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  rappdirs               0.3.3   <span style="color: #555555;">2021-01-31</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  RColorBrewer           1.1-3   <span style="color: #555555;">2022-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  RColorBrewer           1.1-3   <span style="color: #555555;">2022-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  Rcpp                   1.0.12  <span style="color: #555555;">2024-01-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  readr                  2.1.5   <span style="color: #555555;">2024-01-10</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  rjson                  0.2.21  <span style="color: #555555;">2022-01-09</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  readr                  2.1.5   <span style="color: #555555;">2024-01-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  rjson                  0.2.21  <span style="color: #555555;">2022-01-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  rlang                  1.1.3   <span style="color: #555555;">2024-01-10</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  rmarkdown              2.27    <span style="color: #555555;">2024-05-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  RSQLite                2.3.6   <span style="color: #555555;">2024-03-31</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
@@ -595,21 +895,21 @@ levels:</p>
 <span><span class="co">#&gt;  sass                   0.4.9   <span style="color: #555555;">2024-03-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  sessioninfo            1.2.2   <span style="color: #555555;">2021-12-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  shape                  1.4.6.1 <span style="color: #555555;">2024-02-23</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  SparseArray            1.4.5   <span style="color: #555555;">2024-05-20</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  SparseArray            1.4.8   <span style="color: #555555;">2024-05-24</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  stringi                1.8.4   <span style="color: #555555;">2024-05-06</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  stringr              * 1.5.1   <span style="color: #555555;">2023-11-14</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  SummarizedExperiment * 1.34.0  <span style="color: #555555;">2024-05-01</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  systemfonts            1.1.0   <span style="color: #555555;">2024-05-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  taxizedb               0.3.1   <span style="color: #555555;">2023-04-03</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  textshaping            0.3.7   <span style="color: #555555;">2023-10-09</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  textshaping            0.4.0   <span style="color: #555555;">2024-05-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  tibble                 3.2.1   <span style="color: #555555;">2023-03-20</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  tidyr                * 1.3.1   <span style="color: #555555;">2024-01-24</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  tidyr                * 1.3.1   <span style="color: #555555;">2024-01-24</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  tidyselect             1.2.1   <span style="color: #555555;">2024-03-11</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  tzdb                   0.4.0   <span style="color: #555555;">2023-05-12</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  tzdb                   0.4.0   <span style="color: #555555;">2023-05-12</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  UCSC.utils             1.0.0   <span style="color: #555555;">2024-04-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  utf8                   1.2.4   <span style="color: #555555;">2023-10-22</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  vctrs                  0.6.5   <span style="color: #555555;">2023-12-01</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
-<span><span class="co">#&gt;  vroom                  1.6.5   <span style="color: #555555;">2023-12-05</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">CRAN (R 4.4.0)</span></span></span>
+<span><span class="co">#&gt;  vroom                  1.6.5   <span style="color: #555555;">2023-12-05</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  withr                  3.0.0   <span style="color: #555555;">2024-01-16</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  xfun                   0.44    <span style="color: #555555;">2024-05-15</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  XVector                0.44.0  <span style="color: #555555;">2024-04-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
