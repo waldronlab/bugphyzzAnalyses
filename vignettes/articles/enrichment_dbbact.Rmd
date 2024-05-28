@@ -72,7 +72,6 @@ bsdb <- bsdb |>
     filter(`Host species` == "Homo sapiens") |> 
     filter(`Abundance in Group 1` %in% c("increased", "decreased")) |>
     filter(!is.na(`Body site`)) |> 
-    # filter(`Study design` == "case-control") |> 
     mutate(exp = sub("^(bsdb:\\d+/\\d+)/\\d+", "\\1", `BSDB ID`))
 dim(bsdb)
 ```
@@ -100,57 +99,30 @@ dats <- map(bsdb_subsets_by_bodysite, filterEvenDat)
 map_int(dats, ~ nrow(.x$decreased)) == map_int(dats, ~ nrow(.x$increased))
 ```
 
-# Colorectal cancer
-
-Get experiments and BSDB rows
+# Table summary 1
 
 ```{r}
-crc_exps <- crc_dat <- dats$feces$increased |> # It doesn't matter here if it's increased or decreased
-    filter(Condition == "Colorectal cancer") |>
-    filter(
-        grepl("control", `Group 0 name`, ignore.case = TRUE) &
-            grepl("(colorectal cancer|crc)", `Group 1 name`, ignore.case = TRUE)
-    ) |> 
-    pull(exp)
-crc_dat_inc <- dats$feces$increased |> 
-    filter(exp %in% crc_exps)
-crc_dat_dec <- dats$feces$decreased |> 
-    filter(exp %in% crc_exps)
-length(crc_exps)
+nexp_summary <- dats |> 
+    map(~ {
+        .x$increased |> 
+            count(Condition, name = "nexp") |> 
+            filter(nexp > 5)
+    }) |> 
+    bind_rows(.id = "bsite") |> 
+    group_by(bsite) |> 
+    slice_max(order_by = nexp, n = 10) |> 
+    ungroup()
+myDataTable(nexp_summary)
 ```
 
-Get signatures:
 
 ```{r}
-crc_sigs_s <- getPairedSigs(
-    crc_dat_dec, crc_dat_inc, rank = "species", cat = TRUE
-)
-crc_sigs_g <- getPairedSigs(
-    crc_dat_dec, crc_dat_inc, rank = "genus", cat = TRUE
-)
+row_dat_list <- list()
 ```
 
-Enrichment at the species level:
 
-```{r, fig.height=12, fig.width=20}
-crc_feces_enriched_s <- dbEn2(
-    crc_sigs_s$dec, crc_sigs_s$inc, term_list = bpSigs_s,
-    perm = perm_var, freq = 1
-)
-dbHt(crc_feces_enriched_s, scm = FALSE)
-```
 
-Enrichment at the genus level:
-
-```{r, fig.height=8, fig.width=12, warning=FALSE}
-crc_feces_enriched_g <- dbEn2(
-    crc_sigs_g$dec, crc_sigs_g$inc, term_list = bpSigs_g,
-    perm = perm_var, freq = 1
-)
-dbHt(crc_feces_enriched_g, scm = FALSE)
-```
-
-# Obesity
+# Obesity - feces
 
 ```{r}
 obs_dat <- dats$feces$increased |> # It doesn't matter here if it's increased or decreased
@@ -201,7 +173,6 @@ obs_exps = c(
     "bsdb:99/1"  
     
 )
-
 obs_dat_inc <- dats$feces$increased |> 
     filter(exp %in% obs_exps)
 obs_dat_dec <- dats$feces$decreased |> 
@@ -222,6 +193,17 @@ obs_feces_enriched_s <- dbEn2(
     obs_sigs_s$dec, obs_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
 )
+
+row_dat_list$obs_feces_sp <- obs_feces_enriched_s |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "feces",
+        Condition = "Obesity",
+        Rank = "species"
+    )
 dbHt(obs_feces_enriched_s, scm = FALSE)
 ```
 
@@ -231,10 +213,223 @@ obs_feces_enriched_g <- dbEn2(
     obs_sigs_g$dec, obs_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
 )
+
+row_dat_list$obs_feces_gn <- obs_feces_enriched_g |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "feces",
+        Condition = "Obesity",
+        Rank = "genus"
+    )
 dbHt(obs_feces_enriched_g, scm = FALSE)
 ```
 
-# COVID-19
+# Parkinson's disease - feces
+
+```{r}
+pd <- dats$feces$increased |> 
+    filter(Condition == "Parkinson's disease")
+# pd |> 
+#     relocate(exp, `Group 0 name`, `Group 1 name`) |> 
+#     View()
+```
+
+```{r}
+pd_exps <- c(
+    "bsdb:22/1",
+    "bsdb:508/1",
+    "bsdb:533/1",
+    "bsdb:533/2",
+    # "bsdb:537/1",
+    # "bsdb:537/2",
+    # "bsdb:537/3",
+    # "bsdb:537/4",
+    # "bsdb:537/6",
+    "bsdb:537/7",
+    "bsdb:537/8",
+    "bsdb:554/1",
+    "bsdb:560/1",
+    "bsdb:568/1",
+    # "bsdb:568/3",
+    "bsdb:600/1",
+    "bsdb:604/1",
+    "bsdb:604/2",
+    "bsdb:605/1",
+    # "bsdb:605/2",
+    "bsdb:607/1",
+    "bsdb:607/2",
+    "bsdb:716/1",
+    # "bsdb:716/2",
+    # "bsdb:716/3",
+    # "bsdb:716/4",
+    "bsdb:717/1",
+    # "bsdb:717/2",
+    "bsdb:717/3",
+    # "bsdb:717/4",
+    # "bsdb:717/5",
+    # "bsdb:717/6",
+    "bsdb:719/3",
+    "bsdb:722/1",
+    "bsdb:723/1",
+    "bsdb:723/3",
+    "bsdb:723/4",
+    "bsdb:723/5",
+    "bsdb:731/1",
+    "bsdb:731/2",
+    "bsdb:731/4",
+    # "bsdb:741/4",
+    "bsdb:742/1",
+    "bsdb:743/1",
+    "bsdb:746/1"
+)
+pd_dat_inc <- dats$feces$increased |> 
+    filter(exp %in% pd_exps)
+pd_dat_dec <- dats$feces$decreased |> 
+    filter(exp %in% pd_exps)
+length(pd_exps)
+```
+
+Get signatures:
+
+```{r}
+pd_sigs_s <- getPairedSigs(
+    pd_dat_dec, pd_dat_inc, rank = "species", cat = TRUE
+)
+pd_sigs_g <- getPairedSigs(
+    pd_dat_dec, pd_dat_inc, rank = "genus", cat = TRUE
+)
+```
+
+Enrichment at the species level:
+
+```{r, fig.height=12, fig.width=20}
+pd_feces_enriched_s <- dbEn2(
+    pd_sigs_s$dec, pd_sigs_s$inc, term_list = bpSigs_s,
+    perm = perm_var, freq = 1
+)
+
+row_dat_list$pd_feces_sp <- pd_feces_enriched_s |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "feces",
+        Condition = "pd",
+        Rank = "species"
+    )
+dbHt(pd_feces_enriched_s, scm = FALSE, col_pad = 20)
+```
+
+Enrichment at the genus level:
+
+```{r, fig.height=8, fig.width=12, warning=FALSE}
+pd_feces_enriched_g <- dbEn2(
+    pd_sigs_g$dec, pd_sigs_g$inc, term_list = bpSigs_g,
+    perm = perm_var, freq = 1
+)
+row_dat_list$pd_feces_gn <- pd_feces_enriched_g |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "feces",
+        Condition = "pd",
+        Rank = "genus"
+    )
+dbHt(pd_feces_enriched_g, scm = FALSE, col_pad = 20)
+```
+
+# Colorectal cancer - feces
+
+Get experiments and BSDB rows
+
+```{r}
+crc_exps <- crc_dat <- dats$feces$increased |> # It doesn't matter here if it's increased or decreased
+    filter(Condition == "Colorectal cancer") |>
+    filter(
+        grepl("control", `Group 0 name`, ignore.case = TRUE) &
+            grepl("(colorectal cancer|crc)", `Group 1 name`, ignore.case = TRUE)
+    ) |> 
+    pull(exp)
+crc_dat_inc <- dats$feces$increased |> 
+    filter(exp %in% crc_exps)
+crc_dat_dec <- dats$feces$decreased |> 
+    filter(exp %in% crc_exps)
+length(crc_exps)
+```
+
+Get signatures:
+
+```{r}
+crc_sigs_s <- getPairedSigs(
+    crc_dat_dec, crc_dat_inc, rank = "species", cat = TRUE
+)
+crc_sigs_g <- getPairedSigs(
+    crc_dat_dec, crc_dat_inc, rank = "genus", cat = TRUE
+)
+```
+
+Enrichment at the species level:
+
+```{r, fig.height=12, fig.width=20}
+crc_feces_enriched_s <- dbEn2(
+    crc_sigs_s$dec, crc_sigs_s$inc, term_list = bpSigs_s,
+    perm = perm_var, freq = 1
+)
+
+row_dat_list$crc_feces_sp <- crc_feces_enriched_s |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "feces",
+        Condition = "crc",
+        Rank = "species"
+    )
+dbHt(crc_feces_enriched_s, scm = FALSE, col_pad = 20)
+```
+
+Enrichment at the genus level:
+
+```{r, fig.height=8, fig.width=12, warning=FALSE}
+crc_feces_enriched_g <- dbEn2(
+    crc_sigs_g$dec, crc_sigs_g$inc, term_list = bpSigs_g,
+    perm = perm_var, freq = 1
+)
+row_dat_list$crc_feces_gn <- crc_feces_enriched_g |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "feces",
+        Condition = "crc",
+        Rank = "genus"
+    )
+dbHt(crc_feces_enriched_g, scm = FALSE, col_pad = 20)
+```
+
+# Antimicrobial agent - feces 
+
+Interesting, but many different antibiotics are provided.
+It would have been more interesting if vancomycin would be among them.
+
+```{r}
+aa_dat <- dats$feces$increased |> 
+    filter(Condition == "Antimicrobial agent")
+# aa_dat |>
+#     relocate(exp, `Group 0 name`, `Group 1 name`) |>
+#     View()
+stringr::str_extract(aa_dat$`Group 1 definition`, "\\b\\w+in\\b")
+```
+
+# COVID-19 - feces
 
 ```{r}
 covid_dat <- dats$feces$increased |> # It doesn't matter here if it's increased or decreased
@@ -262,9 +457,6 @@ covid_dat_inc <- dats$feces$increased |>
     filter(exp %in% covid_exps)
 covid_dat_dec <- dats$feces$decreased |> 
     filter(exp %in% covid_exps)
-# covid_dat |> 
-#     relocate(exp, `Group 0 name`, `Group 1 name`) |> 
-#     View()
 ```
 
 Concatenate signatures:
@@ -281,6 +473,17 @@ covid_feces_enriched_s <- dbEn2(
     covid_sigs_s$dec, covid_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
 )
+
+row_dat_list$covid_feces_sp <- crc_feces_enriched_s |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "feces",
+        Condition = "covid",
+        Rank = "species"
+    )
 dbHt(covid_feces_enriched_s, scm = FALSE)
 ```
 
@@ -289,50 +492,20 @@ covid_feces_enriched_g <- dbEn2(
     covid_sigs_g$dec, covid_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
 )
+row_dat_list$covid_feces_gn <- crc_feces_enriched_g |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "feces",
+        Condition = "covid",
+        Rank = "genus"
+    )
 dbHt(covid_feces_enriched_g, scm = FALSE)
 ```
 
-## Smoking 
-
-```{r}
-smo_dat <- dats$mouth$increased |> # It doesn't matter here if it's increased or decreased
-        filter(Condition == "Smoking behavior")
-smo_exps <- smo_dat |> 
-    filter(exp != "bsdb:368/1") |> 
-    pull(exp)
-smo_dat_inc <- dats$mouth$increased |> 
-    filter(exp %in% smo_exps)
-smo_dat_dec <- dats$mouth$decreased |> 
-    filter(exp %in% smo_exps)
-# smo_dat |>
-#     relocate(exp, `Group 0 name`, `Group 1 name`) |>
-#     View()
-```
-
-Get concatenated signatures:
-
-```{r}
-smo_sigs_s <- getPairedSigs(smo_dat_dec, smo_dat_inc, rank = "species", cat = TRUE)
-smo_sigs_g <- getPairedSigs(smo_dat_dec, smo_dat_inc, rank = "genus", cat = TRUE)
-```
-
-```{r, fig.height=12, fig.width=20}
-smo_mouth_enriched_s <- dbEn2(
-    smo_sigs_s$dec, smo_sigs_s$inc, term_list = bpSigs_s,
-    perm = perm_var, freq = 1
-)
-dbHt(smo_mouth_enriched_s, scm = FALSE)
-```
-
-```{r, fig.height=12, fig.width=20}
-smo_mouth_enriched_g <- dbEn2(
-    smo_sigs_g$dec, smo_sigs_g$inc, term_list = bpSigs_g,
-    perm = perm_var, freq = 1
-)
-dbHt(smo_mouth_enriched_g, scm = FALSE)
-```
-
-## IBD
+# IBS - feces
 
 ```{r}
 ibs_dat <- dats$feces$increased |> # It doesn't matter here if it's increased or decreased
@@ -350,8 +523,12 @@ ibs_dat_dec <- dats$feces$decreased |>
 ```
 
 ```{r}
-ibs_sigs_s <- getPairedSigs(ibs_dat_dec, ibs_dat_inc, rank = "species", cat = TRUE)
-ibs_sigs_g <- getPairedSigs(ibs_dat_dec, ibs_dat_inc, rank = "genus", cat = TRUE)
+ibs_sigs_s <- getPairedSigs(
+    ibs_dat_dec, ibs_dat_inc, rank = "species", cat = TRUE
+)
+ibs_sigs_g <- getPairedSigs(
+    ibs_dat_dec, ibs_dat_inc, rank = "genus", cat = TRUE
+)
 ```
 
 ```{r, fig.height=15, fig.width=20}
@@ -359,7 +536,17 @@ ibs_feces_enriched_s <- dbEn2(
     ibs_sigs_s$dec, ibs_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
 )
-dbHt(ibs_feces_enriched_s, scm = FALSE)
+row_dat_list$ibs_feces_sp <- ibs_feces_enriched_s |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "feces",
+        Condition = "ibs",
+        Rank = "species"
+    )
+dbHt(ibs_feces_enriched_s, scm = FALSE, col_pad = 20)
 ```
 
 ```{r, fig.width=25, fig.height=15}
@@ -367,51 +554,163 @@ ibs_feces_enriched_g <- dbEn2(
     ibs_sigs_g$dec, ibs_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
 )
-dbHt(ibs_feces_enriched_g, scm = FALSE)
+row_dat_list$ibs_feces_gn <- ibs_feces_enriched_g |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "feces",
+        Condition = "ibs",
+        Rank = "genus"
+    )
+dbHt(ibs_feces_enriched_g, scm = FALSE, col_pad = 20)
 ```
 
-# Summary table
+# Smoking - mouth
 
-```{r, eval=FALSE}
-## genus
-x <- c(
-    feces = feces_enriched_g, mouth = mouth_enriched_g,
-    vagina = vagina_enriched_g, skin = skin_enriched_g
-    ) |> 
-    map(~ {
-        rowData(.x) |> 
-            as.data.frame() |> 
-            tibble::rownames_to_column(var = "term") |> 
-            as_tibble()
-    }) |>
-    bind_rows(.id = "var") |> 
-    mutate(body_site = sub("^(feces|mouth)\\..*$", "\\1", var)) |> 
-    mutate(condition = sub("^(feces|mouth)\\.(.*$)", "\\2", var)) |> 
-    select(-var) |> 
-    relocate(body_site, condition) |> 
-    filter(!is.na(P_value)) |> 
-    mutate(FDR = p.adjust(P_value, "fdr")) |> 
-    arrange(FDR)
+```{r}
+smo_dat <- dats$mouth$increased |> # It doesn't matter here if it's increased or decreased
+        filter(Condition == "Smoking behavior")
+smo_exps <- smo_dat |> 
+    filter(exp != "bsdb:368/1") |> 
+    pull(exp)
+smo_dat_inc <- dats$mouth$increased |> 
+    filter(exp %in% smo_exps)
+smo_dat_dec <- dats$mouth$decreased |> 
+    filter(exp %in% smo_exps)
+```
 
-## species
-y <- c(
-    feces = feces_enriched_s, mouth = mouth_enriched_s,
-    vagina = vagina_enriched_g, skin = skin_enriched_g
+Get concatenated signatures:
+
+```{r}
+smo_sigs_s <- getPairedSigs(
+    smo_dat_dec, smo_dat_inc, rank = "species", cat = TRUE
+)
+smo_sigs_g <- getPairedSigs(
+    smo_dat_dec, smo_dat_inc, rank = "genus", cat = TRUE
+)
+```
+
+```{r, fig.height=12, fig.width=20}
+smo_mouth_enriched_s <- dbEn2(
+    smo_sigs_s$dec, smo_sigs_s$inc, term_list = bpSigs_s,
+    perm = perm_var, freq = 1
+)
+row_dat_list$smo_mouth_sp <- smo_mouth_enriched_s |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "mouth",
+        Condition = "smoking",
+        Rank = "species"
+    )
+dbHt(smo_mouth_enriched_s, scm = FALSE, col_pad = 20)
+```
+
+```{r, fig.height=12, fig.width=20}
+smo_mouth_enriched_g <- dbEn2(
+    smo_sigs_g$dec, smo_sigs_g$inc, term_list = bpSigs_g,
+    perm = perm_var, freq = 1
+)
+row_dat_list$smo_mouth_gn <- smo_mouth_enriched_g |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "mouth",
+        Condition = "smoking",
+        Rank = "genus"
+    )
+dbHt(smo_mouth_enriched_g, scm = FALSE, col_pad = 20)
+```
+
+# Human papilloma virus infection	
+
+```{r}
+hpv_dat <- dats$vagina$increased |> 
+    filter(Condition == "Human papilloma virus infection") |> 
+    filter(grepl("HPV\\+",  `Group 1 name`))
+
+hpv_exps <- hpv_dat |> 
+    pull(exp)
+
+hpv_dat_inc <- dats$vagina$increased |> 
+    filter(exp %in% hpv_exps)
+hpv_dat_dec <- dats$vagina$decreased |> 
+    filter(exp %in% hpv_exps)
+
+# hpv_dat |>
+#     relocate(exp, `Group 0 name`, `Group 1 name`) |>
+#     View()
+```
+
+Get concatenated signatures:
+
+```{r}
+hpv_sigs_s <- getPairedSigs(
+    hpv_dat_dec, hpv_dat_inc, rank = "species", cat = TRUE
+)
+hpv_sigs_g <- getPairedSigs(
+    hpv_dat_dec, hpv_dat_inc, rank = "genus", cat = TRUE
+)
+```
+
+Enrichment at the species level:
+
+```{r, fig.height=15, fig.width=20}
+hpv_vagina_enriched_s <- dbEn2(
+    hpv_sigs_s$dec, hpv_sigs_s$inc, term_list = bpSigs_s,
+    perm = perm_var, freq = 1
+)
+row_dat_list$hpv_vagina_sp <- hpv_vagina_enriched_s |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "vagina",
+        Condition = "hpv",
+        Rank = "species"
+    )
+dbHt(hpv_vagina_enriched_s, scm = TRUE, col_pad = 20)
+```
+
+Enrichment at the genus level:
+
+```{r, fig.height=15, fig.width=20}
+hpv_vagina_enriched_g <- dbEn2(
+    hpv_sigs_g$dec, hpv_sigs_g$inc, term_list = bpSigs_g,
+    perm = perm_var, freq = 1
+)
+row_dat_list$hpv_vagina_gn <- hpv_vagina_enriched_g |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    mutate(
+        Bsite = "vagina",
+        Condition = "hpv",
+        Rank = "genus"
+    )
+dbHt(hpv_vagina_enriched_g, scm = TRUE, col_pad = 20)
+```
+
+
+## Summary table
+
+```{r}
+sum_tbl <- row_dat_list |> 
+    bind_rows() |> 
+    mutate(
+        FDR = p.adjust(P_value, method = "fdr"),
+        PermP_FDR = p.adjust(PermP, method = "fdr")
     ) |> 
-    map(~ {
-        rowData(.x) |> 
-            as.data.frame() |> 
-            tibble::rownames_to_column(var = "term") |> 
-            as_tibble()
-    }) |>
-    bind_rows(.id = "var") |> 
-    mutate(body_site = sub("^(feces|mouth)\\..*$", "\\1", var)) |> 
-    mutate(condition = sub("^(feces|mouth)\\.(.*$)", "\\2", var)) |> 
-    select(-var) |> 
-    relocate(body_site, condition) |> 
-    filter(!is.na(P_value)) |> 
-    mutate(FDR = p.adjust(P_value, "fdr")) |> 
-    arrange(FDR)
+    filter(P_value < 0.1)
+myDataTable(sum_tbl)
 ```
 
 # Session information
