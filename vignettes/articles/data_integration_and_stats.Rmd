@@ -38,8 +38,26 @@ library(cowplot)
 ## Bugphyzz data
 
 ```{r import bp, message=FALSE}
-bp <- importBugphyzz(v = 0.8) |> 
-    map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID)))
+discrete_types <- c(
+    "binary", "multistate-intersection", "multistate-union"
+)
+bp <- importBugphyzz(v = 0.5) |> 
+    map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID))) |> 
+    map(~ {
+        attr_type <- unique(.x$Attribute_type)
+        if (attr_type %in% discrete_types) {
+            df <- .x |> 
+                filter(
+                    !(Validation < 0.7 & Evidence == "asr")
+                )
+        } else if (attr_type == "numeric") {
+            df <- .x |> 
+                filter(
+                    !(Validation < 0.5 & Evidence == "asr")
+                )
+        }
+        df
+    })
 length(bp)
 ```
 ```{r}
@@ -209,9 +227,16 @@ p_count_types
 
 Create plot of MMC values for discrete attributes:
 
+```{r}
+val_fname <- "/home/samuelgamboa/Projects/taxPProValidation/validation_summary.tsv"
+val <- readr::read_tsv(val_fname, show_col_types = FALSE) |> 
+    filter(rank == "all")
+
+```
+
 ```{r validation discrete}
-val <- bugphyzz:::.validationData() |> 
-    filter(rank == "all") # Validation including taxa of mixed ranks as input (keyword is "all")
+# val <- bugphyzz:::.validationData() |> 
+    # filter(rank == "all") # Validation including taxa of mixed ranks as input (keyword is "all")
 dis_phys_names <- val |> 
     filter(!is.na(mcc_mean)) |> 
     group_by(physiology) |> 
@@ -237,7 +262,10 @@ pValDis <- val |> # plot Validation Discrete
         width = 0, linewidth = 0.3
         
     ) +
-    geom_hline(yintercept = 0.8, linetype = "dotdash", linewidth = 0.2) +
+    geom_hline(
+        yintercept = 0.7, linetype = "dotdash", linewidth = 0.2,
+        color = "red"
+    ) +
     geom_point(
         aes(size = ltp_bp),
         shape = 23, position = position_dodge(0.5), fill = "white"
@@ -284,7 +312,10 @@ pValNum <- val |>  # plot Validation Numeric attributes
         width = 0, linewidth = 0.3
         
     ) +
-    geom_hline(yintercept = 0.8, linetype = "dotdash", linewidth = 0.2) +
+    geom_hline(
+        yintercept = 0.5, linetype = "dotdash", linewidth = 0.2,
+        color = "red"
+    ) +
     geom_point(
         aes(size = ltp_bp),
         shape = 23, position = position_dodge(0.5), fill = "white"

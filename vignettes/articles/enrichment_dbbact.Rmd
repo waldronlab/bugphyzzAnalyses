@@ -40,10 +40,26 @@ freq_var <- 1
 Import bugphyzz and create signatures at the genus and species levels:
 
 ```{r, warning=FALSE, message=FALSE}
-bp <- importBugphyzz(
-    version = "10.5281/zenodo.10980813", # v1.0.2
-    v = 0.8
+discrete_types <- c(
+    "binary", "multistate-intersection", "multistate-union"
 )
+bp <- importBugphyzz(v = 0.5) |> 
+    map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID))) |> 
+    map(~ {
+        attr_type <- unique(.x$Attribute_type)
+        if (attr_type %in% discrete_types) {
+            df <- .x |> 
+                filter(
+                    !(Validation < 0.7 & Evidence == "asr")
+                )
+        } else if (attr_type == "numeric") {
+            df <- .x |> 
+                filter(
+                    !(Validation < 0.5 & Evidence == "asr")
+                )
+        }
+        df
+    })
 bpSigs_g <- map(bp, ~ {
     makeSignatures(
         dat = .x,  tax_id_type = "NCBI_ID", tax_level = "genus",

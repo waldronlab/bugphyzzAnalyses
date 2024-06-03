@@ -51,7 +51,26 @@ table(tse_subset$body_subsite)
 Signatures at the genus level:
 
 ```{r bp signatures genus, message = FALSE}
-bp <- importBugphyzz(v = 0.8)
+discrete_types <- c(
+    "binary", "multistate-intersection", "multistate-union"
+)
+bp <- importBugphyzz(v = 0.5) |> 
+    map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID))) |> 
+    map(~ {
+        attr_type <- unique(.x$Attribute_type)
+        if (attr_type %in% discrete_types) {
+            df <- .x |> 
+                filter(
+                    !(Validation < 0.7 & Evidence == "asr")
+                )
+        } else if (attr_type == "numeric") {
+            df <- .x |> 
+                filter(
+                    !(Validation < 0.5 & Evidence == "asr")
+                )
+        }
+        df
+    })
 aer <- bp$aerophilicity
 gn_sigs <- makeSignatures(
     dat = aer, tax_id_type = 'Taxon_name', tax_level = 'genus'
