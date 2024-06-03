@@ -228,15 +228,15 @@ p_count_types
 Create plot of MMC values for discrete attributes:
 
 ```{r}
-val_fname <- "/home/samuelgamboa/Projects/taxPProValidation/validation_summary.tsv"
-val <- readr::read_tsv(val_fname, show_col_types = FALSE) |> 
-    filter(rank == "all")
+# val_fname <- "/home/samuelgamboa/Projects/taxPProValidation/validation_summary.tsv"
+# val <- readr::read_tsv(val_fname, show_col_types = FALSE) |> 
+#     filter(rank == "all")
 
 ```
 
 ```{r validation discrete}
-# val <- bugphyzz:::.validationData() |> 
-    # filter(rank == "all") # Validation including taxa of mixed ranks as input (keyword is "all")
+val <- bugphyzz:::.validationData() |>
+filter(rank == "all") # Validation including taxa of mixed ranks as input (keyword is "all")
 dis_phys_names <- val |> 
     filter(!is.na(mcc_mean)) |> 
     group_by(physiology) |> 
