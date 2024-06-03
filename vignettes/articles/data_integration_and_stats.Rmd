@@ -472,6 +472,24 @@ suppN
 
 # Figure: Heatmap Sources x Attribute x Rank
 
+
+
+```{r}
+mySources <- bp |> 
+    map(~ {
+        .x |> 
+            select(Attribute_source, Confidence_in_curation) |> 
+            drop_na()
+    }) |> 
+    bind_rows() |> 
+    distinct()
+
+mySourcesVct <- mySources$Confidence_in_curation
+names(mySourcesVct) <- mySources$Attribute_source
+```
+
+
+
 ```{r, fig.width=9, fig.height=15}
 source_attribute_rank <- bp |> 
     map(~{
@@ -505,6 +523,28 @@ rank_colors =list(
 row_ha <- rowAnnotation(
     df = rankAnnotationsDF, col = rank_colors, width = unit(5, "cm")
 )
+
+mySourcesVct <- mySourcesVct[colnames(mat)]
+# mySourcesCol <- case_when(
+#     mySourcesVct == "high" ~ "red",
+#     mySourcesVct == "medium" ~ "orange",
+#     mySourcesVct == "low" ~ "yellow"
+# )
+
+mySourcesL <- list(
+    Confidence = c(
+        high = "red", medium = "orange", low = "yellow"
+    )
+)
+
+
+column_ha <- columnAnnotation(
+    df = data.frame(
+        Confidence = mySourcesVct
+    ), col = mySourcesL, height = unit(5, "cm")
+)
+
+
 splits_attrs <- sub("^(.*)\\|\\w+$", "\\1", rownames(mat))
 hp <- Heatmap(
     matrix = mat,
@@ -515,6 +555,7 @@ hp <- Heatmap(
     col = color_fun(c(0, 1)),
     name = "Annotation presence",
     left_annotation = row_ha,
+    bottom_annotation = column_ha,
     row_split = splits_attrs,
     row_title_rot = 0,
     heatmap_legend_param = list(
