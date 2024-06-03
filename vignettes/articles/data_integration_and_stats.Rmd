@@ -472,20 +472,31 @@ suppN
 
 # Figure: Heatmap Sources x Attribute x Rank
 
-
-
 ```{r}
 mySources <- bp |> 
     map(~ {
         .x |> 
-            select(Attribute_source, Confidence_in_curation) |> 
-            drop_na()
+            select(Attribute_source, Confidence_in_curation, Evidence) |> 
+            drop_na() |> 
+            rename(Confidence = Confidence_in_curation)
     }) |> 
     bind_rows() |> 
-    distinct()
-
-mySourcesVct <- mySources$Confidence_in_curation
-names(mySourcesVct) <- mySources$Attribute_source
+    distinct() |> 
+    mutate(
+        Confidence_color = case_when(
+            Confidence == "high" ~  "red",
+            Confidence == "medium" ~ "orange",
+            Confidence == "low" ~ "yellow"
+        ),
+        Evindence_color = case_when(
+           Evidence == "exp" ~ "blue",
+           Evidence == "igc" ~ "green",
+           Evidence == "tas" ~ "brown4",
+           Evidence == "nas" ~ "purple"
+        ),
+        Confidence = factor(Confidence, levels = c("high", "medium", "low")),
+        Evidence = factor(Evidence, levels = c("exp", "igc", "tas", "nas"))
+    )
 ```
 
 
@@ -524,29 +535,16 @@ row_ha <- rowAnnotation(
     df = rankAnnotationsDF, col = rank_colors, width = unit(5, "cm")
 )
 
-mySourcesVct <- mySourcesVct[colnames(mat)]
-# mySourcesCol <- case_when(
-#     mySourcesVct == "high" ~ "red",
-#     mySourcesVct == "medium" ~ "orange",
-#     mySourcesVct == "low" ~ "yellow"
-# )
+mySources <- mySources[match(colnames(mat), mySources$Attribute_source),]
 
-mySourcesL <- list(
-    Confidence = c(
-        high = "red", medium = "orange", low = "yellow"
-    )
+myColColors <- list(
+    Confidence = c(high = "red", medium = "orange", low = "yellow"),
+    Evidence = c(exp = "blue", igc = "green", tas = "pink3", nas = "purple")
 )
-
-
 column_ha <- columnAnnotation(
-    df = data.frame(
-        Confidence = mySourcesVct
-    ),
-    col = mySourcesL,
-    height = unit(5, "cm"),
-    annotation_legend_param = list(
-        at = c("high", "medium", "low")
-    )
+    df = mySources[, c("Confidence", "Evidence")],
+    col = myColColors,
+    height = unit(5, "cm")
 )
 
 splits_attrs <- sub("^(.*)\\|\\w+$", "\\1", rownames(mat))
@@ -591,7 +589,7 @@ sources <- read.table(
 myDataTable(sources, page_len = nrow(sources))
 ```
 
-## Session information
+# Session information
 
 ```{r class.soruce = 'fold-show'}
 sessioninfo::session_info()
