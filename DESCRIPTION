@@ -1,7 +1,7 @@
 Package: bugphyzzAnalyses
 Type: Package
 Title: Analyses performed with the bugphyzz package
-Version: 0.1.8
+Version: 0.1.9
 Authors@R:
     c(
         person(

@@ -644,7 +644,7 @@ row_dat_list$smo_mouth_gn <- smo_mouth_enriched_g |>
 dbHt(smo_mouth_enriched_g, scm = FALSE, col_pad = 20)
 ```
 
-# Human papilloma virus infection	
+# Human papilloma virus infection - vagina
 
 ```{r}
 hpv_dat <- dats$vagina$increased |> 
