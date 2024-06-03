@@ -541,9 +541,13 @@ mySourcesL <- list(
 column_ha <- columnAnnotation(
     df = data.frame(
         Confidence = mySourcesVct
-    ), col = mySourcesL, height = unit(5, "cm")
+    ),
+    col = mySourcesL,
+    height = unit(5, "cm"),
+    annotation_legend_param = list(
+        at = c("high", "medium", "low")
+    )
 )
-
 
 splits_attrs <- sub("^(.*)\\|\\w+$", "\\1", rownames(mat))
 hp <- Heatmap(
