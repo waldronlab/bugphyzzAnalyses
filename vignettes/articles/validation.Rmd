@@ -82,7 +82,8 @@ output <- dat |>
         `Percent of annotated tips per attribute value` = ltp_bp_per,
         `Percent of annotated tips per attribute` = ltp_bp_phys_per
     ) |> 
-    arrange(method, Attribute, `Attribute value`, `MCC mean`, `R-squared mean`) |> 
+    arrange(
+        -`MCC mean`, -`R-squared mean`, method, Attribute, `Attribute value`) |> 
     select(-method)
 myDataTable(output, page_len = nrow(output))
 ```
