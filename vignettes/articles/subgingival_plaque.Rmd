@@ -190,6 +190,40 @@ ora <- bind_rows(ora_up_df, ora_down_df) |>
 myDataTable(ora)
 ```
 
+# ORA - NO ASR
+
+```{r}
+gn_sigs_noasr_bk <- c(gn_sigs_noasr, list(background = rownames(edger)))
+ora_up_noasr <- sbea(
+  method = 'ora', se = edger_up, gs = gn_sigs_noasr_bk, perm = 0, 
+  alpha = 0.1 # This is for DA taxa
+)
+ora_up_df_noasr <- as.data.frame(ora_up_noasr$res.tbl)
+ora_up_df_noasr$BODY.SITE <- 'Supragingival plaque'
+
+ora_down_noasr <- sbea(
+  method = 'ora', se = edger_down, gs = gn_sigs_noasr_bk, perm = 0, 
+  alpha = 0.1 # This is for DA taxa
+)
+ora_down_df_noasr <- data.frame(ora_down_noasr$res.tbl)
+ora_down_df_noasr$BODY.SITE <- 'Subgingival plaque'
+
+ora_noasr <- bind_rows(ora_up_df_noasr, ora_down_df_noasr) |> 
+  arrange(BODY.SITE, PVAL) |> 
+  relocate(BODY.SITE) |> 
+  mutate(
+    GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, ' *'), GENE.SET),
+    PVAL = round(PVAL, 3),
+  ) |> 
+  dplyr::rename(
+    BUG.SET = GENE.SET, NR.BUGS = NR.GENES, NR.SIG.BUGS = NR.SIG.GENES
+  ) |> 
+    filter(BUG.SET != "background")
+
+myDataTable(ora_noasr)
+```
+
+
 ## dbBact approach
 
 ```{r, warning=FALSE}
@@ -228,38 +262,20 @@ se <- dbEn2(con, cas, bpSigs_g)
 ```{r, fig.width = 12, fig.height=12}
 dbHt(se)
 ```
-# ORA - NO ASR
+
 
 ```{r}
-gn_sigs_noasr_bk <- c(gn_sigs_noasr, list(background = rownames(edger)))
-ora_up_noasr <- sbea(
-  method = 'ora', se = edger_up, gs = gn_sigs_noasr_bk, perm = 0, 
-  alpha = 0.1 # This is for DA taxa
-)
-ora_up_df_noasr <- as.data.frame(ora_up_noasr$res.tbl)
-ora_up_df_noasr$BODY.SITE <- 'Supragingival plaque'
-
-ora_down_noasr <- sbea(
-  method = 'ora', se = edger_down, gs = gn_sigs_noasr_bk, perm = 0, 
-  alpha = 0.1 # This is for DA taxa
-)
-ora_down_df_noasr <- data.frame(ora_down_noasr$res.tbl)
-ora_down_df_noasr$BODY.SITE <- 'Subgingival plaque'
-
-ora_noasr <- bind_rows(ora_up_df_noasr, ora_down_df_noasr) |> 
-  arrange(BODY.SITE, PVAL) |> 
-  relocate(BODY.SITE) |> 
-  mutate(
-    GENE.SET = ifelse(PVAL < 0.05, paste0(GENE.SET, ' *'), GENE.SET),
-    PVAL = round(PVAL, 3),
-  ) |> 
-  dplyr::rename(
-    BUG.SET = GENE.SET, NR.BUGS = NR.GENES, NR.SIG.BUGS = NR.SIG.GENES
-  ) |> 
-    filter(BUG.SET != "background")
-
-myDataTable(ora_noasr)
+se |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "bp_sig") |> 
+    as_tibble() |> 
+    arrange(P_value) |> 
+    myDataTable()
 ```
+
+
+
 
 # Quick checks
 

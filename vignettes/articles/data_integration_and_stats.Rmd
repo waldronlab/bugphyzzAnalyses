@@ -393,6 +393,14 @@ myPlot1 <- plot_grid(
 myPlot1
 ```
 
+
+```{r}
+myDataTable(counts_type_sp)
+```
+
+
+
+
 # Supplementary Figure: Counts of annotations for genus, spescies, and strain and number of annotations per taxon
 
 Number of annotations at the genus, species, and strain level:
