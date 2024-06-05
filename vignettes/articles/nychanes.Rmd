@@ -336,10 +336,6 @@ otus_control <- row_data |>
     filter(FC < 0, ADJ.PVAL < 0.1) |> 
     pull(OTU)
 attr(otus_control, "nexp") <- 1
-
-dbEn2(
-    case = otus_case, otus_control, term_list = otu_sigs
-)
 ```
 
 ### dbBact - OTUs
