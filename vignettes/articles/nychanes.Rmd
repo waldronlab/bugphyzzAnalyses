@@ -21,6 +21,7 @@ library(mia)
 library(dplyr)
 library(EnrichmentBrowser)
 library(purrr)
+library(bugsigdbr)
 ```
 
 ## Expected results
@@ -315,6 +316,89 @@ ora_gn_down_res <- as.data.frame(ora_gn_down$res.tbl) |>
     filter(GENE.SET != "background") |> 
     mutate(PVAL = round(PVAL, 3))
 myDataTable(ora_gn_down_res)
+```
+
+## dbBact
+
+```{r}
+row_data <- edger |> 
+    rowData() |> 
+    as.data.frame() |> 
+    tibble::rownames_to_column(var = "OTU") |> 
+    as_tibble()
+    
+otus_case <- row_data |> 
+    filter(FC > 0, ADJ.PVAL < 0.1) |> 
+    pull(OTU)
+attr(otus_case, "nexp") <- 1
+
+otus_control <- row_data |> 
+    filter(FC < 0, ADJ.PVAL < 0.1) |> 
+    pull(OTU)
+attr(otus_control, "nexp") <- 1
+
+dbEn2(
+    case = otus_case, otus_control, term_list = otu_sigs
+)
+```
+
+### dbBact - OTUs
+
+```{r}
+otus_control_list <- map(otu_sigs, ~ as.integer(otus_control %in% .x))
+otus_case_list <- map(otu_sigs, ~ as.integer(otus_case %in% .x))
+
+wpvals <- map2_dbl(
+    .x = otus_control_list,
+    .y = otus_case_list,
+    .f = ~ round(wilcox.test(.x, .y, exact = FALSE)$p.value, 3)
+)
+es <- map2_dbl(
+    .x = otus_control_list,
+    .y = otus_case_list,
+    .f = ~ mean(.y) - mean(.x)
+)
+
+tibble(
+    sigs = names(otu_sigs),
+    p_value = unname(wpvals),
+    es = unname(es)
+) |> 
+    myDataTable()
+```
+
+### dbBact - genus - BugSigDB 727
+
+```{r}
+bsdb <- importBugSigDB() |> 
+    as_tibble()
+tob_sigs <- bsdb |> 
+    filter(`BSDB ID` %in% c("bsdb:727/1/1", "bsdb:727/1/2")) |> 
+    getSignatures(tax.id.type = "taxname", tax.level = "genus") |> 
+    set_names(c("control", "case"))
+
+
+tob_con_list <- map(gn_sigs, ~ as.integer(tob_sigs$control %in% .x))
+tob_cas_list <- map(gn_sigs, ~ as.integer(tob_sigs$case %in% .x))
+
+tob_wpvals <- map2_dbl(
+    .x = tob_con_list,
+    .y = tob_cas_list,
+    .f = ~ round(wilcox.test(.x, .y, exact = FALSE)$p.value, 3)
+)
+tob_es <- map2_dbl(
+    .x = tob_con_list,
+    .y = tob_cas_list,
+    .f = ~ mean(.y) - mean(.x)
+)
+
+tibble(
+    sigs = names(gn_sigs),
+    p_value = unname(tob_wpvals),
+    es = unname(tob_es)
+) |> 
+    myDataTable()
+
 ```
 
 ## Extra
