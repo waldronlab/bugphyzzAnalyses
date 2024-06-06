@@ -23,6 +23,7 @@ library(dplyr)
 library(stringr)
 library(tidyr)
 library(ComplexHeatmap)
+library(ggplot2)
 
 ## Variables
 body_sites <- c(
@@ -497,7 +498,7 @@ covid_feces_enriched_s <- dbEn2(
 ) |> 
     filterDbEnRes()
 
-row_dat_list$covid_feces_sp <- crc_feces_enriched_s |> 
+row_dat_list$covid_feces_sp <- covid_feces_enriched_s |> 
     rowData() |> 
     as.data.frame() |> 
     tibble::rownames_to_column(var = "bp_sig") |> 
@@ -516,7 +517,7 @@ covid_feces_enriched_g <- dbEn2(
     perm = perm_var, freq = 1
 ) |> 
     filterDbEnRes()
-row_dat_list$covid_feces_gn <- crc_feces_enriched_g |> 
+row_dat_list$covid_feces_gn <- covid_feces_enriched_g |> 
     rowData() |> 
     as.data.frame() |> 
     tibble::rownames_to_column(var = "bp_sig") |> 
@@ -747,6 +748,21 @@ sum_tbl <- row_dat_list |>
     # ) |> 
     # filter(P_value < 0.1)
 myDataTable(sum_tbl)
+```
+
+
+```{r}
+sum_tbl |> 
+    ggplot(aes(P_value)) +
+    geom_histogram(binwidth = 0.1)
+```
+
+```{r}
+sum_tbl |> 
+    ggplot(aes(P_value)) +
+    geom_histogram(binwidth = 0.1) +
+    facet_grid(Condition ~ Rank) +
+    scale_y_continuous(breaks = seq(0, 8, 2))
 ```
 
 # Session information
