@@ -405,3 +405,40 @@ dbEnBoot <- function(s1, s2, t, R = 1000) {
     p_value <- mean(abs(perm_scores) >= abs(observed_score))
     list(score = observed_score, p_value = p_value)
 }
+
+
+
+#' Filter Result of dbBact Enrichment
+#'
+#' \code{filterDbEnRes} filters result of dbBact
+#' @param se  A SummarizedExperiment result of runnig dbBact enrichment.
+#' @param min_val Minimun number of annotations in either case or control.
+#' Integer.
+#' @param adj_pval Logical. Whether adjust p-value or not. Default TRUE.
+#'
+#' @return A SummarizedExperiment.
+#' @export
+#'
+filterDbEnRes <- function(se, min_val = 3, adj_pval = TRUE) {
+    mat <- SummarizedExperiment::assay(se)
+    col_data <- SummarizedExperiment::colData(se) |>
+        as.data.frame() |>
+        tibble::rownames_to_column(var = "bp_sig") |>
+        tibble::as_tibble()
+   posControl <- which(col_data$Condition == "Control")
+   posCase <- which(col_data$Condition == "Case")
+   rows <- vector("logical", nrow(mat))
+   for (i in seq_along(rows)) {
+       nControl <- sum(mat[i, posControl, drop = TRUE])
+       nCase <- sum(mat[i, posCase, drop = TRUE])
+       lgl <- nControl > min_val & nCase > min_val
+       rows[i] <- lgl
+   }
+   select_rows <- which(rows)
+   output <- se[select_rows,]
+   if (adj_pval) {
+       SummarizedExperiment::rowData(output)$FDR <-
+           stats::p.adjust(SummarizedExperiment::rowData(output)$P_value, "fdr")
+   }
+   return(output)
+}

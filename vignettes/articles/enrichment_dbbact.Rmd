@@ -208,7 +208,8 @@ Enrichment at the species level:
 obs_feces_enriched_s <- dbEn2(
     obs_sigs_s$dec, obs_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 
 row_dat_list$obs_feces_sp <- obs_feces_enriched_s |> 
     rowData() |> 
@@ -228,7 +229,8 @@ dbHt(obs_feces_enriched_s, scm = FALSE)
 obs_feces_enriched_g <- dbEn2(
     obs_sigs_g$dec, obs_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 
 row_dat_list$obs_feces_gn <- obs_feces_enriched_g |> 
     rowData() |> 
@@ -325,7 +327,8 @@ Enrichment at the species level:
 pd_feces_enriched_s <- dbEn2(
     pd_sigs_s$dec, pd_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 
 row_dat_list$pd_feces_sp <- pd_feces_enriched_s |> 
     rowData() |> 
@@ -346,7 +349,8 @@ Enrichment at the genus level:
 pd_feces_enriched_g <- dbEn2(
     pd_sigs_g$dec, pd_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 row_dat_list$pd_feces_gn <- pd_feces_enriched_g |> 
     rowData() |> 
     as.data.frame() |> 
@@ -396,7 +400,8 @@ Enrichment at the species level:
 crc_feces_enriched_s <- dbEn2(
     crc_sigs_s$dec, crc_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 
 row_dat_list$crc_feces_sp <- crc_feces_enriched_s |> 
     rowData() |> 
@@ -417,7 +422,8 @@ Enrichment at the genus level:
 crc_feces_enriched_g <- dbEn2(
     crc_sigs_g$dec, crc_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 row_dat_list$crc_feces_gn <- crc_feces_enriched_g |> 
     rowData() |> 
     as.data.frame() |> 
@@ -488,7 +494,8 @@ Enrichment at the species level:
 covid_feces_enriched_s <- dbEn2(
     covid_sigs_s$dec, covid_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 
 row_dat_list$covid_feces_sp <- crc_feces_enriched_s |> 
     rowData() |> 
@@ -507,7 +514,8 @@ dbHt(covid_feces_enriched_s, scm = FALSE)
 covid_feces_enriched_g <- dbEn2(
     covid_sigs_g$dec, covid_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 row_dat_list$covid_feces_gn <- crc_feces_enriched_g |> 
     rowData() |> 
     as.data.frame() |> 
@@ -551,7 +559,8 @@ ibs_sigs_g <- getPairedSigs(
 ibs_feces_enriched_s <- dbEn2(
     ibs_sigs_s$dec, ibs_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 row_dat_list$ibs_feces_sp <- ibs_feces_enriched_s |> 
     rowData() |> 
     as.data.frame() |> 
@@ -569,7 +578,8 @@ dbHt(ibs_feces_enriched_s, scm = FALSE, col_pad = 20)
 ibs_feces_enriched_g <- dbEn2(
     ibs_sigs_g$dec, ibs_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 row_dat_list$ibs_feces_gn <- ibs_feces_enriched_g |> 
     rowData() |> 
     as.data.frame() |> 
@@ -612,7 +622,8 @@ smo_sigs_g <- getPairedSigs(
 smo_mouth_enriched_s <- dbEn2(
     smo_sigs_s$dec, smo_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 row_dat_list$smo_mouth_sp <- smo_mouth_enriched_s |> 
     rowData() |> 
     as.data.frame() |> 
@@ -630,7 +641,8 @@ dbHt(smo_mouth_enriched_s, scm = FALSE, col_pad = 20)
 smo_mouth_enriched_g <- dbEn2(
     smo_sigs_g$dec, smo_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 row_dat_list$smo_mouth_gn <- smo_mouth_enriched_g |> 
     rowData() |> 
     as.data.frame() |> 
@@ -681,7 +693,8 @@ Enrichment at the species level:
 hpv_vagina_enriched_s <- dbEn2(
     hpv_sigs_s$dec, hpv_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 row_dat_list$hpv_vagina_sp <- hpv_vagina_enriched_s |> 
     rowData() |> 
     as.data.frame() |> 
@@ -701,7 +714,8 @@ Enrichment at the genus level:
 hpv_vagina_enriched_g <- dbEn2(
     hpv_sigs_g$dec, hpv_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
-)
+) |> 
+    filterDbEnRes()
 row_dat_list$hpv_vagina_gn <- hpv_vagina_enriched_g |> 
     rowData() |> 
     as.data.frame() |> 
@@ -716,16 +730,22 @@ dbHt(hpv_vagina_enriched_g, scm = TRUE, col_pad = 20)
 ```
 
 
-## Summary table
+# Summary table
 
 ```{r}
 sum_tbl <- row_dat_list |> 
     bind_rows() |> 
+    select(-PermP) |> 
     mutate(
-        FDR = p.adjust(P_value, method = "fdr"),
-        PermP_FDR = p.adjust(PermP, method = "fdr")
-    ) |> 
-    filter(P_value < 0.1)
+        P_value = round(P_value, 3),
+        FDR = round(FDR, 3),
+        Effect_size = round(Effect_size, 2)
+    )
+    # mutate(
+    #     FDR = p.adjust(P_value, method = "fdr"),
+    #     PermP_FDR = p.adjust(PermP, method = "fdr")
+    # ) |> 
+    # filter(P_value < 0.1)
 myDataTable(sum_tbl)
 ```
 
