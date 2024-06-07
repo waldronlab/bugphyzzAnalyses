@@ -205,7 +205,7 @@ obs_sigs_g <- getPairedSigs(obs_dat_dec, obs_dat_inc, rank = "genus", cat = TRUE
 
 Enrichment at the species level:
 
-```{r, fig.height=12, fig.width=20}
+```{r, fig.height=10, fig.width=20}
 obs_feces_enriched_s <- dbEn2(
     obs_sigs_s$dec, obs_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
@@ -222,11 +222,10 @@ row_dat_list$obs_feces_sp <- obs_feces_enriched_s |>
         Condition = "Obesity",
         Rank = "species"
     )
-dbHt(obs_feces_enriched_s, scm = FALSE)
+dbHt(obs_feces_enriched_s, scm = FALSE, col_pad = 20)
 ```
 
-
-```{r, fig.width=20, fig.height=10}
+```{r, fig.width=20, fig.height=8}
 obs_feces_enriched_g <- dbEn2(
     obs_sigs_g$dec, obs_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
@@ -243,7 +242,7 @@ row_dat_list$obs_feces_gn <- obs_feces_enriched_g |>
         Condition = "Obesity",
         Rank = "genus"
     )
-dbHt(obs_feces_enriched_g, scm = FALSE)
+dbHt(obs_feces_enriched_g, scm = FALSE, col_pad = 20)
 ```
 
 # Parkinson's disease - feces
@@ -346,7 +345,7 @@ dbHt(pd_feces_enriched_s, scm = FALSE, col_pad = 20)
 
 Enrichment at the genus level:
 
-```{r, fig.height=8, fig.width=12, warning=FALSE}
+```{r, fig.height=10, fig.width=20, warning=FALSE}
 pd_feces_enriched_g <- dbEn2(
     pd_sigs_g$dec, pd_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
@@ -419,7 +418,7 @@ dbHt(crc_feces_enriched_s, scm = FALSE, col_pad = 20)
 
 Enrichment at the genus level:
 
-```{r, fig.height=8, fig.width=12, warning=FALSE}
+```{r, fig.height=8, fig.width=20, warning=FALSE}
 crc_feces_enriched_g <- dbEn2(
     crc_sigs_g$dec, crc_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
@@ -491,7 +490,7 @@ covid_sigs_g <- getPairedSigs(covid_dat_dec, covid_dat_inc, rank = "genus", cat 
 
 Enrichment at the species level:
 
-```{r, fig.height=12, fig.width=20}
+```{r, fig.height=8, fig.width=20}
 covid_feces_enriched_s <- dbEn2(
     covid_sigs_s$dec, covid_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
@@ -511,7 +510,7 @@ row_dat_list$covid_feces_sp <- covid_feces_enriched_s |>
 dbHt(covid_feces_enriched_s, scm = FALSE)
 ```
 
-```{r, fig.height=12, fig.width=20}
+```{r, fig.height=8, fig.width=20}
 covid_feces_enriched_g <- dbEn2(
     covid_sigs_g$dec, covid_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
@@ -556,7 +555,7 @@ ibs_sigs_g <- getPairedSigs(
 )
 ```
 
-```{r, fig.height=15, fig.width=20}
+```{r, fig.height=10, fig.width=20}
 ibs_feces_enriched_s <- dbEn2(
     ibs_sigs_s$dec, ibs_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
@@ -575,7 +574,7 @@ row_dat_list$ibs_feces_sp <- ibs_feces_enriched_s |>
 dbHt(ibs_feces_enriched_s, scm = FALSE, col_pad = 20)
 ```
 
-```{r, fig.width=25, fig.height=15}
+```{r, fig.width=20, fig.height=8}
 ibs_feces_enriched_g <- dbEn2(
     ibs_sigs_g$dec, ibs_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
@@ -619,7 +618,7 @@ smo_sigs_g <- getPairedSigs(
 )
 ```
 
-```{r, fig.height=12, fig.width=20}
+```{r, fig.height=8, fig.width=20}
 smo_mouth_enriched_s <- dbEn2(
     smo_sigs_s$dec, smo_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
@@ -638,7 +637,7 @@ row_dat_list$smo_mouth_sp <- smo_mouth_enriched_s |>
 dbHt(smo_mouth_enriched_s, scm = FALSE, col_pad = 20)
 ```
 
-```{r, fig.height=12, fig.width=20}
+```{r, fig.height=8, fig.width=20}
 smo_mouth_enriched_g <- dbEn2(
     smo_sigs_g$dec, smo_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
@@ -690,7 +689,7 @@ hpv_sigs_g <- getPairedSigs(
 
 Enrichment at the species level:
 
-```{r, fig.height=15, fig.width=20}
+```{r, fig.height=10, fig.width=15}
 hpv_vagina_enriched_s <- dbEn2(
     hpv_sigs_s$dec, hpv_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
@@ -706,12 +705,12 @@ row_dat_list$hpv_vagina_sp <- hpv_vagina_enriched_s |>
         Condition = "hpv",
         Rank = "species"
     )
-dbHt(hpv_vagina_enriched_s, scm = TRUE, col_pad = 20)
+dbHt(hpv_vagina_enriched_s, scm = TRUE)
 ```
 
 Enrichment at the genus level:
 
-```{r, fig.height=15, fig.width=20}
+```{r, fig.height=10, fig.width=15}
 hpv_vagina_enriched_g <- dbEn2(
     hpv_sigs_g$dec, hpv_sigs_g$inc, term_list = bpSigs_g,
     perm = perm_var, freq = 1
@@ -727,7 +726,7 @@ row_dat_list$hpv_vagina_gn <- hpv_vagina_enriched_g |>
         Condition = "hpv",
         Rank = "genus"
     )
-dbHt(hpv_vagina_enriched_g, scm = TRUE, col_pad = 20)
+dbHt(hpv_vagina_enriched_g, scm = TRUE)
 ```
 
 
@@ -794,8 +793,6 @@ sum_tbl2 |>
     count(`Body site`, Condition, Rank) |> 
     knitr::kable()
 ```
-
-
 
 # Session information
 
