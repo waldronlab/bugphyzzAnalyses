@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">bugphyzzAnalyses</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.15</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.16</span>
       </span>
     </div>
 
@@ -837,33 +837,12 @@ have been more interesting if vancomycin would be among them.</p>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_grid.html" class="external-link">facet_grid</a></span><span class="op">(</span><span class="va">Condition</span> <span class="op">~</span> <span class="va">Rank</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_continuous</a></span><span class="op">(</span>breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">8</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-40-1.png" width="700"></p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sum_tbl</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">Condition</span>, <span class="va">Rank</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="op">-</span><span class="va">n</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 14 × 3</span></span></span>
-<span><span class="co">#&gt;    Condition Rank        n</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> crc       species    37</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> pd        species    36</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> Obesity   species    35</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> covid     species    27</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> pd        genus      25</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> ibs       species    24</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> covid     genus      22</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> smoking   species    22</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> Obesity   genus      21</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> crc       genus      21</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> smoking   genus      21</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> ibs       genus      20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">13</span> hpv       genus      11</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">14</span> hpv       species     9</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="summary-table-p-value-0-1">Summary table P-value &lt; 0.1<a class="anchor" aria-label="anchor" href="#summary-table-p-value-0-1"></a>
 </h2>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sum_tbl</span> <span class="op">|&gt;</span> </span>
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sum_tbl2</span> <span class="op">&lt;-</span> <span class="va">sum_tbl</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">P_value</span> <span class="op">&lt;</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">Bsite</span>, <span class="va">Condition</span>, <span class="va">Rank</span>, <span class="va">Direction</span>, <span class="va">P_value</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Direction <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">Direction</span>, levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Control"</span>, <span class="st">"Case"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -871,10 +850,90 @@ have been more interesting if vancomycin would be among them.</p>
 <span>        `Body site` <span class="op">=</span> <span class="va">Bsite</span>, <span class="va">Condition</span>, <span class="va">Rank</span>, <span class="va">Direction</span>, `P-value` <span class="op">=</span> <span class="va">P_value</span>,</span>
 <span>        `Effect size` <span class="op">=</span> <span class="va">Effect_size</span>, `Bugphyzz Signature` <span class="op">=</span> <span class="va">bp_sig</span></span>
 <span>    <span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">PermP</span>, <span class="op">-</span> <span class="va">FDR</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">PermP</span>, <span class="op">-</span> <span class="va">FDR</span><span class="op">)</span> </span>
+<span><span class="va">sum_tbl2</span> <span class="op">|&gt;</span> </span>
 <span>    <span class="op">{</span>\<span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="fu"><a href="../reference/myDataTable.html">myDataTable</a></span><span class="op">(</span><span class="va">y</span>, page_len <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">y</span><span class="op">)</span><span class="op">)</span><span class="op">}</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-36aa3d2a04d42bbc2145" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-36aa3d2a04d42bbc2145">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"factor\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"width: 100%; display: none;\">\n      <select multiple=\"multiple\" style=\"width: 100%;\" data-options=\"[&quot;Control&quot;,&quot;Case&quot;]\"><\/select>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.001\" data-max=\"0.096\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-0.84\" data-max=\"0.74\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"data":[["feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","mouth","mouth","mouth","mouth","mouth","vagina"],["Obesity","Obesity","Obesity","Obesity","Obesity","Obesity","Obesity","Obesity","covid","covid","covid","covid","covid","covid","covid","covid","covid","covid","crc","crc","crc","crc","crc","crc","crc","crc","crc","crc","ibs","ibs","ibs","pd","pd","pd","pd","pd","smoking","smoking","smoking","smoking","smoking","hpv"],["genus","species","species","species","species","species","species","species","genus","genus","genus","species","species","species","species","species","species","species","genus","genus","genus","species","species","species","species","species","species","species","species","species","species","species","species","species","species","species","genus","genus","species","species","species","genus"],["Case","Case","Case","Case","Control","Control","Control","Control","Case","Control","Control","Case","Case","Case","Case","Control","Control","Control","Control","Control","Control","Control","Control","Control","Control","Control","Control","Control","Case","Case","Control","Case","Case","Control","Control","Control","Case","Case","Case","Control","Control","Case"],[0.096,0.029,0.082,0.08500000000000001,0.047,0.047,0.056,0.061,0.036,0.012,0.017,0.043,0.043,0.075,0.093,0.003,0.008999999999999999,0.042,0.02,0.031,0.051,0.001,0.008999999999999999,0.018,0.022,0.047,0.065,0.081,0.022,0.09,0.054,0.055,0.075,0.007,0.027,0.054,0.055,0.055,0.091,0.049,0.075,0.066],[0.36,0.12,0.16,0.21,-0.45,-0.47,-0.44,-0.32,0.33,-0.84,-0.58,0.32,0.32,0.4,0.19,-0.44,-0.4,-0.34,-0.36,-0.34,-0.4,-0.33,-0.27,-0.18,-0.12,-0.27,-0.21,-0.24,0.58,0.5600000000000001,-0.83,0.19,0.13,-0.21,-0.13,-0.15,0.21,0.21,0.22,-0.27,-0.25,0.74],["shape|coccus","biofilm formation|FALSE","habitat|human gut microbiome","gram stain|gram stain positive","habitat|digestive system","gram stain|gram stain negative","shape|bacillus","habitat|human microbiome","gram stain|gram stain positive","aerophilicity|anaerobic","gram stain|gram stain negative","coding genes|average| &gt; 600 &amp; &lt;= 6000","genome size|large| &gt; 998123 &amp; &lt;= 6997434","host-associated|TRUE","habitat|human microbiome","biosafety level|biosafety level 1","habitat|human gut microbiome","spore shape|endospore","growth temperature|mesophile| &gt; 25 &amp; &lt;= 45","spore formation|FALSE","aerophilicity|anaerobic","animal pathogen|FALSE","gram stain|gram stain positive","habitat|waste and sludge water","cogem pathogenicity rating|cogem pathogenicity rating 1","plant pathogenicity|FALSE","biosafety level|biosafety level 1","habitat|human gut microbiome","gram stain|gram stain positive","spore shape|endospore","gram stain|gram stain negative","cogem pathogenicity rating|cogem pathogenicity rating 2","arrangement|cell chain","habitat|human gut microbiome","habitat|waste and sludge water","spore shape|endospore","coding genes|average| &gt; 600 &amp; &lt;= 6000","genome size|large| &gt; 998123 &amp; &lt;= 6997434","gram stain|gram stain negative","gram stain|gram stain positive","host-associated|TRUE","aerophilicity|anaerobic"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Body site<\/th>\n      <th>Condition<\/th>\n      <th>Rank<\/th>\n      <th>Direction<\/th>\n      <th>P-value<\/th>\n      <th>Effect size<\/th>\n      <th>Bugphyzz Signature<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"lBfrtip","paging":true,"pageLength":42,"buttons":[{"extend":"copy","title":null},{"extend":"print","title":null},{"extend":"csv","title":null}],"scrollX":true,"columnDefs":[{"className":"dt-right","targets":[4,5]},{"name":"Body site","targets":0},{"name":"Condition","targets":1},{"name":"Rank","targets":2},{"name":"Direction","targets":3},{"name":"P-value","targets":4},{"name":"Effect size","targets":5},{"name":"Bugphyzz Signature","targets":6}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true,"lengthMenu":[10,25,42,50,100]}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-36aa3d2a04d42bbc2145">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"factor\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"width: 100%; display: none;\">\n      <select multiple=\"multiple\" style=\"width: 100%;\" data-options=\"[&quot;Control&quot;,&quot;Case&quot;]\"><\/select>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.001\" data-max=\"0.096\" data-scale=\"3\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"-0.84\" data-max=\"0.74\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"data":[["feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","feces","mouth","mouth","mouth","mouth","mouth","vagina"],["Obesity","Obesity","Obesity","Obesity","Obesity","Obesity","Obesity","Obesity","covid","covid","covid","covid","covid","covid","covid","covid","covid","covid","crc","crc","crc","crc","crc","crc","crc","crc","crc","crc","ibs","ibs","ibs","pd","pd","pd","pd","pd","smoking","smoking","smoking","smoking","smoking","hpv"],["genus","species","species","species","species","species","species","species","genus","genus","genus","species","species","species","species","species","species","species","genus","genus","genus","species","species","species","species","species","species","species","species","species","species","species","species","species","species","species","genus","genus","species","species","species","genus"],["Case","Case","Case","Case","Control","Control","Control","Control","Case","Control","Control","Case","Case","Case","Case","Control","Control","Control","Control","Control","Control","Control","Control","Control","Control","Control","Control","Control","Case","Case","Control","Case","Case","Control","Control","Control","Case","Case","Case","Control","Control","Case"],[0.096,0.029,0.082,0.08500000000000001,0.047,0.047,0.056,0.061,0.036,0.012,0.017,0.043,0.043,0.075,0.093,0.003,0.008999999999999999,0.042,0.02,0.031,0.051,0.001,0.008999999999999999,0.018,0.022,0.047,0.065,0.081,0.022,0.09,0.054,0.055,0.075,0.007,0.027,0.054,0.055,0.055,0.091,0.049,0.075,0.066],[0.36,0.12,0.16,0.21,-0.45,-0.47,-0.44,-0.32,0.33,-0.84,-0.58,0.32,0.32,0.4,0.19,-0.44,-0.4,-0.34,-0.36,-0.34,-0.4,-0.33,-0.27,-0.18,-0.12,-0.27,-0.21,-0.24,0.58,0.5600000000000001,-0.83,0.19,0.13,-0.21,-0.13,-0.15,0.21,0.21,0.22,-0.27,-0.25,0.74],["shape|coccus","biofilm formation|FALSE","habitat|human gut microbiome","gram stain|gram stain positive","habitat|digestive system","gram stain|gram stain negative","shape|bacillus","habitat|human microbiome","gram stain|gram stain positive","aerophilicity|anaerobic","gram stain|gram stain negative","coding genes|average| &gt; 600 &amp; &lt;= 6000","genome size|large| &gt; 998123 &amp; &lt;= 6997434","host-associated|TRUE","habitat|human microbiome","biosafety level|biosafety level 1","habitat|human gut microbiome","spore shape|endospore","growth temperature|mesophile| &gt; 25 &amp; &lt;= 45","spore formation|FALSE","aerophilicity|anaerobic","animal pathogen|FALSE","gram stain|gram stain positive","habitat|waste and sludge water","cogem pathogenicity rating|cogem pathogenicity rating 1","plant pathogenicity|FALSE","biosafety level|biosafety level 1","habitat|human gut microbiome","gram stain|gram stain positive","spore shape|endospore","gram stain|gram stain negative","cogem pathogenicity rating|cogem pathogenicity rating 2","arrangement|cell chain","habitat|human gut microbiome","habitat|waste and sludge water","spore shape|endospore","coding genes|average| &gt; 600 &amp; &lt;= 6000","genome size|large| &gt; 998123 &amp; &lt;= 6997434","gram stain|gram stain negative","gram stain|gram stain positive","host-associated|TRUE","aerophilicity|anaerobic"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Body site<\/th>\n      <th>Condition<\/th>\n      <th>Rank<\/th>\n      <th>Direction<\/th>\n      <th>P-value<\/th>\n      <th>Effect size<\/th>\n      <th>Bugphyzz Signature<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"lBfrtip","paging":true,"pageLength":42,"buttons":[{"extend":"copy","title":null},{"extend":"print","title":null},{"extend":"csv","title":null}],"scrollX":true,"columnDefs":[{"className":"dt-right","targets":[4,5]},{"name":"Body site","targets":0},{"name":"Condition","targets":1},{"name":"Rank","targets":2},{"name":"Direction","targets":3},{"name":"P-value","targets":4},{"name":"Effect size","targets":5},{"name":"Bugphyzz Signature","targets":6}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true,"lengthMenu":[10,25,42,50,100]}},"evals":[],"jsHooks":[]}</script><div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sum_tbl2</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html" class="external-link">count</a></span><span class="op">(</span><span class="va">`Body site`</span>, <span class="va">Condition</span>, <span class="va">Rank</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>    <span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<thead><tr class="header">
+<th align="left">Body site</th>
+<th align="left">Condition</th>
+<th align="left">Rank</th>
+<th align="right">n</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">feces</td>
+<td align="left">Obesity</td>
+<td align="left">genus</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="left">feces</td>
+<td align="left">Obesity</td>
+<td align="left">species</td>
+<td align="right">7</td>
+</tr>
+<tr class="odd">
+<td align="left">feces</td>
+<td align="left">covid</td>
+<td align="left">genus</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">feces</td>
+<td align="left">covid</td>
+<td align="left">species</td>
+<td align="right">7</td>
+</tr>
+<tr class="odd">
+<td align="left">feces</td>
+<td align="left">crc</td>
+<td align="left">genus</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">feces</td>
+<td align="left">crc</td>
+<td align="left">species</td>
+<td align="right">7</td>
+</tr>
+<tr class="odd">
+<td align="left">feces</td>
+<td align="left">ibs</td>
+<td align="left">species</td>
+<td align="right">3</td>
+</tr>
+<tr class="even">
+<td align="left">feces</td>
+<td align="left">pd</td>
+<td align="left">species</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="left">mouth</td>
+<td align="left">smoking</td>
+<td align="left">genus</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">mouth</td>
+<td align="left">smoking</td>
+<td align="left">species</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">vagina</td>
+<td align="left">hpv</td>
+<td align="left">genus</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
@@ -905,7 +964,7 @@ have been more interesting if vancomycin would be among them.</p>
 <span><span class="co">#&gt;  blob                   1.2.4   <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  bslib                  0.7.0   <span style="color: #555555;">2024-03-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  bugphyzz             * 0.99.3  <span style="color: #555555;">2024-06-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@496e8d6)</span></span></span>
-<span><span class="co">#&gt;  bugphyzzAnalyses     * 0.1.15  <span style="color: #555555;">2024-06-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
+<span><span class="co">#&gt;  bugphyzzAnalyses     * 0.1.16  <span style="color: #555555;">2024-06-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
 <span><span class="co">#&gt;  bugsigdbr            * 1.10.0  <span style="color: #555555;">2024-04-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  cachem                 1.1.0   <span style="color: #555555;">2024-05-16</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  Cairo                  1.6-2   <span style="color: #555555;">2023-11-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
