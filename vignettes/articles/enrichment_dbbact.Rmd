@@ -736,7 +736,7 @@ dbHt(hpv_vagina_enriched_g, scm = TRUE, col_pad = 20)
 ```{r}
 sum_tbl <- row_dat_list |> 
     bind_rows() |> 
-    select(-PermP) |> 
+    # select(-PermP) |> 
     mutate(
         P_value = round(P_value, 3),
         FDR = round(FDR, 3),
@@ -763,6 +763,27 @@ sum_tbl |>
     geom_histogram(binwidth = 0.1) +
     facet_grid(Condition ~ Rank) +
     scale_y_continuous(breaks = seq(0, 8, 2))
+```
+
+```{r}
+sum_tbl |> 
+    count(Condition, Rank) |> 
+    arrange(-n)
+```
+
+# Summary table P-value < 0.1
+
+```{r}
+sum_tbl |> 
+    filter(P_value < 0.1) |> 
+    arrange(Bsite, Condition, Rank, Direction, P_value) |>
+    mutate(Direction = factor(Direction, levels = c("Control", "Case"))) |> 
+    relocate(
+        `Body site` = Bsite, Condition, Rank, Direction, `P-value` = P_value,
+        `Effect size` = Effect_size, `Bugphyzz Signature` = bp_sig
+    ) |> 
+    select(-PermP, - FDR) |> 
+    {\(y) myDataTable(y, page_len = nrow(y))}()
 ```
 
 # Session information
