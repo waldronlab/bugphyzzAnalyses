@@ -774,9 +774,16 @@ sum_tbl2 <- sum_tbl |>
     mutate(Direction = factor(Direction, levels = c("Control", "Case"))) |> 
     relocate(
         `Body site` = Bsite, Condition, Rank, Direction, `P-value` = P_value,
-        `Effect size` = Effect_size, `Bugphyzz Signature` = bp_sig
+        `Effect size` = Effect_size, `Signature` = bp_sig
     ) |> 
-    select(-PermP, - FDR) 
+    mutate(
+        Signature = case_when(
+            `P-value` < 0.05 ~ paste0(Signature, "**"),
+            # `P-value` < 0.5 ~ paste0(Signature, "**"),
+            TRUE ~ paste0(Signature, "*")
+        )
+    ) |> 
+    select(-PermP, - FDR)
 sum_tbl2 |> 
     {\(y) myDataTable(y, page_len = nrow(y))}()
 ```
