@@ -765,16 +765,10 @@ sum_tbl |>
     scale_y_continuous(breaks = seq(0, 8, 2))
 ```
 
-```{r}
-sum_tbl |> 
-    count(Condition, Rank) |> 
-    arrange(-n)
-```
-
 # Summary table P-value < 0.1
 
 ```{r}
-sum_tbl |> 
+sum_tbl2 <- sum_tbl |> 
     filter(P_value < 0.1) |> 
     arrange(Bsite, Condition, Rank, Direction, P_value) |>
     mutate(Direction = factor(Direction, levels = c("Control", "Case"))) |> 
@@ -782,9 +776,19 @@ sum_tbl |>
         `Body site` = Bsite, Condition, Rank, Direction, `P-value` = P_value,
         `Effect size` = Effect_size, `Bugphyzz Signature` = bp_sig
     ) |> 
-    select(-PermP, - FDR) |> 
+    select(-PermP, - FDR) 
+sum_tbl2 |> 
     {\(y) myDataTable(y, page_len = nrow(y))}()
 ```
+
+
+```{r}
+sum_tbl2 |> 
+    count(`Body site`, Condition, Rank) |> 
+    knitr::kable()
+```
+
+
 
 # Session information
 
