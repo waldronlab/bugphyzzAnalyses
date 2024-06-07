@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">bugphyzzAnalyses</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.17</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.18</span>
       </span>
     </div>
 
@@ -322,7 +322,7 @@ levels:</p>
 <span>        Condition <span class="op">=</span> <span class="st">"Obesity"</span>,</span>
 <span>        Rank <span class="op">=</span> <span class="st">"species"</span></span>
 <span>    <span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">obs_feces_enriched_s</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">obs_feces_enriched_s</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
 <p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-10-1.png" width="1920"></p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">obs_feces_enriched_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
@@ -341,7 +341,7 @@ levels:</p>
 <span>        Condition <span class="op">=</span> <span class="st">"Obesity"</span>,</span>
 <span>        Rank <span class="op">=</span> <span class="st">"genus"</span></span>
 <span>    <span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">obs_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">obs_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
 <p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-11-1.png" width="1920"></p>
 </div>
 <div class="section level2">
@@ -453,7 +453,7 @@ levels:</p>
 <span>        Rank <span class="op">=</span> <span class="st">"genus"</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">pd_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-16-1.png" width="1152"></p>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-16-1.png" width="1920"></p>
 </div>
 <div class="section level2">
 <h2 id="colorectal-cancer---feces">Colorectal cancer - feces<a class="anchor" aria-label="anchor" href="#colorectal-cancer---feces"></a>
@@ -519,7 +519,7 @@ levels:</p>
 <span>        Rank <span class="op">=</span> <span class="st">"genus"</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">crc_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-20-1.png" width="1152"></p>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-20-1.png" width="1920"></p>
 </div>
 <div class="section level2">
 <h2 id="antimicrobial-agent---feces">Antimicrobial agent - feces<a class="anchor" aria-label="anchor" href="#antimicrobial-agent---feces"></a>
@@ -677,7 +677,7 @@ have been more interesting if vancomycin would be among them.</p>
 <span>        Rank <span class="op">=</span> <span class="st">"genus"</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">ibs_feces_enriched_g</span>, scm <span class="op">=</span> <span class="cn">FALSE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-29-1.png" width="2400"></p>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-29-1.png" width="1920"></p>
 </div>
 <div class="section level2">
 <h2 id="smoking---mouth">Smoking - mouth<a class="anchor" aria-label="anchor" href="#smoking---mouth"></a>
@@ -784,8 +784,8 @@ have been more interesting if vancomycin would be among them.</p>
 <span>        Condition <span class="op">=</span> <span class="st">"hpv"</span>,</span>
 <span>        Rank <span class="op">=</span> <span class="st">"species"</span></span>
 <span>    <span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">hpv_vagina_enriched_s</span>, scm <span class="op">=</span> <span class="cn">TRUE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-36-1.png" width="1920"></p>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">hpv_vagina_enriched_s</span>, scm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-36-1.png" width="1440"></p>
 <p>Enrichment at the genus level:</p>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hpv_vagina_enriched_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/dbEn2.html">dbEn2</a></span><span class="op">(</span></span>
@@ -803,8 +803,8 @@ have been more interesting if vancomycin would be among them.</p>
 <span>        Condition <span class="op">=</span> <span class="st">"hpv"</span>,</span>
 <span>        Rank <span class="op">=</span> <span class="st">"genus"</span></span>
 <span>    <span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">hpv_vagina_enriched_g</span>, scm <span class="op">=</span> <span class="cn">TRUE</span>, col_pad <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
-<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-37-1.png" width="1920"></p>
+<span><span class="fu"><a href="../reference/dbHt.html">dbHt</a></span><span class="op">(</span><span class="va">hpv_vagina_enriched_g</span>, scm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="enrichment_dbbact_files/figure-html/unnamed-chunk-37-1.png" width="1440"></p>
 </div>
 <div class="section level2">
 <h2 id="summary-table">Summary table<a class="anchor" aria-label="anchor" href="#summary-table"></a>
@@ -971,7 +971,7 @@ have been more interesting if vancomycin would be among them.</p>
 <span><span class="co">#&gt;  blob                   1.2.4   <span style="color: #555555;">2023-03-17</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  bslib                  0.7.0   <span style="color: #555555;">2024-03-29</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  bugphyzz             * 0.99.3  <span style="color: #555555;">2024-06-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">Github (waldronlab/bugphyzz@496e8d6)</span></span></span>
-<span><span class="co">#&gt;  bugphyzzAnalyses     * 0.1.17  <span style="color: #555555;">2024-06-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
+<span><span class="co">#&gt;  bugphyzzAnalyses     * 0.1.18  <span style="color: #555555;">2024-06-07</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">local</span></span></span>
 <span><span class="co">#&gt;  bugsigdbr            * 1.10.0  <span style="color: #555555;">2024-04-30</span> <span style="color: #555555;">[1]</span> <span style="color: #555555;">Bioconductor 3.19 (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  cachem                 1.1.0   <span style="color: #555555;">2024-05-16</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
 <span><span class="co">#&gt;  Cairo                  1.6-2   <span style="color: #555555;">2023-11-28</span> <span style="color: #555555;">[1]</span> <span style="color: #BB00BB; font-weight: bold;">RSPM (R 4.4.0)</span></span></span>
