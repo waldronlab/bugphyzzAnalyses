@@ -205,7 +205,7 @@ obs_sigs_g <- getPairedSigs(obs_dat_dec, obs_dat_inc, rank = "genus", cat = TRUE
 
 Enrichment at the species level:
 
-```{r, fig.height=10, fig.width=20}
+```{r, fig.height=12, fig.width=25}
 obs_feces_enriched_s <- dbEn2(
     obs_sigs_s$dec, obs_sigs_s$inc, term_list = bpSigs_s,
     perm = perm_var, freq = 1
@@ -222,7 +222,28 @@ row_dat_list$obs_feces_sp <- obs_feces_enriched_s |>
         Condition = "Obesity",
         Rank = "species"
     )
-dbHt(obs_feces_enriched_s, scm = FALSE, col_pad = 20)
+dbHt(obs_feces_enriched_s, scm = TRUE)
+```
+
+```{r, eval=FALSE, echo=FALSE}
+# tbl <- colData(obs_feces_enriched_s) |> 
+#     as.data.frame() |> 
+#     as_tibble()
+# 
+# classif <- taxizedb::classification(tbl$Taxon, db = "ncbi")
+# dat <- map(classif, ~ {
+#     .x |> 
+#         filter(rank == "phylum") |> 
+#         select(Phylum = name)
+# }) |> 
+#     bind_rows()
+# 
+# col_data <- bind_cols(tbl, dat)
+# 
+# col_data |> 
+#     count(Condition, Phylum) |> 
+#     arrange(Condition, -n) 
+
 ```
 
 ```{r, fig.width=20, fig.height=8}

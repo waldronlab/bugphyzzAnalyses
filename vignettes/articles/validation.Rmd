@@ -17,7 +17,7 @@ library(ggrepel)
 library(bugphyzzAnalyses)
 ```
 
-## Import validation data
+# Import validation data
 
 Validation scripts and outputs are in: https://github.com/waldronlab/taxPProValidation/tree/main
 
@@ -89,7 +89,80 @@ myDataTable(output, page_len = nrow(output))
 ```
 
 
-## Session information
+# Ontology data
+
+```{r}
+fname <- system.file(
+    "extdata", "attributes.tsv", package = "bugphyzz"
+)
+o <- readr::read_tsv(fname, show_col_types = FALSE)
+```
+
+
+```{r}
+o2 <- o |> 
+    mutate(ontology = gsub("(?<!CO)_(?!(\\d+:\\d+))", ":", ontology, perl = TRUE)) |>
+    mutate(ontology = sub("^(.*):.*$", "\\1", ontology)) |> 
+    select(ontology) |> 
+    filter(!is.na(ontology)) |> 
+    arrange(ontology) |> 
+    distinct()
+o3 <- o2 |> 
+    mutate(
+        Description = case_when(
+            ontology == "APO" ~ "obophenotype/ascomycete-phenotype-ontology",
+            ontology == "ARO" ~ "Antibiotic Resistance Ontology",
+            ontology == "BTO" ~ "The BRENDA Tissue Ontology",
+            ontology == "CO_320" ~ "The Planteome Project",
+            ontology == "CO_331" ~ "The Planteome Project",
+            ontology == "CO_345" ~ "The Planteome Project",
+            ontology == "CO_357" ~ "The Planteome Project",
+            ontology == "ECOCORE" ~ "An ontology of core ecological entities",
+            ontology == "EFO" ~ "Experimental Factor Ontology",
+            ontology == "EHDAA2" ~ "Ontobee/Human developmental anatomy, abstract",
+            ontology == "ENM" ~ "eNanoMapper ontology",
+            ontology == "ENVO" ~ "The Environment Ontology",
+            ontology == "ERO" ~ "Eagle-I Research Resource Ontology",
+            ontology == "FMA" ~ "The Foundational Model of Anatomy",
+            ontology == "FOODON" ~ "Ontobee/Food Ontology",
+            ontology == "GO" ~ "Gene Ontology",
+            ontology == "IDO" ~ "Infectious Disease Ontology",
+            ontology == "IDOMAL" ~ "Malaria Ontology",
+            ontology == "MCO" ~ "Microbial Conditions Ontology",
+            ontology == "MICRO" ~ "Ontology of Prokaryotic Phenotypic and Metabolic Characters",
+            ontology == "MONDO" ~ "Mondo Disease Ontology",
+            ontology == "MP" ~ "The Mammalian Phenotype Ontology",
+            ontology == "NCBITaxon" ~ "NCBI organismal classification",
+            ontology == "NCIT" ~ "NCI Thesaurus OBO Edition",
+            ontology == "OBI" ~ "Ontology for Biomedical Investigations",
+            ontology == "OHMI" ~ "OHMI: Ontology of Host-Microbiome Interactions",
+            ontology == "OMIT" ~ "Ontology for MIRNA Target",
+            ontology == "OMP" ~ "Ontology of Microbial Phenotypes",
+            ontology == "Orphanet" ~ "Orphanet",
+            ontology == "PATO" ~ "PATO - the Phenotype And Trait Ontology",
+            ontology == "PHIPO" ~ "Pathogen Host Interactions Phenotype Ontology",
+            ontology == "PO" ~ "Plant Ontology",
+            ontology == "SIO" ~ "Ontobee/Semanticscience Integrated Ontology",
+            ontology == "SNOMED" ~ "SNOMED CT (International Edition)",
+            ontology == "SPD" ~ "The Spider Anatomy Ontology",
+            ontology == "SYMP" ~ "Symptom Ontology",
+            ontology == "UBERON" ~ "Uber-anatomy ontology",
+            ontology == "UPa" ~ "Unipathway",
+            ontology == "XCO" ~ "Experimental condition ontology",
+            ontology == "ZFA" ~ "Zebrafish Anatomy Ontology (ZFA)"
+        )
+    ) |> 
+    mutate(
+        ontology = case_when(
+            grepl("^(CO_).*$", ontology) ~ "CO",
+            TRUE ~ ontology
+    )) |> 
+    distinct() |>
+    dplyr::rename(Ontology = ontology)
+myDataTable(o3)
+```
+
+# Session information
 
 ```{r, echo=FALSE}
 sessioninfo::session_info()
