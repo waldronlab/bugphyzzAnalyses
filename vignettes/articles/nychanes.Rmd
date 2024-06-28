@@ -120,7 +120,7 @@ Create signatures at the genus level:
 
 ```{r}
 gn_sigs <- makeSignatures(
-    dat = aer, tax_id_type = 'Taxon_name', tax_level = 'genus'
+    dat = aer, taxIdType = 'Taxon_name', taxLevel = 'genus'
 ) |> 
     list_flatten(name_spec = "{inner") |> 
     discard(is.null)

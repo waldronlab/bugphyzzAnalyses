@@ -73,7 +73,7 @@ bp <- importBugphyzz(v = 0.5) |>
     })
 aer <- bp$aerophilicity
 gn_sigs <- makeSignatures(
-    dat = aer, tax_id_type = 'Taxon_name', tax_level = 'genus'
+    dat = aer, taxIdType = 'Taxon_name', taxLevel = 'genus'
 )
 ## Only one genus is missing  (TG5), which is ambiguous in the ncbi taxonomy
 mean(as.integer(
@@ -85,7 +85,7 @@ Without ASR some annotations are missing:
 
 ```{r}
 gn_sigs_noasr <- makeSignatures(
-    dat = aer, tax_id_type = 'Taxon_name', tax_level = 'genus',
+    dat = aer, taxIdType = 'Taxon_name', taxLevel = 'genus',
     evidence = c("exp", "igc", "tas", "nas", "tax")
 )
 mean(as.integer(
@@ -229,7 +229,7 @@ myDataTable(ora_noasr)
 ```{r, warning=FALSE}
 bpSigs_g <- map(
     bp, ~ {
-        makeSignatures(.x, tax_id_type = "NCBI_ID", tax_level = "genus")
+        makeSignatures(.x, taxIdType = "NCBI_ID", taxLevel = "genus")
 }) |> 
     list_flatten(name_spec = "{inner}") |> 
     discard(is.null)

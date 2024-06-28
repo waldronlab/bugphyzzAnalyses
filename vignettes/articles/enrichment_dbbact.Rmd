@@ -63,8 +63,8 @@ bp <- importBugphyzz(v = 0.5) |>
     })
 bpSigs_g <- map(bp, ~ {
     makeSignatures(
-        dat = .x,  tax_id_type = "NCBI_ID", tax_level = "genus",
-        min_size = 10
+        dat = .x,  taxIdType = "NCBI_ID", taxLevel = "genus",
+        minSize = 10
     )
 }) |> 
     list_flatten(name_spec = "{inner}") |> 
@@ -72,8 +72,8 @@ bpSigs_g <- map(bp, ~ {
 
 bpSigs_s <- map(bp, ~ {
     makeSignatures(
-        dat = .x,  tax_id_type = "NCBI_ID", tax_level = "species",
-        min_size = 10
+        dat = .x,  taxIdType = "NCBI_ID", taxLevel = "species",
+        minSize = 10
     )
 }) |> 
     list_flatten(name_spec = "{inner}") |> 
