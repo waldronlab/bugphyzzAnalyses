@@ -4,6 +4,8 @@ output:
   html_document:
     toc:
       true
+params:
+  bugphyzz_version: "devel"   # Zenodo DOI of the release the paper cites, or "devel"
 ---
 
 ```{r, include = FALSE}
@@ -89,26 +91,11 @@ tse_gn
 bugphyzz data:
 
 ```{r, message=FALSE}
-discrete_types <- c(
-    "binary", "multistate-intersection", "multistate-union"
-)
-bp <- importBugphyzz(v = 0.5) |> 
-    map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID))) |> 
-    map(~ {
-        attr_type <- unique(.x$Attribute_type)
-        if (attr_type %in% discrete_types) {
-            df <- .x |> 
-                filter(
-                    !(Validation < 0.7 & Evidence == "asr")
-                )
-        } else if (attr_type == "numeric") {
-            df <- .x |> 
-                filter(
-                    !(Validation < 0.5 & Evidence == "asr")
-                )
-        }
-        df
-    })
+## importBugphyzz() keeps imputed (ASR) annotations with MCC >= 0.7
+## (discrete) or R2 >= 0.5 (numeric) by default, the manuscript thresholds;
+## since bugphyzzExports 2026-11 the exported files are already filtered.
+bp <- importBugphyzz(version = params$bugphyzz_version) |>
+    map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID)))
 
 aer <- bp$aerophilicity
 dim(aer)
@@ -366,7 +353,7 @@ tibble(
 ### dbBact - genus - BugSigDB 727
 
 ```{r}
-bsdb <- importBugSigDB() |> 
+bsdb <- importBugSigDB(version = "10.5281/zenodo.10627578") |> # v1.2.1, as in the other articles
     as_tibble()
 tob_sigs <- bsdb |> 
     filter(`BSDB ID` %in% c("bsdb:727/1/1", "bsdb:727/1/2")) |> 
