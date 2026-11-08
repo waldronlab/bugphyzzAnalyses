@@ -1,129 +1,45 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE.html</loc>
-  </url>
-  <url>
-    <loc>/articles/data_integration_and_stats.html</loc>
-  </url>
-  <url>
-    <loc>/articles/enrichment_dbbact.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/articles/nychanes.html</loc>
-  </url>
-  <url>
-    <loc>/articles/nychanes2.html</loc>
-  </url>
-  <url>
-    <loc>/articles/subgingival_plaque.html</loc>
-  </url>
-  <url>
-    <loc>/articles/validation.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/calcPredStats.html</loc>
-  </url>
-  <url>
-    <loc>/reference/classif2Table.html</loc>
-  </url>
-  <url>
-    <loc>/reference/concatenateEvenSigs.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createDT.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dbEn2.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dbHt.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dbMat.html</loc>
-  </url>
-  <url>
-    <loc>/reference/dot-getTaxonClassification.html</loc>
-  </url>
-  <url>
-    <loc>/reference/elbows.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filterDbEnRes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filterEvenDat.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filterEvenSignatures.html</loc>
-  </url>
-  <url>
-    <loc>/reference/filterTaxa.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getCatSignatures.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getPairedSigs.html</loc>
-  </url>
-  <url>
-    <loc>/reference/getSets.html</loc>
-  </url>
-  <url>
-    <loc>/reference/importBiosis.html</loc>
-  </url>
-  <url>
-    <loc>/reference/importNYCHANES.html</loc>
-  </url>
-  <url>
-    <loc>/reference/importTMS.html</loc>
-  </url>
-  <url>
-    <loc>/reference/importTaxids.html</loc>
-  </url>
-  <url>
-    <loc>/reference/import_taxids.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/limmaVoom.html</loc>
-  </url>
-  <url>
-    <loc>/reference/microbeSetEnrichment.html</loc>
-  </url>
-  <url>
-    <loc>/reference/myDT.html</loc>
-  </url>
-  <url>
-    <loc>/reference/myDataTable.html</loc>
-  </url>
-  <url>
-    <loc>/reference/plotEnrichmentRes.html</loc>
-  </url>
-  <url>
-    <loc>/reference/runEnrichment.html</loc>
-  </url>
-  <url>
-    <loc>/reference/taxTable2taxid.html</loc>
-  </url>
-  <url>
-    <loc>/reference/validRanks.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/LICENSE.html</loc></url>
+<url><loc>/articles/data_integration_and_stats.html</loc></url>
+<url><loc>/articles/enrichment_dbbact.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/articles/nychanes.html</loc></url>
+<url><loc>/articles/nychanes2.html</loc></url>
+<url><loc>/articles/subgingival_plaque.html</loc></url>
+<url><loc>/articles/validation.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/reference/calcPredStats.html</loc></url>
+<url><loc>/reference/classif2Table.html</loc></url>
+<url><loc>/reference/concatenateEvenSigs.html</loc></url>
+<url><loc>/reference/createDT.html</loc></url>
+<url><loc>/reference/dbEn2.html</loc></url>
+<url><loc>/reference/dbHt.html</loc></url>
+<url><loc>/reference/dbMat.html</loc></url>
+<url><loc>/reference/dot-getTaxonClassification.html</loc></url>
+<url><loc>/reference/elbows.html</loc></url>
+<url><loc>/reference/filterDbEnRes.html</loc></url>
+<url><loc>/reference/filterEvenDat.html</loc></url>
+<url><loc>/reference/filterEvenSignatures.html</loc></url>
+<url><loc>/reference/filterTaxa.html</loc></url>
+<url><loc>/reference/getCatSignatures.html</loc></url>
+<url><loc>/reference/getPairedSigs.html</loc></url>
+<url><loc>/reference/getSets.html</loc></url>
+<url><loc>/reference/importBiosis.html</loc></url>
+<url><loc>/reference/importNYCHANES.html</loc></url>
+<url><loc>/reference/importTMS.html</loc></url>
+<url><loc>/reference/importTaxids.html</loc></url>
+<url><loc>/reference/import_taxids.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/limmaVoom.html</loc></url>
+<url><loc>/reference/microbeSetEnrichment.html</loc></url>
+<url><loc>/reference/myDT.html</loc></url>
+<url><loc>/reference/myDataTable.html</loc></url>
+<url><loc>/reference/plotEnrichmentRes.html</loc></url>
+<url><loc>/reference/runEnrichment.html</loc></url>
+<url><loc>/reference/taxTable2taxid.html</loc></url>
+<url><loc>/reference/validRanks.html</loc></url>
 </urlset>
+

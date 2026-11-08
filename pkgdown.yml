@@ -1,12 +1,11 @@
 pandoc: '3.2'
-pkgdown: 2.0.9
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
-  data_integration_and_stats: data_integration_and_stats.html
-  enrichment_dbbact: enrichment_dbbact.html
-  nychanes: nychanes.html
-  nychanes2: nychanes2.html
-  subgingival_plaque: subgingival_plaque.html
-  validation: validation.html
-last_built: 2024-06-28T20:42Z
-
+  articles/data_integration_and_stats: data_integration_and_stats.html
+  articles/enrichment_dbbact: enrichment_dbbact.html
+  articles/nychanes: nychanes.html
+  articles/nychanes2: nychanes2.html
+  articles/subgingival_plaque: subgingival_plaque.html
+  articles/validation: validation.html
+last_built: 2026-11-08T01:50Z
