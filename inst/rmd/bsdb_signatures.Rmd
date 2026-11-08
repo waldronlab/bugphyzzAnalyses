@@ -3,6 +3,9 @@ title: "High-throughput ORA with BSDB signatures"
 output:
     html_document:
         toc: true
+params:
+  bugphyzz_version: "devel"
+  uberon_obo: "https://github.com/obophenotype/uberon/releases/download/v2024-05-13/uberon-basic.obo"
 ---
 
 ```{r, include = FALSE}
@@ -84,7 +87,12 @@ dim(bsdb)
 BugSigDB subsets by body site:
 
 ```{r, message=FALSE}
-uberon <- getOntology(onto = "uberon")
+## Uberon, pinned to the release current when these analyses were first run
+## (May 2024). bugsigdbr::getOntology() fetches the latest release and its
+## download step fails on some networks, so the OBO is read directly.
+uberon <- ontologyIndex::get_ontology(
+    params$uberon_obo, propagate_relationships = c("is_a", "part_of")
+)
 bsdb_subsets_by_bodysite <- vector("list", length(body_sites))
 names(bsdb_subsets_by_bodysite) <- body_sites
 for (i in seq_along(bsdb_subsets_by_bodysite)) {
@@ -102,7 +110,7 @@ for (i in seq_along(bsdb_subsets_by_bodysite)) {
 Bugphyzz:
 
 ```{r, message=FALSE}
-bp <- importBugphyzz(v = 0.8)
+bp <- importBugphyzz(version = params$bugphyzz_version)   # manuscript thresholds (MCC 0.7, R2 0.5) are the defaults
 names(bp)
 ```
 

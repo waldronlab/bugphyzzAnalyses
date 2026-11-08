@@ -4,6 +4,10 @@ output:
   html_document:
     code_folding: hide
     toc: true
+params:
+  bugphyzz_version: "devel"   # Zenodo DOI of the release the paper cites, or "devel"
+  validation_tsv: ""          # path or URL of a taxPProValidation validation_summary.tsv; "" uses the copy in the installed bugphyzz
+  out_dir: ""                 # where the supplementary TSVs are written; "" means tempdir()
 ---
 
 ```{r script options, include = FALSE}
@@ -38,26 +42,26 @@ library(cowplot)
 ## Bugphyzz data
 
 ```{r import bp, message=FALSE}
-discrete_types <- c(
-    "binary", "multistate-intersection", "multistate-union"
-)
-bp <- importBugphyzz(v = 0.5) |> 
-    map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID))) |> 
-    map(~ {
-        attr_type <- unique(.x$Attribute_type)
-        if (attr_type %in% discrete_types) {
-            df <- .x |> 
-                filter(
-                    !(Validation < 0.7 & Evidence == "asr")
-                )
-        } else if (attr_type == "numeric") {
-            df <- .x |> 
-                filter(
-                    !(Validation < 0.5 & Evidence == "asr")
-                )
-        }
-        df
-    })
+## importBugphyzz() keeps imputed (ASR) annotations with MCC >= 0.7
+## (discrete) or R2 >= 0.5 (numeric) by default, the manuscript thresholds;
+## since bugphyzzExports 2026-11 the exported files are already filtered.
+bp <- importBugphyzz(version = params$bugphyzz_version) |>
+    map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID)))
+## Cross-validation table (taxPProValidation): the installed package's copy
+## unless params$validation_tsv points to another version
+validation <- if (nzchar(params$validation_tsv)) {
+    readr::read_tsv(params$validation_tsv, show_col_types = FALSE)
+} else {
+    if (params$bugphyzz_version != "devel") {
+        warning(
+            "validation_tsv is empty, so Figure 2 and the attributes table use ",
+            "the validation_summary.tsv shipped with bugphyzz ",
+            packageVersion("bugphyzz"), ", which may not be the version the ",
+            params$bugphyzz_version, " release was filtered with."
+        )
+    }
+    bugphyzz:::.validationData()   # bugphyzz exports no accessor for this table
+}
 length(bp)
 ```
 ```{r}
@@ -131,7 +135,7 @@ attr_asr_default_names <- map(bp, ~ {
 
 attr_asr_default <- length(attr_asr_default_names)
 
-attr_asr_all <- bugphyzz:::.validationData() |>
+attr_asr_all <- validation |>
     filter(rank == "all") |> 
     select(physiology, mcc_mean, r2_mean) |> 
     pull(physiology) |> 
@@ -148,7 +152,7 @@ count_summary_tbl <- tibble::tribble(
     "Number of annoations from sources", n_annotations_source,
     "Number of IBD annotations", n_annotations_ibd,
     "Number of annotations imputed through ASR", n_annotations_asr,
-    "Number of attributes with ASR data (default > 0.5 val)", attr_asr_default,
+    "Number of attributes with ASR data passing validation", attr_asr_default,
     "Number of attributes with ASR data (all)", attr_asr_all
 )
 
@@ -235,7 +239,7 @@ Create plot of MMC values for discrete attributes:
 ```
 
 ```{r validation discrete}
-val <- bugphyzz:::.validationData() |>
+val <- validation |>
 filter(rank == "all") # Validation including taxa of mixed ranks as input (keyword is "all")
 dis_phys_names <- val |> 
     filter(!is.na(mcc_mean)) |> 
@@ -595,6 +599,64 @@ sources <- read.table(
         `Source (long)` = full_source
     )
 myDataTable(sources, page_len = nrow(sources))
+```
+
+# Supplementary Table: attributes
+
+One row per attribute: type, unit, number of sources, annotations by evidence
+(curated from a source, IBD = inherited from strains by taxonomy, ASR), taxa,
+and the cross-validation score of each attribute value at rank "all" (MCC for
+discrete, R2 for numeric; those at or above the export threshold, 0.7 and
+0.5, have imputed annotations in the release).
+
+```{r supp table attributes}
+val_str <- validation |>
+    filter(rank == "all") |>
+    mutate(
+        score = ifelse(is.na(mcc_mean), r2_mean, mcc_mean),
+        label = ifelse(
+            physiology == attribute, sprintf("%.2f", score),
+            sprintf("%s %.2f", attribute, score)
+        )
+    ) |>
+    group_by(physiology) |>
+    summarise(`Validation (rank all)` = paste(label, collapse = "; "), .groups = "drop") |>
+    mutate(Attribute = tolower(physiology)) |>   # the export lowercases attribute names
+    select(-physiology)
+supp_attr_tbl <- bp |>
+    map(~ {
+        .x |>
+            summarise(
+                Type = unique(Attribute_type)[1],
+                Unit = if ("Unit" %in% names(.x)) paste(unique(na.omit(Unit)), collapse = ";") else "",
+                Sources = n_distinct(Attribute_source[!is.na(Attribute_source)]),
+                Curated = sum(Evidence %in% c("exp", "igc", "tas", "nas")),
+                IBD = sum(Evidence == "tax"),
+                ASR = sum(Evidence == "asr"),
+                Total = n(),
+                Taxa = n_distinct(NCBI_ID)
+            )
+    }) |>
+    bind_rows(.id = "Attribute") |>
+    mutate(.key = tolower(Attribute)) |>
+    left_join(val_str, by = c(".key" = "Attribute")) |>
+    select(-.key) |>
+    arrange(desc(Total))
+## every annotation is curated, IBD or ASR, and every attribute with ASR
+## annotations has a validation score to show for them
+stopifnot(
+    all(supp_attr_tbl$Curated + supp_attr_tbl$IBD + supp_attr_tbl$ASR == supp_attr_tbl$Total),
+    !any(supp_attr_tbl$ASR > 0 & is.na(supp_attr_tbl$`Validation (rank all)`))
+)
+myDataTable(supp_attr_tbl, page_len = nrow(supp_attr_tbl))
+```
+
+```{r write supp tables, include = FALSE}
+## TSV copies for the manuscript supplement
+out_dir <- if (nzchar(params$out_dir)) params$out_dir else tempdir()
+readr::write_tsv(supp_attr_tbl, file.path(out_dir, "supplementary_table_attributes.tsv"))
+readr::write_tsv(sources, file.path(out_dir, "supplementary_table_sources.tsv"))
+message("Supplementary tables written to ", out_dir)
 ```
 
 # Session information
