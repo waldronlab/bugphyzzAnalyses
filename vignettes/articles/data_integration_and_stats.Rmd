@@ -73,19 +73,34 @@ validation <- if (nzchar(params$validation_tsv)) {
 validation_attr <- if (nzchar(params$validation_attributes_tsv)) {
     readr::read_tsv(params$validation_attributes_tsv, show_col_types = FALSE)
 } else {
-    readr::read_tsv(
-        system.file("extdata", "validation_attributes.tsv", package = "bugphyzz"),
-        show_col_types = FALSE
-    )
+    if (params$bugphyzz_version != "devel") {
+        warning(
+            "validation_attributes_tsv is empty, so the imputation decisions ",
+            "come from the table shipped with bugphyzz ",
+            packageVersion("bugphyzz"), ", which may not be the version the ",
+            params$bugphyzz_version, " release was filtered with."
+        )
+    }
+    f <- system.file("extdata", "validation_attributes.tsv", package = "bugphyzz")
+    if (!nzchar(f)) {
+        stop(
+            "The installed bugphyzz has no extdata/validation_attributes.tsv; ",
+            "it needs version 1.7.15 or later, or set validation_attributes_tsv."
+        )
+    }
+    readr::read_tsv(f, show_col_types = FALSE)
 }
-numeric_attrs <- c("coding genes", "genome size", "growth temperature",
-                   "length", "optimal ph", "width", "gc content")
+## The threshold follows the metric, not a list of attribute names: R2 for
+## numeric attributes, kappa (weighted where the states are ordered) for the
+## rest. `imputed` is the attribute-level decision; individual imputed rows
+## must also have Score >= 0.5, which importBugphyzz() applies.
 validation_attr <- validation_attr |>
     filter(rank == "all") |>
     mutate(
-        threshold = ifelse(tolower(physiology) %in% numeric_attrs, 0.5, 0.7),
+        threshold = ifelse(metric == "r2", 0.5, 0.7),
         imputed = score_lcb >= threshold
     )
+stopifnot(all(validation_attr$metric %in% c("r2", "kappa", "weighted kappa")))
 length(bp)
 ```
 ```{r}
@@ -633,7 +648,7 @@ and the cross-validation score at rank "all" that decides whether the
 attribute is imputed: the lower 95% bound of its distance-matched Cohen's
 kappa, or of its R2 for numeric attributes (bugphyzzExports ADR 0006).
 Attributes at or above the threshold, 0.7 and 0.5, carry imputed annotations
-in the release.
+in the release, except individual rows whose `Score` is below 0.5.
 
 ```{r supp table attributes}
 val_str <- validation_attr |>
