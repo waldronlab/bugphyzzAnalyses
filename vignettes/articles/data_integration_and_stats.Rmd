@@ -7,6 +7,7 @@ output:
 params:
   bugphyzz_version: "devel"   # Zenodo DOI of the release the paper cites, or "devel"
   validation_tsv: ""          # path or URL of a taxPProValidation validation_summary.tsv; "" uses the copy in the installed bugphyzz
+  validation_attributes_tsv: ""  # same for validation_attributes.tsv (per-attribute kappa/R2, ADR 0006)
   out_dir: ""                 # where the supplementary TSVs are written; "" means tempdir()
 ---
 
@@ -42,9 +43,11 @@ library(cowplot)
 ## Bugphyzz data
 
 ```{r import bp, message=FALSE}
-## importBugphyzz() keeps imputed (ASR) annotations with MCC >= 0.7
-## (discrete) or R2 >= 0.5 (numeric) by default, the manuscript thresholds;
-## since bugphyzzExports 2026-11 the exported files are already filtered.
+## importBugphyzz() keeps an attribute's imputed (ASR) annotations when the
+## lower 95% bound of its cross-validated kappa is at least 0.7 (R2 0.5 for
+## numeric attributes) and the row's Score is at least 0.5: bugphyzzExports
+## ADR 0006, in bugphyzz since 1.7.15. The exported files are already filtered
+## the same way.
 bp <- importBugphyzz(version = params$bugphyzz_version) |>
     map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID)))
 ## Cross-validation table (taxPProValidation): the installed package's copy
@@ -60,8 +63,29 @@ validation <- if (nzchar(params$validation_tsv)) {
             params$bugphyzz_version, " release was filtered with."
         )
     }
-    bugphyzz:::.validationData()   # bugphyzz exports no accessor for this table
+    ## bugphyzz exports no accessor for these tables
+    readr::read_tsv(
+        system.file("extdata", "validation_summary.tsv", package = "bugphyzz"),
+        show_col_types = FALSE
+    )
 }
+## Per-attribute scores (ADR 0006): these decide which attributes are imputed
+validation_attr <- if (nzchar(params$validation_attributes_tsv)) {
+    readr::read_tsv(params$validation_attributes_tsv, show_col_types = FALSE)
+} else {
+    readr::read_tsv(
+        system.file("extdata", "validation_attributes.tsv", package = "bugphyzz"),
+        show_col_types = FALSE
+    )
+}
+numeric_attrs <- c("coding genes", "genome size", "growth temperature",
+                   "length", "optimal ph", "width", "gc content")
+validation_attr <- validation_attr |>
+    filter(rank == "all") |>
+    mutate(
+        threshold = ifelse(tolower(physiology) %in% numeric_attrs, 0.5, 0.7),
+        imputed = score_lcb >= threshold
+    )
 length(bp)
 ```
 ```{r}
@@ -135,11 +159,9 @@ attr_asr_default_names <- map(bp, ~ {
 
 attr_asr_default <- length(attr_asr_default_names)
 
-attr_asr_all <- validation |>
-    filter(rank == "all") |> 
-    select(physiology, mcc_mean, r2_mean) |> 
-    pull(physiology) |> 
-    unique() |> 
+attr_asr_all <- validation_attr |>
+    pull(physiology) |>
+    unique() |>
     length()
 
 count_summary_tbl <- tibble::tribble(
@@ -152,8 +174,8 @@ count_summary_tbl <- tibble::tribble(
     "Number of annoations from sources", n_annotations_source,
     "Number of IBD annotations", n_annotations_ibd,
     "Number of annotations imputed through ASR", n_annotations_asr,
-    "Number of attributes with ASR data passing validation", attr_asr_default,
-    "Number of attributes with ASR data (all)", attr_asr_all
+    "Number of attributes with imputed (ASR) annotations", attr_asr_default,
+    "Number of attributes cross-validated for imputation", attr_asr_all
 )
 
 myDataTable(count_summary_tbl)
@@ -241,10 +263,12 @@ Create plot of MMC values for discrete attributes:
 ```{r validation discrete}
 val <- validation |>
 filter(rank == "all") # Validation including taxa of mixed ranks as input (keyword is "all")
+## with_ties = FALSE: two values of one attribute can share the top score
+## (COGEM ratings 1 and 2 in v1.0.7), which would duplicate a factor level
 dis_phys_names <- val |> 
     filter(!is.na(mcc_mean)) |> 
     group_by(physiology) |> 
-    slice_max(order_by = mcc_mean, n = 1) |> 
+    slice_max(order_by = mcc_mean, n = 1, with_ties = FALSE) |> 
     arrange(-mcc_mean) |> 
     pull(physiology)
 pValDis <- val |> # plot Validation Discrete
@@ -303,7 +327,7 @@ num <- val |>
     filter(!is.na(r2_mean))
 num_phys_names <- num |> 
     group_by(physiology) |> 
-    slice_max(order_by = r2_mean, n = 1) |> 
+    slice_max(order_by = r2_mean, n = 1, with_ties = FALSE) |> 
     arrange(-r2_mean) |> 
     pull(physiology)
 pValNum <- val |>  # plot Validation Numeric attributes
@@ -605,24 +629,22 @@ myDataTable(sources, page_len = nrow(sources))
 
 One row per attribute: type, unit, number of sources, annotations by evidence
 (curated from a source, IBD = inherited from strains by taxonomy, ASR), taxa,
-and the cross-validation score of each attribute value at rank "all" (MCC for
-discrete, R2 for numeric; those at or above the export threshold, 0.7 and
-0.5, have imputed annotations in the release).
+and the cross-validation score at rank "all" that decides whether the
+attribute is imputed: the lower 95% bound of its distance-matched Cohen's
+kappa, or of its R2 for numeric attributes (bugphyzzExports ADR 0006).
+Attributes at or above the threshold, 0.7 and 0.5, carry imputed annotations
+in the release.
 
 ```{r supp table attributes}
-val_str <- validation |>
-    filter(rank == "all") |>
+val_str <- validation_attr |>
     mutate(
-        score = ifelse(is.na(mcc_mean), r2_mean, mcc_mean),
-        label = ifelse(
-            physiology == attribute, sprintf("%.2f", score),
-            sprintf("%s %.2f", attribute, score)
-        )
+        `Validation (rank all)` = sprintf(
+            "%s %.2f (lower bound %.2f, %s)", metric, score_mean, score_lcb,
+            ifelse(imputed, "imputed", "not imputed")
+        ),
+        Attribute = tolower(physiology)   # the export lowercases attribute names
     ) |>
-    group_by(physiology) |>
-    summarise(`Validation (rank all)` = paste(label, collapse = "; "), .groups = "drop") |>
-    mutate(Attribute = tolower(physiology)) |>   # the export lowercases attribute names
-    select(-physiology)
+    select(Attribute, `Validation (rank all)`)
 supp_attr_tbl <- bp |>
     map(~ {
         .x |>
