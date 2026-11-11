@@ -52,7 +52,10 @@ bp <- importBugphyzz(version = params$bugphyzz_version) |>
     map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID)))
 ## The installed bugphyzz ships the validation tables of the release it
 ## defaults to, so only other releases need their own tables
-bugphyzz_default <- eval(formals(bugphyzz::importBugphyzz)$version)
+bugphyzz_default <- tryCatch(
+    eval(formals(bugphyzz::importBugphyzz)$version),
+    error = function(e) NA_character_
+)
 ## Cross-validation table (taxPProValidation): the installed package's copy
 ## unless params$validation_tsv points to another version
 validation <- if (nzchar(params$validation_tsv)) {
