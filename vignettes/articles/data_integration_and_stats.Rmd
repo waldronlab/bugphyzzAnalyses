@@ -5,7 +5,7 @@ output:
     code_folding: hide
     toc: true
 params:
-  bugphyzz_version: "devel"   # Zenodo DOI of the release the paper cites, or "devel"
+  bugphyzz_version: "10.5281/zenodo.24114812"   # Zenodo DOI of the release the paper cites (v1.1.0), or "devel"
   validation_tsv: ""          # path or URL of a taxPProValidation validation_summary.tsv; "" uses the copy in the installed bugphyzz
   validation_attributes_tsv: ""  # same for validation_attributes.tsv (per-attribute kappa/R2, ADR 0006)
   out_dir: ""                 # where the supplementary TSVs are written; "" means tempdir()
@@ -50,12 +50,18 @@ library(cowplot)
 ## the same way.
 bp <- importBugphyzz(version = params$bugphyzz_version) |>
     map(~ mutate(.x, NCBI_ID = as.character(NCBI_ID)))
+## The installed bugphyzz ships the validation tables of the release it
+## defaults to, so only other releases need their own tables
+bugphyzz_default <- tryCatch(
+    eval(formals(bugphyzz::importBugphyzz)$version),
+    error = function(e) NA_character_
+)
 ## Cross-validation table (taxPProValidation): the installed package's copy
 ## unless params$validation_tsv points to another version
 validation <- if (nzchar(params$validation_tsv)) {
     readr::read_tsv(params$validation_tsv, show_col_types = FALSE)
 } else {
-    if (params$bugphyzz_version != "devel") {
+    if (!params$bugphyzz_version %in% c("devel", bugphyzz_default)) {
         warning(
             "validation_tsv is empty, so Figure 2 and the attributes table use ",
             "the validation_summary.tsv shipped with bugphyzz ",
@@ -73,7 +79,7 @@ validation <- if (nzchar(params$validation_tsv)) {
 validation_attr <- if (nzchar(params$validation_attributes_tsv)) {
     readr::read_tsv(params$validation_attributes_tsv, show_col_types = FALSE)
 } else {
-    if (params$bugphyzz_version != "devel") {
+    if (!params$bugphyzz_version %in% c("devel", bugphyzz_default)) {
         warning(
             "validation_attributes_tsv is empty, so the imputation decisions ",
             "come from the table shipped with bugphyzz ",
