@@ -4,7 +4,7 @@ output:
   html_document:
     toc: yes
 params:
-  bugphyzz_version: "devel"   # Zenodo DOI of the release the paper cites, or "devel"
+  bugphyzz_version: "10.5281/zenodo.24114812"   # Zenodo DOI of the release the paper cites (v1.1.0), or "devel"
   uberon_obo: "https://github.com/obophenotype/uberon/releases/download/v2024-05-13/uberon-basic.obo"
 ---
 

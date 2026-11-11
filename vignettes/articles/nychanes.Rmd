@@ -5,7 +5,7 @@ output:
     toc:
       true
 params:
-  bugphyzz_version: "devel"   # Zenodo DOI of the release the paper cites, or "devel"
+  bugphyzz_version: "10.5281/zenodo.24114812"   # Zenodo DOI of the release the paper cites (v1.1.0), or "devel"
 ---
 
 ```{r, include = FALSE}
