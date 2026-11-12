@@ -719,9 +719,11 @@ sources_base <- paste0(
     "https://raw.githubusercontent.com/waldronlab/bugphyzzExports/",
     params$sources_ref, "/sources/"
 )
+## physiologies() reads this option (bugphyzz >= 1.7.5) and keys its cache
+## on it; restored even if the import fails
 old_opt <- options(bugphyzz.sourcesBaseUrl = sources_base)
-phys <- physiologies("all")
-options(old_opt)
+phys <- tryCatch(physiologies("all"), finally = options(old_opt))
+sheets_read_on <- Sys.Date()
 sheet_ov <- readr::read_tsv(
     paste0(sources_base, "sheet_overrides.tsv"),
     col_types = readr::cols(.default = "c")
@@ -784,6 +786,19 @@ sourceAgreement <- function(dat) {
         ) |>
         arrange(desc(`Taxa with 2+ sources`))
 }
+## fixture: taxon 1 identical, 2 partial overlap, 3 disjoint, 4 one source
+fx <- tibble::tribble(
+    ~Attribute_group, ~NCBI_ID, ~Attribute_source, ~state,
+    "g", "1", "A", "x", "g", "1", "B", "x",
+    "g", "2", "A", "x", "g", "2", "A", "y", "g", "2", "B", "x",
+    "g", "3", "A", "x", "g", "3", "B", "y",
+    "g", "4", "A", "x"
+)
+fx_out <- sourceAgreement(fx)
+stopifnot(
+    fx_out$Taxa == 4, fx_out$`Taxa with 2+ sources` == 3,
+    fx_out$Identical == 1, fx_out$`Share a state` == 2
+)
 agreement_taxid <- sourceAgreement(curated_inputs)
 agreement_species <- curated_inputs |>
     mutate(
@@ -810,6 +825,7 @@ Strains moved to their parent species:
 myDataTable(agreement_species, page_len = nrow(agreement_species))
 ```
 
+The curation sheets were read on `r if (nzchar(params$sources_ref)) format(sheets_read_on) else "(section skipped)"`.
 Sources are not all independent: some compile others, so agreement is an upper
 bound on independent confirmation. Rows without a rank in the curated inputs
 stay at their own taxid in the second table.
