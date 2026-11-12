@@ -5,10 +5,11 @@ output:
     code_folding: hide
     toc: true
 params:
-  bugphyzz_version: "10.5281/zenodo.24114812"   # Zenodo DOI of the release the paper cites (v1.1.0), or "devel"
+  bugphyzz_version: "10.5281/zenodo.24166279"   # Zenodo DOI of the release the paper cites (v1.2.0), or "devel"
   validation_tsv: ""          # path or URL of a taxPProValidation validation_summary.tsv; "" uses the copy in the installed bugphyzz
   validation_attributes_tsv: ""  # same for validation_attributes.tsv (per-attribute kappa/R2, ADR 0006)
   out_dir: ""                 # where the supplementary TSVs are written; "" means tempdir()
+  sources_ref: "v1.2.0"       # bugphyzzExports tag or commit whose sources/ the agreement table reads; "" skips that table
 ---
 
 ```{r script options, include = FALSE}
@@ -694,11 +695,134 @@ stopifnot(
 myDataTable(supp_attr_tbl, page_len = nrow(supp_attr_tbl))
 ```
 
+# Supplementary Table: agreement between sources
+
+The release credits each value to one source, so it cannot show how often
+sources overlap. This table is computed from the curated inputs instead:
+`physiologies()` reads every source before conflicts are resolved. The
+programmatic sources come from `sources/` of bugphyzzExports at
+`params$sources_ref`; the curation sheets are read as they are today and
+cannot be pinned. As in the export, the 2020 Bergey's Manual rows and the rows
+in `sources/sheet_overrides.tsv` are left out.
+
+Only attributes with mutually exclusive states are compared (binary and
+multistate-intersection). For each attribute, a taxon counts once per source,
+with the set of states that source gives it. "Identical" means all sources
+give the same set; "share a state" means at least one state is common to all
+of them. The first table matches on the NCBI taxid as curated; in the second,
+strain rows are moved to their parent species first, so that strain-level
+sources (BacDive) meet species-level ones, and a source's states for a
+species are those of all its strains.
+
+```{r source agreement, eval = nzchar(params$sources_ref)}
+sources_base <- paste0(
+    "https://raw.githubusercontent.com/waldronlab/bugphyzzExports/",
+    params$sources_ref, "/sources/"
+)
+old_opt <- options(bugphyzz.sourcesBaseUrl = sources_base)
+phys <- physiologies("all")
+options(old_opt)
+sheet_ov <- readr::read_tsv(
+    paste0(sources_base, "sheet_overrides.tsv"),
+    col_types = readr::cols(.default = "c")
+)
+curated_inputs <- map(phys, ~ {
+    .x |>
+        mutate(across(everything(), as.character)) |>
+        select(any_of(c(
+            "NCBI_ID", "Rank", "Parent_NCBI_ID", "Parent_rank", "Attribute",
+            "Attribute_value", "Attribute_group", "Attribute_type",
+            "Attribute_source", "Frequency"
+        )))
+}) |>
+    bind_rows() |>
+    filter(
+        !is.na(NCBI_ID), NCBI_ID != "", !is.na(Attribute_source),
+        Attribute_source != "Bergey's Manual",
+        Attribute_type %in% c("binary", "multistate-intersection"),
+        !Frequency %in% "never"
+    ) |>
+    anti_join(
+        sheet_ov,
+        by = c(
+            "Attribute_group" = "physiology", "NCBI_ID", "Attribute",
+            "Attribute_value", "Attribute_source"
+        )
+    ) |>
+    ## a multistate row with FALSE says a state is absent; only stated
+    ## states are compared
+    filter(Attribute_type == "binary" | Attribute_value == "TRUE") |>
+    mutate(state = ifelse(Attribute_type == "binary", Attribute_value, Attribute))
+
+sourceAgreement <- function(dat) {
+    per_source <- dat |>
+        group_by(Attribute_group, NCBI_ID, Attribute_source) |>
+        summarise(states = list(sort(unique(state))), .groups = "drop")
+    per_taxon <- per_source |>
+        group_by(Attribute_group, NCBI_ID) |>
+        summarise(
+            n_sources = n(),
+            identical = length(unique(map_chr(states, paste, collapse = "|"))) == 1,
+            share = length(Reduce(intersect, states)) > 0,
+            .groups = "drop"
+        )
+    per_taxon |>
+        group_by(Attribute = Attribute_group) |>
+        summarise(
+            Taxa = n(),
+            `Taxa with 2+ sources` = sum(n_sources >= 2),
+            `Taxa with 3+ sources` = sum(n_sources >= 3),
+            Identical = sum(identical & n_sources >= 2),
+            `Share a state` = sum(share & n_sources >= 2),
+            .groups = "drop"
+        ) |>
+        filter(`Taxa with 2+ sources` > 0) |>
+        mutate(
+            `Identical (%)` = round(100 * Identical / `Taxa with 2+ sources`, 1),
+            `Share a state (%)` = round(100 * `Share a state` / `Taxa with 2+ sources`, 1),
+            `No state shared (%)` = round(100 - `Share a state (%)`, 1)
+        ) |>
+        arrange(desc(`Taxa with 2+ sources`))
+}
+agreement_taxid <- sourceAgreement(curated_inputs)
+agreement_species <- curated_inputs |>
+    mutate(
+        to_species = Rank %in% "strain" & Parent_rank %in% "species" &
+            !is.na(Parent_NCBI_ID),
+        NCBI_ID = ifelse(to_species, Parent_NCBI_ID, NCBI_ID)
+    ) |>
+    sourceAgreement()
+stopifnot(
+    all(agreement_taxid$Identical <= agreement_taxid$`Share a state`),
+    all(agreement_species$Identical <= agreement_species$`Share a state`)
+)
+```
+
+Matched on the taxid as curated:
+
+```{r source agreement taxid, eval = nzchar(params$sources_ref)}
+myDataTable(agreement_taxid, page_len = nrow(agreement_taxid))
+```
+
+Strains moved to their parent species:
+
+```{r source agreement species, eval = nzchar(params$sources_ref)}
+myDataTable(agreement_species, page_len = nrow(agreement_species))
+```
+
+Sources are not all independent: some compile others, so agreement is an upper
+bound on independent confirmation. Rows without a rank in the curated inputs
+stay at their own taxid in the second table.
+
 ```{r write supp tables, include = FALSE}
 ## TSV copies for the manuscript supplement
 out_dir <- if (nzchar(params$out_dir)) params$out_dir else tempdir()
 readr::write_tsv(supp_attr_tbl, file.path(out_dir, "supplementary_table_attributes.tsv"))
 readr::write_tsv(sources, file.path(out_dir, "supplementary_table_sources.tsv"))
+if (nzchar(params$sources_ref)) {
+    readr::write_tsv(agreement_taxid, file.path(out_dir, "supplementary_table_source_agreement_taxid.tsv"))
+    readr::write_tsv(agreement_species, file.path(out_dir, "supplementary_table_source_agreement_species.tsv"))
+}
 message("Supplementary tables written to ", out_dir)
 ```
 
